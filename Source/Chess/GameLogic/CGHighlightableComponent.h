@@ -22,7 +22,9 @@ protected:
 
 public:	
 	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	bool IsSkeletal;
 
 	UFUNCTION(BlueprintCallable, Category="Chess setup")
 	virtual void SetHighlighted(bool value);

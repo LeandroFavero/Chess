@@ -2,8 +2,10 @@
 
 #pragma once
 
-#include "ChessLogic/SquareCoord.h"
-#include "ChessLogic/CGPiece.h"
+#include "ChessLogic/CGSquareCoord.h"
+class ACGChessBoard;
+class UCGLabelWidgetComponent;
+class ACGPiece;
 #include "Components/StaticMeshComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -13,26 +15,63 @@ UCLASS()
 class CHESS_API ACGBoardTile : public AActor
 {
 	GENERATED_BODY()
-	
-private:
-	TArray<ACGPiece> AttackedBy;
-	TArray<ACGPiece> OccupiedBy;
+
+public:
+	static const int NORTH{ 0 };
+	static const int NORTH_EAST{ 1 };
+	static const int EAST{ 2 };
+	static const int SOUTH_EAST{ 3 };
+	static const int SOUTH{ 4 };
+	static const int SOUTH_WEST{ 5 };
+	static const int WEST{ 6 };
+	static const int NORTH_WEST{ 7 };
+	static const int KNIGHT1{ 8 };
+	static const int KNIGHT2{ 9 };
+	static const int KNIGHT3{ 10 };
+	static const int KNIGHT4{ 11 };
+	static const int KNIGHT5{ 12 };
+	static const int KNIGHT6{ 13 };
+	static const int KNIGHT7{ 14 };
+	static const int KNIGHT8{ 15 };
+
+	UPROPERTY()
+	TSet<ACGPiece*> AttackedBy;
+
+	UPROPERTY()
+	TSet<ACGPiece*> OccupiedBy;
 
 	UPROPERTY()
 	bool m_isBlack{ false };
 
 	UPROPERTY()
-	TArray<UMaterialInstanceDynamic*> DynaMats;
+	TArray<ACGBoardTile*> Neighbours;
 
-public:	
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
+	UMaterialInstance* Black;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
+	UMaterialInstance* White;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
 	UStaticMeshComponent* Mesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
-	FVector2D Size {100, 100};
+	UPROPERTY(BlueprintReadOnly, Category = "Chess setup")
+	FCGSquareCoord Position;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Chess setup")
-	FSquareCoord Position;
+	ACGChessBoard* Board;
+
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	//TSubclassOf<class UCGLabelWidget> WidgetTemplate;
+	TSubclassOf<class UCGLabelWidgetComponent> WidgetTemplate;
+
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	FRotator WidgetRotation {0.0f, 90.0f, 0.0f};
+
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	FVector WidgetOffset {100, 100, 1};
 
 	// Sets default values for this actor's properties
 	ACGBoardTile();
@@ -48,8 +87,14 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual void SetCoord(const FCGSquareCoord coord);
+
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual void SetBlack(bool value);
 
 	UFUNCTION(BlueprintPure, Category = "Chess setup")
 	virtual bool IsBlack();
+
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual void ClearAttackers();
 };

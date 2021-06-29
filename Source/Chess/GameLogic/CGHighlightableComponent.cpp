@@ -23,19 +23,18 @@ void UCGHighlightableComponent::BeginPlay()
 	
 }
 
-
-// Called every frame
-void UCGHighlightableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
 void UCGHighlightableComponent::SetHighlighted(bool value)
 {
-	TArray<UActorComponent*> meshes = GetOwner()->GetComponentsByClass(UStaticMeshComponent::StaticClass());
-	for (UActorComponent* m : meshes)
+	//TArray<UActorComponent*> meshes = ;
+	for (UActorComponent* m : GetOwner()->GetComponentsByClass(USkeletalMeshComponent::StaticClass()))
+	{
+		USkeletalMeshComponent* smc = Cast<USkeletalMeshComponent>(m);
+		if (smc)
+		{
+			smc->SetRenderCustomDepth(value);
+		}
+	}
+	for (UActorComponent* m : GetOwner()->GetComponentsByClass(UStaticMeshComponent::StaticClass()))
 	{
 		UStaticMeshComponent* smc = Cast<UStaticMeshComponent>(m);
 		if (smc)

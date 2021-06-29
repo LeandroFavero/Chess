@@ -2,11 +2,12 @@
 
 #pragma once
 
-
-#include "GameLogic/CGBoardTile.h"
+class ACGBoardTile;
 #include "Math/IntPoint.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+class ACGChessPlayerController;
+#include "ChessLogic/CGSquareCoord.h"
 #include "CGChessBoard.generated.h"
 
 UCLASS()
@@ -14,18 +15,37 @@ class CHESS_API ACGChessBoard : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
+public:
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	UMaterialInstance* BlackMaterial;
+
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	UMaterialInstance* WhiteMaterial;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	TSubclassOf<class ACGBoardTile> TileTemplate;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FSquareCoord Size {8, 8};
+	TArray<TSubclassOf<class ACGPiece>> PieceTemplates;
+
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	FCGSquareCoord Size {8, 8};
+
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	FVector2D TileSize {200, 200};
+
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	FString DefaultBoardFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	TArray<ACGBoardTile*> Board;
+	
+	UPROPERTY()
+	TArray<ACGPiece*> Pieces;
+
+	UMaterialInstance* umi;
 
 	UPROPERTY()
-	TArray<ACGBoardTile*> Board;
-
-
 	USceneComponent* Root;
 	// Sets default values for this actor's properties
 	ACGChessBoard();
@@ -41,4 +61,31 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 	void Destroyed() override;
+
+	//https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual bool FenStringToChessPieces(FString fen);
+
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual void ApplySkin(ACGChessPlayerController* playerController, int skin);
+
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual void StartGame(ACGChessPlayerController* p1, ACGChessPlayerController* p2 = nullptr);
+
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual FTransform CoordToTransform(const FCGSquareCoord& coord) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual FCGSquareCoord TransformToCoord(const FTransform& transform);
+
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual FCGSquareCoord LocationToCoord(const FVector& location);
+
+	UFUNCTION(BlueprintPure, Category = "Chess setup")
+	virtual ACGBoardTile* GetTile(const FCGSquareCoord& coord);
+
+	//UFUNCTION(BlueprintPure, Category = "Chess")
+	static void CoordToLabel(const FCGSquareCoord coord, TCHAR& X, TCHAR& Y);
+private:
+	
 };

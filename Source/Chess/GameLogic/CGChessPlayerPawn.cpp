@@ -1,11 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "CGChessPlayerPawn.h"
 #include "Engine/World.h"
+#include "ChessLogic/CGPiece.h"
 #include "DrawDebugHelpers.h"
 #include "CGBoardTile.h"
+
 #include "CGHighlightableComponent.h"
-#include "CGChessPlayerPawn.h"
+#include "ChessGameMode.h"
 
 // Sets default values
 ACGChessPlayerPawn::ACGChessPlayerPawn() : Super()
@@ -20,14 +22,14 @@ ACGChessPlayerPawn::ACGChessPlayerPawn() : Super()
 	
 	CameraArm->SetRelativeRotation(CameraArmDefaultRotation);
 	CameraArm->TargetArmLength = CameraArmLengthDefault;
-
+	CameraArm->bDoCollisionTest = false;
 }
 
 // Called when the game starts or when spawned
 void ACGChessPlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	OrbitCamera(WhiteRotation, CameraArmYDefault, true);
 }
 
 // Called every frame
@@ -39,28 +41,42 @@ void ACGChessPlayerPawn::Tick(float DeltaTime)
 }
 
 // Called to bind functionality to input
-void ACGChessPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ACGChessPlayerPawn::SetupPlayerInputComponent(UInputComponent* playerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	Super::SetupPlayerInputComponent(playerInputComponent);
+	check(playerInputComponent);
+	playerInputComponent->BindAction("RightClick", IE_Pressed, this, &ACGChessPlayerPawn::BeginTurnCamera).bConsumeInput = false;
+	playerInputComponent->BindAction("RightClick", IE_Released, this, &ACGChessPlayerPawn::EndTurnCamera).bConsumeInput = false;
+	playerInputComponent->BindAction("LeftClick", IE_Pressed, this, &ACGChessPlayerPawn::LeftPressed).bConsumeInput = false;
+	playerInputComponent->BindAction("LeftClick", IE_Released, this, &ACGChessPlayerPawn::LeftReleased).bConsumeInput = false;
 
-	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("RightClick", IE_Pressed, this, &ACGChessPlayerPawn::BeginTurnCamera).bConsumeInput = false;
-	PlayerInputComponent->BindAction("RightClick", IE_Released, this, &ACGChessPlayerPawn::EndTurnCamera).bConsumeInput = false;
-
-	PlayerInputComponent->BindAxis("MouseX", this, &ACGChessPlayerPawn::MouseMoveX);
-	PlayerInputComponent->BindAxis("MouseY", this, &ACGChessPlayerPawn::MouseMoveY);
-	PlayerInputComponent->BindAxis("Scroll", this, &ACGChessPlayerPawn::Zoom);
+	playerInputComponent->BindAxis("MouseX", this, &ACGChessPlayerPawn::MouseMoveX);
+	playerInputComponent->BindAxis("MouseY", this, &ACGChessPlayerPawn::MouseMoveY);
+	playerInputComponent->BindAxis("Scroll", this, &ACGChessPlayerPawn::Zoom);
 }
 
 void ACGChessPlayerPawn::TraceCursor()
 {
 	if (APlayerController* pc = Cast<APlayerController>(GetController()))
 	{
+		if (bIsAdjustingCamera)
+		{
+			SetMouseoverHighlighted(false);
+			EndGrabPiece();
+			return;
+		}
+
 		FVector start, dir, end;
 		pc->DeprojectMousePositionToWorld(start, dir);
 		end = start + (dir * 8000.0f);
-		FHitResult hitResult;
-		GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
+		
+		FCollisionQueryParams collisionParams;
+		if (GrabbedPiece.IsValid())
+		{
+			collisionParams.AddIgnoredActor(GrabbedPiece.Get());
+		}
+		//FHitResult hitResult;
+		GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, collisionParams);
 		if (bDrawDebugHelpers)
 		{
 			DrawDebugLine(GetWorld(), start, hitResult.Location, FColor::Red);
@@ -73,41 +89,19 @@ void ACGChessPlayerPawn::TraceCursor()
 			MouseoveredActor = hitResult.Actor;
 			//enable new highlight
 			SetMouseoverHighlighted(true);
-			/*if (HitResult.Actor.IsValid())
-			{
-				ACGBoardTile* tile = Cast<ACGBoardTile>(MouseoveredActor.Get());
-				UCGHighlightableComponent* highlight = MouseoveredActor.Get()->FindComponentByClass<UCGHighlightableComponent>();
-				if (highlight)
-				{
-					highlight->SetHighlighted(true);
-				}
-				//CGPiece* piece = Cast<ACGPiece>(HitResult.Actor.Get());
-			}*/
+
+		}
+
+		if (GrabbedPiece.IsValid())
+		{
+			GrabbedPiece.Get()->UpdateGrab(hitResult.Location);
 		}
 	}
-		
-		//APuzzleTesztBlock* HitBlock = Cast<APuzzleTesztBlock>(HitResult.Actor.Get());
-		/*if (CurrentBlockFocus != HitBlock)
-		{
-			if (CurrentBlockFocus)
-			{
-				CurrentBlockFocus->Highlight(false);
-			}
-			if (HitBlock)
-			{
-				HitBlock->Highlight(true);
-			}
-			CurrentBlockFocus = HitBlock;
-		}*/
-	/*else if (CurrentBlockFocus)
-	{
-		CurrentBlockFocus->Highlight(false);
-		CurrentBlockFocus = nullptr;
-	}*/
 }
 
 void ACGChessPlayerPawn::SetMouseoverHighlighted(bool value)
 {
+	/*
 	if (MouseoveredActor.IsValid())
 	{
 		UCGHighlightableComponent* highlight = MouseoveredActor.Get()->FindComponentByClass<UCGHighlightableComponent>();
@@ -116,40 +110,141 @@ void ACGChessPlayerPawn::SetMouseoverHighlighted(bool value)
 			highlight->SetHighlighted(value);
 		}
 	}
+	*/
 }
 
 void ACGChessPlayerPawn::BeginTurnCamera()
 {
-	APlayerController* pc = Cast<APlayerController>(GetController());
-	if (pc)
+	bIsAdjustingCamera = true;
+	EndGrabPiece();
+	if (APlayerController* pc = Cast<APlayerController>(GetController()))
 	{
 		pc->bShowMouseCursor = false;
 		pc->GetMousePosition(lastMouseX, lastMouseY);
-		pc->SetInputMode(FInputModeGameOnly());
+		//pc->SetInputMode(FInputModeGameOnly());
 	}
 	bIsAdjustingCamera = true;
 }
+
 void ACGChessPlayerPawn::EndTurnCamera()
 {
 	if (APlayerController* pc = Cast<APlayerController>(GetController()))
 	{
-		pc->bShowMouseCursor = true;
+		
 		pc->GetLocalPlayer()->ViewportClient->Viewport->SetMouse(lastMouseX, lastMouseY);
-		pc->SetInputMode(FInputModeGameAndUI());
-		/*if (ULocalPlayer* lp = Cast<ULocalPlayer>(pc->Player))
-		{
-			if (FViewport* v = lp->ViewportClient->Viewport)
-			{
-				v->SetMouse(lastMouseX, lastMouseY);
-			}
-		}*/
+		//pc->SetInputMode(FInputModeGameOnly());
+		pc->bShowMouseCursor = true;
+		pc->bEnableClickEvents = true;
+		pc->bEnableTouchEvents = true;
 	}
 	bIsAdjustingCamera = false;
 }
 
-void ACGChessPlayerPawn::Zoom(float Val)
+void ACGChessPlayerPawn::LeftPressed()
 {
-	CameraArm->TargetArmLength += (Val * CameraArmZoomSpeed);
+	bIsLeftClicking = true;
+	if (bIsAdjustingCamera)
+	{
+		EndTurnCamera();
+	}
+	if (APlayerController* pc = Cast<APlayerController>(GetController()))
+	{
+		pc->GetMousePosition(lastMouseX, lastMouseY);
+	}
+	if (GrabbedPiece.IsValid())
+	{
+		EndGrabPiece(true);
+	}
+	else
+	{
+		BeginGrabPiece();
+	}
+}
+
+void ACGChessPlayerPawn::LeftReleased()
+{
+	bIsLeftClicking = false;
+	if (bIsAdjustingCamera)
+	{
+		EndTurnCamera();
+	}
+	if (GrabbedPiece.IsValid() && IsDragged())
+	{
+		EndGrabPiece(true);
+	}
+}
+
+bool ACGChessPlayerPawn::IsDragged()
+{
+	if (APlayerController* pc = Cast<APlayerController>(GetController()))
+	{
+		float x, y;
+		pc->GetMousePosition(x, y);
+		float dist = FMath::Sqrt(FMath::Square(lastMouseX - x) + FMath::Square(lastMouseY - y));
+		return dist > DragTreshold;
+	}
+	return false;
+}
+
+void ACGChessPlayerPawn::BeginGrabPiece()
+{
+	if (GrabbedPiece.IsValid())
+	{
+		GrabbedPiece.Get()->Grab(false);
+	}
+	if (MouseoveredActor.IsValid())
+	{
+		if (ACGPiece* piece = Cast<ACGPiece>(MouseoveredActor.Get()))
+		{
+			GrabbedPiece = piece;
+			piece->Grab(true);
+			
+			HighlightedTiles = piece->AvailableMoves();
+			HighlightTiles(true);
+		}
+	}
+}
+
+void ACGChessPlayerPawn::EndGrabPiece(bool moveTo)
+{
+	HighlightTiles(false);
+	HighlightedTiles.Empty();
+	if (moveTo)
+	{
+		if (UWorld* w = GetWorld())
+		{
+			if (AChessGameMode* mode = Cast<AChessGameMode>(w->GetAuthGameMode()))
+			{
+				GrabbedPiece.Get()->MoveTo(mode->Board->LocationToCoord(hitResult.Location));
+			}
+		}
+	}
+	if (GrabbedPiece.IsValid())
+	{
+		GrabbedPiece.Get()->Grab(false);
+		GrabbedPiece = nullptr;
+	}
+}
+
+void ACGChessPlayerPawn::HighlightTiles(bool val)
+{
+	for (ACGBoardTile* t : HighlightedTiles)
+	{
+		UCGHighlightableComponent* highlight = MouseoveredActor.Get()->FindComponentByClass<UCGHighlightableComponent>();
+		if (highlight)
+		{
+			highlight->SetHighlighted(val);
+		}
+	}
+}
+
+void ACGChessPlayerPawn::Zoom(float val)
+{
+	if (val == 0)
+	{
+		return;
+	}
+	CameraArm->TargetArmLength += (val * CameraArmZoomSpeed);
 	if (CameraArm->TargetArmLength < CameraArmLengthMin)
 	{
 		CameraArm->TargetArmLength = CameraArmLengthMin;
@@ -176,11 +271,19 @@ void ACGChessPlayerPawn::MouseMoveY(float val)
 	}
 }
 
-void ACGChessPlayerPawn::OrbitCamera(float X, float Y)
+void ACGChessPlayerPawn::OrbitCamera(float X, float Y, bool absolute)
 {
 	FRotator rot = CameraArm->GetDesiredRotation();
-	rot.Pitch += Y;
-	rot.Yaw += X;
+	if(absolute)
+	{
+		rot.Pitch = Y;
+		rot.Yaw = X;
+	}
+	else
+	{
+		rot.Pitch += Y;
+		rot.Yaw += X;
+	}
 	if (rot.Pitch > CameraArmYMax)
 	{
 		rot.Pitch = CameraArmYMax;

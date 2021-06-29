@@ -1,62 +1,143 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "CGHighlightableComponent.h"
 #include "CGBoardTile.h"
+#include "ChessLogic/CGChessBoard.h"
+#include "CGHighlightableComponent.h"
+#include "UI/CGLabelWidgetComponent.h"
 
 // Sets default values
 ACGBoardTile::ACGBoardTile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	//RootComponent = ObjectInitializer.CreateDefaultSubobject<USceneComponent>(this, TEXT("Root"));
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetCollisionProfileName(FName("BoardCollision"), false);
 	SetRootComponent(Mesh);
 
 	UCGHighlightableComponent* highlight = CreateDefaultSubobject<UCGHighlightableComponent>(TEXT("Highlight"));
 	AddOwnedComponent(highlight);
+
+	//Neighbours.Reserve(16);
+	Neighbours.SetNumZeroed(16);
 }
 
 // Called when the game starts or when spawned
 void ACGBoardTile::BeginPlay()
 {
 	Super::BeginPlay();
+	SetCoord(Position);
 }
 
 // Called every frame
 void ACGBoardTile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void ACGBoardTile::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
-	DynaMats.Empty();
-	for (int i = 0; i < Mesh->GetNumMaterials(); ++i)
+}
+
+void ACGBoardTile::SetCoord(const FCGSquareCoord coord)
+{
+	Position = coord;
+	SetBlack(coord.X % 2 == coord.Y % 2);
+	if (!Board || !WidgetTemplate || !GetWorld())
 	{
-		auto dynaMat = Mesh->CreateDynamicMaterialInstance(i);
-		DynaMats.Add(dynaMat);
+		return;
+	}
+
+	bool horizontal = Position.X == 0 || Position.X == (Board->Size.X - 1);
+	bool vertical = Position.Y == 0 || Position.Y == (Board->Size.Y - 1);
+	if (!horizontal && !vertical)
+	{
+		for (auto* uac : GetComponentsByClass(UCGLabelWidgetComponent::StaticClass()))
+		{
+			uac->DestroyComponent();
+		}
+		return;
+	}
+	TArray<UActorComponent*> comps = GetComponentsByClass(UCGLabelWidgetComponent::StaticClass());
+	int labelNum = horizontal && vertical ? 2 : 1;
+	while (comps.Num() > labelNum)
+	{
+		comps.RemoveAt(comps.Num() - 1);
+	}
+	while (comps.Num() < labelNum)
+	{
+		UCGLabelWidgetComponent* newComponent = NewObject<UCGLabelWidgetComponent>(this, WidgetTemplate);
+		//newComponent->SetWidgetClass(WidgetTemplate);
+		AddInstanceComponent(newComponent);
+		newComponent->RegisterComponent();
+		//newComponent->OnComponentCreated();
+		newComponent->SetRelativeRotation(WidgetRotation);
+		newComponent->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform);
+		
+		newComponent->InitWidget();
+		comps.Add(newComponent);
+	}
+	int idx = 0;
+	constexpr int DIGIT_FLAG = 1 << 31;
+	if (Position.X == 0)
+	{
+		//Left
+		UCGLabelWidgetComponent* widgetComp = Cast<UCGLabelWidgetComponent>(comps[idx]);
+		widgetComp->SetRelativeRotation(WidgetRotation + FRotator(0, 90, 0));
+		widgetComp->SetRelativeLocation(WidgetOffset.RotateAngleAxis(90, FVector(0.0f, 0.0f, 1.0f)));
+		widgetComp->SetLabel(DIGIT_FLAG | (Board->Size.Y-Position.Y));
+		idx += 1;
+	}
+	if (Position.X == (Board->Size.X - 1))
+	{
+		//Right
+		UCGLabelWidgetComponent* widgetComp = Cast<UCGLabelWidgetComponent>(comps[idx]);
+		widgetComp->SetRelativeRotation(WidgetRotation + FRotator(0, 270,0));
+		widgetComp->SetRelativeLocation(WidgetOffset.RotateAngleAxis(270, FVector(0.0f, 0.0f, 1.0f)));
+		widgetComp->SetLabel(DIGIT_FLAG | (Board->Size.Y-Position.Y));
+		idx += 1;
+	}
+
+	if (Position.Y == 0 )
+	{
+		//Top
+		UCGLabelWidgetComponent* widgetComp = Cast<UCGLabelWidgetComponent>(comps[idx]);
+		widgetComp->SetRelativeRotation(WidgetRotation + FRotator(0, 270, 0));
+		widgetComp->SetRelativeLocation(WidgetOffset.RotateAngleAxis(180, FVector(0.0f, 0.0f, 1.0f)));
+		widgetComp->SetLabel(Position.X);
+		idx += 1;
+	}
+	if (Position.Y == (Board->Size.Y - 1))
+	{
+		//Bottom
+		UCGLabelWidgetComponent* widgetComp = Cast<UCGLabelWidgetComponent>(comps[idx]);
+		widgetComp->SetRelativeRotation(WidgetRotation + FRotator(0, 90, 0));
+		widgetComp->SetRelativeLocation(WidgetOffset.RotateAngleAxis(0, FVector(0.0f, 0.0f, 1.0f)));
+		widgetComp->SetLabel(Position.X);
+		idx += 1;
 	}
 }
+
+/*void ACGBoardTile::RemoveLabels(UWidgetComponent* widgetComp, )
+{
+	for (UActorComponent* uac : GetComponentsByClass(UWidgetComponent::StaticClass()))
+	{
+		uac->DestroyComponent();
+	}
+}*/
 
 void ACGBoardTile::SetBlack(bool value)
 {
 	m_isBlack = value;
-	for (UMaterialInstanceDynamic* mat : DynaMats)
-	{
-		if (value)
-		{
-			mat->SetScalarParameterValue(FName("IsBlack"), 1.0f );
-		}
-		else
-		{
-			mat->SetScalarParameterValue(FName("IsBlack"), 0.0f);
-		}
-	}
+	Mesh->SetMaterial(0, m_isBlack ? Black : White);
 }
 
 bool ACGBoardTile::IsBlack()
 {
 	return m_isBlack;
+}
+
+void ACGBoardTile::ClearAttackers()
+{
+	AttackedBy.Empty();
 }

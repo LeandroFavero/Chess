@@ -9,10 +9,20 @@
 /**
  * 
  */
+
+
 UCLASS()
 class CHESS_API ACGChessPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
 	ACGChessPlayerController();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Chess setup")
+	int SelectedSkinId{ 0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
+	int PreferredSide;
+
+
 };
