@@ -4,6 +4,9 @@
 #include "ChessLogic/CGPieceMovementBase.h"
 #include <GameLogic/CGBoardTile.h>
 
+#include "ChessLogic/CGPiece.h"
+#include "GameLogic/CGBoardTile.h"
+
 // Sets default values for this component's properties
 UCGPieceMovementBase::UCGPieceMovementBase()
 {
@@ -24,8 +27,21 @@ void UCGPieceMovementBase::TickComponent(float DeltaTime, ELevelTick TickType, F
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-bool UCGPieceMovementBase::IsMoveValid(const FCGSquareCoord& coord)
+bool UCGPieceMovementBase::IsMoveValid(const ACGBoardTile* pTile)
 {
+	if (!pTile)
+	{
+		return false;
+	}
+	TSet<ACGBoardTile*> set;
+	AvailableMoves(set);
+	for (const ACGBoardTile* t : set)
+	{
+		if (t == pTile)
+		{
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -36,5 +52,5 @@ void UCGPieceMovementBase::AvailableMoves(TSet<ACGBoardTile*>& set)
 
 void UCGPieceMovementBase::AttackedTiles(TSet<ACGBoardTile*>& set)
 {
-
+	AvailableMoves(set);
 }

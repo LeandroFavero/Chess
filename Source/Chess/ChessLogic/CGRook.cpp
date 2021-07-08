@@ -2,11 +2,15 @@
 
 
 #include "ChessLogic/CGRook.h"
-#include "CGDirectionalMovement.h"
+#include "CGLinearMovement.h"
+#include "GameLogic/CGBoardTile.h"
 
 ACGRook::ACGRook()
 {
-	UCGPieceMovementBase* moveComp = CreateDefaultSubobject<UCGDirectionalMovement>(TEXT("RookMovement"));
-	moveComp->Range = -1;
+	UCGLinearMovement* moveComp = CreateDefaultSubobject<UCGLinearMovement>(TEXT("MoveValidator"));
+	moveComp->Directions = {EDir::NORTH, EDir::EAST, EDir::SOUTH, EDir::WEST };
 	AddOwnedComponent(moveComp);
+
+	//Flags |= 0x00000001;//Captured order
+	Flags |= EPieceFlags::CanCastle;
 }

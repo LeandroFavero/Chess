@@ -4,16 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "ChessLogic/CGPieceMovementBase.h"
-#include "CGKnightMovement.generated.h"
+#include "GameLogic/CGBoardTile.h"
+#include "CGLinearMovement.generated.h"
 
 /**
  * 
  */
 UCLASS(Blueprintable, ClassGroup = (Chess), meta = (BlueprintSpawnableComponent))
-class CHESS_API UCGKnightMovement : public UCGPieceMovementBase
+class CHESS_API UCGLinearMovement : public UCGPieceMovementBase
 {
 	GENERATED_BODY()
-
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess logic")
+	int Range{ -1 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess logic")
+	TSet<EDir> Directions;
+
 	void AvailableMoves(TSet<ACGBoardTile*>& set) override;
+
 };

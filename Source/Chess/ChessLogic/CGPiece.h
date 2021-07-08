@@ -3,14 +3,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
 #include "GameFramework/Actor.h"
+#include "GameLogic/CGUndo.h"
+#include "ChessLogic/CGSquareCoord.h"
+#include "CGPiece.generated.h"
+
 class UCGAnimInstance;
 class ACGChessPlayerController;
 class ACGChessBoard;
 class ACGBoardTile;
-#include "ChessLogic/CGSquareCoord.h"
-#include "CGPiece.generated.h"
+
+
+//UENUM()
+struct EPieceFlags
+{
+	enum EPieceFlagsValues
+	{
+		IsBlack = 1 << 0,	//bit0
+		CanCastle = 1 << 1,	//bit1
+		Captured = 1 << 2,	//bit2
+		OrderStart = 1 << 4,	//bit4-
+		OrderEnd = 1 << 7	//7
+	};
+};
 
 UCLASS()
 class CHESS_API ACGPiece : public AActor
@@ -20,6 +35,7 @@ class CHESS_API ACGPiece : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ACGPiece();
+	ACGPiece(ACGChessBoard* pBoard, uint8 pFlags = 0);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Chess setup")
 	USkeletalMeshComponent* Mesh;
@@ -30,49 +46,61 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Chess setup")
 	UStaticMeshComponent* Collision;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
-	bool IsBlack;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
 	ACGChessPlayerController* OwningPC;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing = SnapToPlace, Category = "Chess setup")
 	FCGSquareCoord Position;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	ACGChessBoard* Board;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	ACGBoardTile* Tile;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
+	uint8 Flags {0};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
+	int Value;
+
 protected:
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void PostInitializeComponents() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+
+	virtual void Destroyed() override;
 
 	UFUNCTION(BlueprintPure, Category = "Chess setup")
 	virtual const FString GetFenChars() const { return ""; }
 
+	UFUNCTION(BlueprintPure, Category = "Chess setup")
+	virtual const FString GetUnicode() const { return ""; }
+
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void SetMaterial(UMaterialInstance* mat);
 
-	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void Grab(bool isGrabbed);
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual void SetColor(bool isWhite);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual bool UpdateGrab(/*ACGChessPlayerController* pc,*/FVector_NetQuantize Location);
+	virtual void ServerGrab(bool isGrabbed);
 
-	UFUNCTION(BlueprintCallable, Category = "Chess")
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "Chess")
 	virtual void SnapToPlace();
+	virtual void SnapToPlace_Implementation();
 
-	UFUNCTION(BlueprintCallable, Category = "Chess")
+	UFUNCTION(BlueprintCallable, /*Server, Reliable,*/ Category = "Chess")
 	virtual void MoveTo(const FCGSquareCoord& coord, bool bypassCheck = false);
 
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	virtual void MoveToTile(ACGBoardTile* pTile, bool bypassCheck = false);
+	//virtual void MoveToTile_Implementation(ACGBoardTile* pTile, bool bypassCheck = false);
+	
 	/*
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void MoveTo(ACGBoardTile* tile, bool bypassCheck = false);
@@ -80,6 +108,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void MoveTo(ACGPiece* piece, bool bypassCheck = false);
 	*/
+
+	UFUNCTION(BlueprintPure, Category = "Chess")
+	virtual bool IsBlack() const { return (Flags & EPieceFlags::IsBlack) == EPieceFlags::IsBlack; }
+
+	UFUNCTION(BlueprintPure, Category = "Chess")
+	virtual bool IsWhite() const { return (Flags & EPieceFlags::IsBlack) != EPieceFlags::IsBlack; }
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual TSet<ACGBoardTile*> AvailableMoves();
@@ -89,24 +123,30 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void Capture();
-	
-	UFUNCTION(BlueprintNativeEvent, Category = "Chess setup")
+
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	virtual void UnCapture();
+
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	virtual const bool IsCaptured() const;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Chess setup")
 	void OnPieceGrabbed(bool isGrabbed);
-	void OnPieceGrabbed_Implementation(bool isGrabbed);
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Chess events")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Chess events")
 	void OnPieceCaptured();
-	void OnPieceCaptured_Implementation();
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Chess events")
-	void OnPieceMoved(FCGSquareCoord coord);
-	void OnPieceMoved_Implementation(FCGSquareCoord coord);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Chess events")
+	void OnPieceMoved();
+	UFUNCTION(Client, Reliable)
+	void ClientOnPieceMoved();
+	void ClientOnPieceMoved_Implementation();
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Chess events")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Chess events")
 	void OnPieceSpawned();
-	void OnPieceSpawned_Implementation();
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Chess events")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Chess events")
 	void OnInvalidMove();
-	void OnInvalidMove_Implementation();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

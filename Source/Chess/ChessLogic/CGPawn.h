@@ -17,6 +17,13 @@ public:
 	ACGPawn();
 
 	const FString GetFenChars() const override { return "Pp"; }
+	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265F") : TEXT("\u2659")); }//U+265F : U+2659
 
-	bool IsDoubleOpenAvailable();
+	//bool IsDoubleOpenAvailable();
+
+
+	void BeginPromotion();
+
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	void EndPromotion();
 };

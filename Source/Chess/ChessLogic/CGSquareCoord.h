@@ -34,11 +34,13 @@ struct FCGSquareCoord
 		return X == Other.X && Y == Other.Y;
 	}
 
-	//FORCEINLINE
-	friend uint32 GetTypeHash(const FCGSquareCoord& Coord)
+	FORCEINLINE friend uint32 GetTypeHash(const FCGSquareCoord& Coord)
 	{
 		uint32 ret = Coord.X << 8;
 		ret += Coord.Y;
 		return ret;
 	}
 };
+
+static FCGSquareCoord UNDO_CAPTURE(0xff, 0xff);
+static FCGSquareCoord UNDO_SPAWN(0xff, 0xfe);

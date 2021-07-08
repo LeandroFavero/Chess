@@ -1,13 +1,16 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "ChessGameMode.h"
+#include "GameLogic/CGGameMode.h"
 #include "GameLogic/CGChessPlayerPawn.h"
 #include "GameLogic/CGChessPlayerController.h"
 #include "MaterialShared.h"
 #include "UI/CGHUD.h"
+#include "ChessLogic/CGCanBePromotedInto.h"
+#include "ChessLogic/CGPiece.h"
 
-AChessGameMode::AChessGameMode()
+
+ACGGameMode::ACGGameMode()
 {
 	DefaultPawnClass = ACGChessPlayerPawn::StaticClass();
 	PlayerControllerClass = ACGChessPlayerController::StaticClass();
@@ -16,7 +19,7 @@ AChessGameMode::AChessGameMode()
 
 }
 
-int AChessGameMode::GetCurrentViewMode(const APlayerController* PlayerController)
+int ACGGameMode::GetCurrentViewMode(const APlayerController* PlayerController)
 {
 
     if (IsValid(PlayerController))
@@ -44,13 +47,3 @@ int AChessGameMode::GetCurrentViewMode(const APlayerController* PlayerController
     return -1;
 
 }
-
-/*FCGSkinData AChessGameMode::GetSkinData(FName Id)
-{
-	
-	if (row)
-	{
-		return row->WhiteMaterial;
-	}
-	return nullptr;
-}*/

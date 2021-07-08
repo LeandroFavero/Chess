@@ -5,35 +5,28 @@
 #include "ChessLogic/CGPawn.h"
 #include "ChessLogic/CGPiece.h"
 #include "GameLogic/CGBoardTile.h"
+#include "CGChessBoard.h"
 
-bool UCGPawnMovement::IsMoveValid(const FCGSquareCoord& coord)
-{
-	TSet<ACGBoardTile*> set;
-	AvailableMoves(set);
-	for (const ACGBoardTile* t : set)
-	{
-		if (t && t->Position == coord)
-		{
-			return true;
-		}
-	}
-	return false;
-}
+
+//TODO: EN PASSANT !!!
+//TODO: promotion !!!
 
 void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 {
-	ACGPawn* owner = GetOwner<ACGPawn>();
-	if (owner)
+	ACGPawn* pawn = GetOwner<ACGPawn>();
+	if (pawn && pawn->Tile && pawn->Board)
 	{
-		ACGBoardTile* t = owner->Tile->Neighbours[owner->IsBlack ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH];
+		ACGBoardTile* t = pawn->Tile->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH];
 		if (t)
 		{
 			if (t->OccupiedBy.Num() == 0)
 			{
 				set.Add(t);
-				if (owner->IsDoubleOpenAvailable())
+
+				//can double open?
+				if ((pawn->IsBlack() && pawn->Position.Y == pawn->Board->Size.Y - 2) || (pawn->IsWhite() && pawn->Position.Y == 1))
 				{
-					t = t->Neighbours[owner->IsBlack ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH];
+					t = t->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH];
 					if (t && t->OccupiedBy.Num() == 0)
 					{
 						set.Add(t);
@@ -41,24 +34,25 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 				}
 			}
 		}
-		t = owner->Tile->Neighbours[owner->IsBlack ? ACGBoardTile::SOUTH_EAST : ACGBoardTile::NORTH_EAST];
+		//attack
+		t = pawn->Tile->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH_EAST : ACGBoardTile::NORTH_EAST];
 		if(t)
 		{
 			for (const ACGPiece* p : t->OccupiedBy)
 			{
-				if (p->IsBlack != owner->IsBlack)
+				if (p->IsBlack() != pawn->IsBlack())
 				{
 					set.Add(t);
 					break;
 				}
 			}
 		}
-		t = owner->Tile->Neighbours[owner->IsBlack ? ACGBoardTile::SOUTH_WEST : ACGBoardTile::NORTH_WEST];
+		t = pawn->Tile->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH_WEST : ACGBoardTile::NORTH_WEST];
 		if (t)
 		{
 			for (const ACGPiece* p : t->OccupiedBy)
 			{
-				if (p->IsBlack != owner->IsBlack)
+				if (p->IsBlack() != pawn->IsBlack())
 				{
 					set.Add(t);
 					break;
@@ -74,12 +68,12 @@ void UCGPawnMovement::AttackedTiles(TSet<ACGBoardTile*>& set)
 	if (owner)
 	{
 		ACGBoardTile* t;
-		t = owner->Tile->Neighbours[owner->IsBlack ? ACGBoardTile::SOUTH_WEST : ACGBoardTile::NORTH_WEST];
+		t = owner->Tile->Neighbours[owner->IsBlack() ? ACGBoardTile::SOUTH_WEST : ACGBoardTile::NORTH_WEST];
 		if (t)
 		{
 			set.Add(t);
 		}
-		t = owner->Tile->Neighbours[owner->IsBlack ? ACGBoardTile::SOUTH_EAST : ACGBoardTile::NORTH_EAST];
+		t = owner->Tile->Neighbours[owner->IsBlack() ? ACGBoardTile::SOUTH_EAST : ACGBoardTile::NORTH_EAST];
 		if (t)
 		{
 			set.Add(t);

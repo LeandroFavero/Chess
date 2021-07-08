@@ -7,15 +7,17 @@
 
 ACGPawn::ACGPawn()
 {
-	UCGPieceMovementBase* moveComp = CreateDefaultSubobject<UCGPawnMovement>(TEXT("RookMovement"));
+	UCGPieceMovementBase* moveComp = CreateDefaultSubobject<UCGPawnMovement>(TEXT("MoveValidator"));
 	AddOwnedComponent(moveComp);
+
+	//Flags |= 0x00000100;//Captured order
 }
 
-bool ACGPawn::IsDoubleOpenAvailable()
+/*bool ACGPawn::IsDoubleOpenAvailable()
 {
 	if (Board)
 	{
-		if (IsBlack)
+		if (IsBlack())
 		{
 			return Position.Y == Board->Size.Y - 2;
 		}
@@ -25,4 +27,14 @@ bool ACGPawn::IsDoubleOpenAvailable()
 		}
 	}
 	return false;
+}*/
+
+void ACGPawn::BeginPromotion()
+{
+
+}
+
+void ACGPawn::EndPromotion()
+{
+
 }

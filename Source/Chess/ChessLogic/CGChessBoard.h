@@ -7,26 +7,22 @@ class ACGBoardTile;
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 class ACGChessPlayerController;
+class UCGCapturedPieces;
 #include "ChessLogic/CGSquareCoord.h"
+#include "GameLogic/CGUndo.h"
 #include "CGChessBoard.generated.h"
 
-UCLASS()
+
+
+UCLASS(Blueprintable)
 class CHESS_API ACGChessBoard : public AActor
 {
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	UMaterialInstance* BlackMaterial;
-
-	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	UMaterialInstance* WhiteMaterial;
-
+	
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	TSubclassOf<class ACGBoardTile> TileTemplate;
-
-	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	TArray<TSubclassOf<class ACGPiece>> PieceTemplates;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	FCGSquareCoord Size {8, 8};
@@ -37,10 +33,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	FString DefaultBoardFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	UPROPERTY(EditAnywhere, Replicated, Category = "Chess setup")
 	TArray<ACGBoardTile*> Board;
 	
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TArray<ACGPiece*> Pieces;
 
 	UMaterialInstance* umi;
@@ -50,13 +46,23 @@ public:
 	// Sets default values for this actor's properties
 	ACGChessBoard();
 
+	//UPROPERTY()
+	//uint32 MoveNum {0};
+
+	UPROPERTY(ReplicatedUsing = UndoNotify, BlueprintReadOnly, Category = "Chess")
+	TArray<FCGUndo> Undos;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
+	UCGCapturedPieces* CapturedWhite;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
+	UCGCapturedPieces* CapturedBlack;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
@@ -84,8 +90,25 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Chess setup")
 	virtual ACGBoardTile* GetTile(const FCGSquareCoord& coord);
 
+	virtual FCGUndo& CreateUndo();
+
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	virtual void UndoTo(int pMoveNum);
+
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	virtual void RequestUndoTo(int pMoveNum);
+
+	UFUNCTION()
+	virtual void UndoNotify();
+	/*
+	UFUNCTION(BlueprintNativeEvent, Category = "Chess events")
+	void OnValidMove(const FCGUndo& undo);
+	void OnValidMove_Implementation(const FCGUndo& undo);
+	*/
 	//UFUNCTION(BlueprintPure, Category = "Chess")
 	static void CoordToLabel(const FCGSquareCoord coord, TCHAR& X, TCHAR& Y);
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:
 	
 };

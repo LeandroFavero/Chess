@@ -1,10 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CGChessBoard.h"
-#include "ChessGameMode.h"
+#include "GameLogic/CGGameState.h"
+#include "GameLogic/CGGameMode.h"
 #include "CGPiece.h"
 #include "GameLogic/CGBoardTile.h"
 #include "GameLogic/CGChessPlayerController.h"
+#include "GameLogic/CGCapturedPieces.h"
+#include "UI/CGHUD.h"
+#include "Net/UnrealNetwork.h"
 
 #define Dbg(x) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT(x));}
 
@@ -16,6 +20,9 @@ ACGChessBoard::ACGChessBoard()
 	bRunConstructionScriptOnDrag = false;
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SetRootComponent(Root);
+
+	bReplicates = true;
+	bOnlyRelevantToOwner = false;
 }
 
 // Called when the game starts or when spawned
@@ -24,10 +31,11 @@ void ACGChessBoard::BeginPlay()
 	Super::BeginPlay();
 	if (UWorld* w = GetWorld())
 	{
-		AChessGameMode* gameMode = Cast<AChessGameMode>(w->GetAuthGameMode());
-		if (gameMode)
+		//GetGameState
+		ACGGameState* gameState = Cast<ACGGameState>(w->GetGameState());
+		if (gameState)
 		{
-			gameMode->Board = this;
+			gameState->Board = this;
 		}
 
 		//TODO remove?
@@ -35,18 +43,10 @@ void ACGChessBoard::BeginPlay()
 	}
 }
 
-// Called every frame
-void ACGChessBoard::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void ACGChessBoard::OnConstruction(const FTransform& transform)
 {
 	Super::OnConstruction(transform);
 
-	//bool reset = false;
 	for (AActor* a : Board)
 	{
 		if (!a || a->IsActorBeingDestroyed())
@@ -56,7 +56,11 @@ void ACGChessBoard::OnConstruction(const FTransform& transform)
 			break;
 		}
 	}
-
+	if (!TileTemplate)
+	{
+		return;
+	}
+	
 	int32 tileCount = Size.X * Size.Y;
 
 	//add or delete to match the tile count
@@ -97,33 +101,57 @@ void ACGChessBoard::OnConstruction(const FTransform& transform)
 	{
 		ACGBoardTile* tile = Board[i];
 
-		int otherIdx = i - Size.X;
-		tile->Neighbours[ACGBoardTile::NORTH] = (otherIdx < 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
+		int otherIdx = i + 1;
+		tile->Neighbours[static_cast<int>(EDir::NORTH)] = (otherIdx % Size.Y == 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
 
-		otherIdx = i - Size.X + 1;
-		tile->Neighbours[ACGBoardTile::NORTH_EAST] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.X == 0) ? nullptr : Board[otherIdx];
+		otherIdx = i + 1 + Size.Y;
+		tile->Neighbours[static_cast<int>(EDir::NORTH_EAST)] = (otherIdx % Size.Y == 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
 
-		otherIdx = i + 1;
-		tile->Neighbours[ACGBoardTile::EAST] = (otherIdx % Size.X == 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
+		otherIdx = i + Size.Y;
+		tile->Neighbours[static_cast<int>(EDir::EAST)] = (otherIdx >= tileCount) ? nullptr : Board[otherIdx];
 
-		otherIdx = i + Size.X + 1;
-		tile->Neighbours[ACGBoardTile::SOUTH_EAST] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.X == 0) ? nullptr : Board[otherIdx];
-
-		otherIdx = i + Size.X;
-		tile->Neighbours[ACGBoardTile::SOUTH] = (otherIdx < 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
-
-		otherIdx = i + Size.X - 1;
-		tile->Neighbours[ACGBoardTile::SOUTH_WEST] = (otherIdx < 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
+		otherIdx = i - 1 + Size.Y;
+		tile->Neighbours[static_cast<int>(EDir::SOUTH_EAST)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
 
 		otherIdx = i - 1;
-		tile->Neighbours[ACGBoardTile::WEST] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.X == Size.X-1) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::SOUTH)] = (otherIdx < 0 || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
 
-		otherIdx = i - Size.X - 1;
-		tile->Neighbours[ACGBoardTile::NORTH_WEST] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.X == Size.X - 1) ? nullptr : Board[otherIdx];
+		otherIdx = i - 1 - Size.Y;
+		tile->Neighbours[static_cast<int>(EDir::SOUTH_WEST)] = (otherIdx < 0 || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
 
+		otherIdx = i - Size.Y;
+		tile->Neighbours[static_cast<int>(EDir::WEST)] = (otherIdx < 0) ? nullptr : Board[otherIdx];
+
+		otherIdx = i + 1 - Size.Y;
+		tile->Neighbours[static_cast<int>(EDir::NORTH_WEST)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0) ? nullptr : Board[otherIdx];
+
+		//knight moves clockwise
+		otherIdx = i + 2 + Size.Y;
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT1)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0 || otherIdx % Size.Y == 1) ? nullptr : Board[otherIdx];
+
+		otherIdx = i + 1 + (Size.Y * 2);
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT2)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0) ? nullptr : Board[otherIdx];
+
+		otherIdx = i - 1 + (Size.Y * 2);
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT3)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
+
+		otherIdx = i - 2 + Size.Y;
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT4)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0 || otherIdx % Size.Y == Size.Y - 2 || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
+
+
+		otherIdx = i - 2 - Size.Y;
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT5)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0 || otherIdx % Size.Y == Size.Y - 2 || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
+		
+		otherIdx = i - 1 - (Size.Y * 2);
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT6)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
+
+		otherIdx = i + 1 - (Size.Y * 2);
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT7)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0) ? nullptr : Board[otherIdx];
+
+		otherIdx = i + 2 - Size.Y;
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT8)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0 || otherIdx % Size.Y == 1) ? nullptr : Board[otherIdx];
 
 	}
-
 }
 
 void ACGChessBoard::Destroyed()
@@ -144,6 +172,7 @@ void ACGChessBoard::Destroyed()
 		}
 	}
 	Pieces.Empty();
+	Undos.Empty();
 	Super::Destroyed();
 }
 
@@ -152,6 +181,7 @@ void ACGChessBoard::StartGame(ACGChessPlayerController* p1, ACGChessPlayerContro
 
 	//TODO: remove
 	FenStringToChessPieces(DefaultBoardFen);
+	Undos.Empty();
 }
 
 
@@ -172,7 +202,7 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 	Pieces.Empty();
 
 	int8 x = 0;
-	int8 y = 0;
+	int8 y = Size.Y-1;
 	bool boardFinished = false;
 	UWorld* world = GetWorld();
 	if (!world)
@@ -200,28 +230,32 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 			}
 			else
 			{
-				for (TSubclassOf<class ACGPiece> temp : PieceTemplates)
+				if (ACGGameMode* gameMode = world->GetAuthGameMode<ACGGameMode>())
 				{
-					if (temp) {
-						ACGPiece* def = Cast<ACGPiece>(temp.Get()->GetDefaultObject());
-						if (def)
-						{
-							for (const TCHAR pieceChr : def->GetFenChars())
+					for (TSubclassOf<class ACGPiece> temp : gameMode->PieceTemplates)
+					{
+						if (temp) {
+							ACGPiece* def = Cast<ACGPiece>(temp.Get()->GetDefaultObject());
+							if (def)
 							{
-								if (pieceChr == chr)
+								for (const TCHAR pieceChr : def->GetFenChars())
 								{
-									//spawn piece
-									FActorSpawnParameters params;
-									bool isWhite = TChar<TCHAR>::IsUpper(pieceChr);
-									params.Owner = this;
-									ACGPiece* newPiece = world->SpawnActor<ACGPiece>(temp, params);
-									newPiece->SetMaterial(isWhite ? WhiteMaterial : BlackMaterial);
-									newPiece->Board = this;
-									newPiece->MoveTo(FCGSquareCoord(x, y), true);
-									Pieces.Add(newPiece);
+									if (pieceChr == chr)
+									{
+										//spawn piece
+										FActorSpawnParameters params;
+										bool isWhite = TChar<TCHAR>::IsUpper(pieceChr);
+										params.Owner = this;
+										ACGPiece* newPiece = world->SpawnActor<ACGPiece>(temp, params);
+										newPiece->SetMaterial(isWhite ? gameMode->WhiteMaterial : gameMode->BlackMaterial);
+										newPiece->SetColor(isWhite);
+										newPiece->Board = this;
+										newPiece->MoveTo(FCGSquareCoord(x, y), true);
+										Pieces.Add(newPiece);
 
-									charHandled = true;
-									x += 1;
+										charHandled = true;
+										x += 1;
+									}
 								}
 							}
 						}
@@ -231,14 +265,14 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 			if (x >= Size.X)
 			{
 				x = 0;
-				y += 1;
+				y -= 1;
 			}
 		}
 		if (!charHandled)
 		{
 			return false;
 		}
-		if (x == Size.X && y == Size.Y)
+		if (x == Size.X && y == 0)
 		{
 			boardFinished = true;
 			//TODO: remove this!
@@ -293,7 +327,83 @@ void ACGChessBoard::CoordToLabel(const FCGSquareCoord coord, TCHAR& X, TCHAR& Y)
 	Y = coord.Y + 1;
 }
 
+FCGUndo& ACGChessBoard::CreateUndo()
+{
+	Undos.Emplace(Undos.Num());
+	return Undos.Last();
+}
+
+void ACGChessBoard::UndoTo(int pMoveNum)
+{
+	for (int i = Undos.Num() - 1; i >= pMoveNum;--i)
+	{
+		FCGUndo u = Undos[i];
+		if (u.Piece)
+		{
+			u.Piece->MoveTo(u.From->Position, true);
+			u.Piece->Flags = u.Flags;
+		}
+		if (u.Capture)
+		{
+			u.Capture->UnCapture();
+			u.Capture->MoveTo(u.To->Position, true);
+		}
+		if (u.Promotion)
+		{
+			u.Promotion->Destroy();
+		}
+		Undos.RemoveAt(i);
+	}
+	//listen server has to update the ui
+	if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
+	{
+		UndoNotify();
+	}
+}
+
+void ACGChessBoard::RequestUndoTo(int pMoveNum)
+{
+
+}
+
+void ACGChessBoard::UndoNotify()
+{
+	//GetLoc
+	if (UWorld* w = GetWorld())
+	{
+		if (ULocalPlayer* lp = w->GetFirstLocalPlayerFromController())
+		{
+			if (APlayerController* pc = lp->GetPlayerController(w))
+			{
+				if (ACGHUD* hud = pc->GetHUD<ACGHUD>())
+				{
+					hud->UpdateHud();
+				}
+			}
+		}
+	}
+}
+
 void ACGChessBoard::ApplySkin(ACGChessPlayerController* playerController, int skin)
 {
 
 }
+
+void ACGChessBoard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ACGChessBoard, Pieces)
+	DOREPLIFETIME(ACGChessBoard, CapturedWhite)
+	DOREPLIFETIME(ACGChessBoard, CapturedBlack)
+	DOREPLIFETIME(ACGChessBoard, Board)
+	DOREPLIFETIME(ACGChessBoard, Undos)
+
+}
+
+/*
+void ACGChessBoard::OnValidMove_Implementation(const FCGUndo& undo)
+{
+
+}
+*/

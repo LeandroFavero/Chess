@@ -5,9 +5,11 @@
 #include "ChessLogic/CGPiece.h"
 #include "DrawDebugHelpers.h"
 #include "CGBoardTile.h"
+#include "CGChessPlayerController.h"
+#include "UI/CGHUD.h"
 
 #include "CGHighlightableComponent.h"
-#include "ChessGameMode.h"
+#include "GameLogic/CGGameState.h"
 
 // Sets default values
 ACGChessPlayerPawn::ACGChessPlayerPawn() : Super()
@@ -23,6 +25,8 @@ ACGChessPlayerPawn::ACGChessPlayerPawn() : Super()
 	CameraArm->SetRelativeRotation(CameraArmDefaultRotation);
 	CameraArm->TargetArmLength = CameraArmLengthDefault;
 	CameraArm->bDoCollisionTest = false;
+
+	bOnlyRelevantToOwner = true;
 }
 
 // Called when the game starts or when spawned
@@ -30,6 +34,7 @@ void ACGChessPlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	OrbitCamera(WhiteRotation, CameraArmYDefault, true);
+	
 }
 
 // Called every frame
@@ -37,7 +42,10 @@ void ACGChessPlayerPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	//calculate mouseover
-	TraceCursor();
+	if (IsLocallyControlled()) 
+	{
+		TraceCursor();
+	}
 }
 
 // Called to bind functionality to input
@@ -57,7 +65,7 @@ void ACGChessPlayerPawn::SetupPlayerInputComponent(UInputComponent* playerInputC
 
 void ACGChessPlayerPawn::TraceCursor()
 {
-	if (APlayerController* pc = Cast<APlayerController>(GetController()))
+	if (ACGChessPlayerController* pc = GetController<ACGChessPlayerController>())
 	{
 		if (bIsAdjustingCamera)
 		{
@@ -66,35 +74,25 @@ void ACGChessPlayerPawn::TraceCursor()
 			return;
 		}
 
-		FVector start, dir, end;
-		pc->DeprojectMousePositionToWorld(start, dir);
-		end = start + (dir * 8000.0f);
-		
-		FCollisionQueryParams collisionParams;
-		if (GrabbedPiece.IsValid())
-		{
-			collisionParams.AddIgnoredActor(GrabbedPiece.Get());
-		}
-		//FHitResult hitResult;
-		GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility, collisionParams);
+		//collision disabled for pieces if one is lifted
+		pc->GetHitResultUnderCursor(GrabbedPiece.IsValid() ? ECC_GameTraceChannel1 : ECC_Visibility, false, hitResult);
+
 		if (bDrawDebugHelpers)
 		{
-			DrawDebugLine(GetWorld(), start, hitResult.Location, FColor::Red);
+			//DrawDebugLine(GetWorld(), start, hitResult.Location, FColor::Red);
 			DrawDebugSolidBox(GetWorld(), hitResult.Location, FVector(20.0f), FColor::Red);
 		}
 		if (hitResult.Actor != MouseoveredActor)
 		{
-			//disable old highlight
 			SetMouseoverHighlighted(false);
 			MouseoveredActor = hitResult.Actor;
-			//enable new highlight
 			SetMouseoverHighlighted(true);
 
 		}
 
 		if (GrabbedPiece.IsValid())
 		{
-			GrabbedPiece.Get()->UpdateGrab(hitResult.Location);
+			pc->ServerUpdateGrab(GrabbedPiece.Get(), hitResult.Location);
 		}
 	}
 }
@@ -188,19 +186,28 @@ bool ACGChessPlayerPawn::IsDragged()
 
 void ACGChessPlayerPawn::BeginGrabPiece()
 {
-	if (GrabbedPiece.IsValid())
+	if (ACGChessPlayerController* pc = GetController<ACGChessPlayerController>())
 	{
-		GrabbedPiece.Get()->Grab(false);
-	}
-	if (MouseoveredActor.IsValid())
-	{
-		if (ACGPiece* piece = Cast<ACGPiece>(MouseoveredActor.Get()))
+		if (GrabbedPiece.IsValid())
 		{
-			GrabbedPiece = piece;
-			piece->Grab(true);
-			
-			HighlightedTiles = piece->AvailableMoves();
-			HighlightTiles(true);
+			pc->ServerGrab(GrabbedPiece.Get(), false);
+			//GrabbedPiece.Get()->Grab(false);
+		}
+		if (MouseoveredActor.IsValid())
+		{
+			if (ACGPiece* piece = Cast<ACGPiece>(MouseoveredActor.Get()))
+			{
+				if (piece->IsCaptured())
+				{
+					return;
+				}
+
+				GrabbedPiece = piece;
+				pc->ServerGrab(piece, true);
+
+				HighlightedTiles = piece->AvailableMoves();
+				HighlightTiles(true);
+			}
 		}
 	}
 }
@@ -209,20 +216,21 @@ void ACGChessPlayerPawn::EndGrabPiece(bool moveTo)
 {
 	HighlightTiles(false);
 	HighlightedTiles.Empty();
-	if (moveTo)
+	if (ACGChessPlayerController* pc = GetController<ACGChessPlayerController>())
 	{
-		if (UWorld* w = GetWorld())
+		if (moveTo)
 		{
-			if (AChessGameMode* mode = Cast<AChessGameMode>(w->GetAuthGameMode()))
+			ACGChessPlayerController* controller = GetController<ACGChessPlayerController>();
+			if (controller)
 			{
-				GrabbedPiece.Get()->MoveTo(mode->Board->LocationToCoord(hitResult.Location));
+				controller->ServerMoveToTile(GrabbedPiece.Get(), Cast<ACGBoardTile>(MouseoveredActor.Get()));
 			}
 		}
-	}
-	if (GrabbedPiece.IsValid())
-	{
-		GrabbedPiece.Get()->Grab(false);
-		GrabbedPiece = nullptr;
+		if (GrabbedPiece.IsValid())
+		{
+			pc->ServerGrab(GrabbedPiece.Get(), false);
+			GrabbedPiece = nullptr;
+		}
 	}
 }
 
@@ -230,10 +238,13 @@ void ACGChessPlayerPawn::HighlightTiles(bool val)
 {
 	for (ACGBoardTile* t : HighlightedTiles)
 	{
-		UCGHighlightableComponent* highlight = MouseoveredActor.Get()->FindComponentByClass<UCGHighlightableComponent>();
-		if (highlight)
+		if (t)
 		{
-			highlight->SetHighlighted(val);
+			UCGHighlightableComponent* highlight = t->FindComponentByClass<UCGHighlightableComponent>();
+			if (highlight)
+			{
+				highlight->SetHighlighted(val);
+			}
 		}
 	}
 }

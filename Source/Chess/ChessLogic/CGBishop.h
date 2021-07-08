@@ -4,17 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "ChessLogic/CGPiece.h"
+#include "CGCanBePromotedInto.h"
 #include "CGBishop.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class CHESS_API ACGBishop : public ACGPiece
+class CHESS_API ACGBishop : public ACGPiece, public ICGCanBePromotedInto
 {
 	GENERATED_BODY()
 
 public:
+	ACGBishop();
 	const FString GetFenChars() const override { return "Bb"; }
-
+	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265D") : TEXT("\u2657")); }
 };

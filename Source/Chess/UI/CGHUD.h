@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/HUD.h"
+#include "GameLogic/CGUndo.h"
 #include "CGHUD.generated.h"
 
 /**
@@ -14,26 +15,33 @@ UCLASS()
 class CHESS_API ACGHUD : public AHUD
 {
 	GENERATED_BODY()
-private:
-	UUserWidget* m_MainMenu;
-	UUserWidget* m_OptionsMenu;
-	UUserWidget* m_InGameMenu;
 
 public:
+	UUserWidget* MainMenu;
+	UUserWidget* OptionsMenu;
+	UUserWidget* InGame;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<class UUserWidget> MainMenu;
+	TSubclassOf<class UUserWidget> MainMenuTemplate;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<class UUserWidget> OptionsMenu;
+	TSubclassOf<class UUserWidget> OptionsMenuTemplate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<class UUserWidget> InGameMenu;
+	TSubclassOf<class UUserWidget> InGameTemplate;
 
-	void BeginPlay() override;
+	virtual void ShowHud();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
+	void UpdateHud();
+	//void UpdateHud_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess HUD")
 	void ShowOptions();
+
+	UFUNCTION(BlueprintCallable, Category = "Chess HUD")
+	FString UndoToNotationString(const FCGUndo& undo) const;
 
 };
 

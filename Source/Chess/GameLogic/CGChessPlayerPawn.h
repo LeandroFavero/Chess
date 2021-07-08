@@ -4,12 +4,12 @@
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-class ACGPiece;
-class ACGBoardTile;
-
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "CGChessPlayerPawn.generated.h"
+
+class ACGPiece;
+class ACGBoardTile;
 
 UENUM(BlueprintType)
 enum class ESide: uint8
@@ -39,9 +39,9 @@ public:
 	float CameraArmYMax = -10.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	float BlackRotation = 90.0f;
+	float BlackRotation = 270.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	float WhiteRotation = 270.0f;
+	float WhiteRotation = 90.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float RotationDuration = 0.5f;
@@ -55,11 +55,11 @@ public:
 	bool bIsLeftClicking;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	float CameraArmLengthDefault = 1000.0f;
+	float CameraArmLengthDefault = 2500.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float CameraArmLengthMin = 1500.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	float CameraArmLengthMax = 2000.0f;
+	float CameraArmLengthMax = 2500.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float CameraArmZoomSpeed = -50.0f;
 

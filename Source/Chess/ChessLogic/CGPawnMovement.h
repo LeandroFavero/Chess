@@ -14,9 +14,6 @@ UCLASS(Blueprintable, ClassGroup = (Chess), meta = (BlueprintSpawnableComponent)
 class CHESS_API UCGPawnMovement : public UCGPieceMovementBase
 {
 	GENERATED_BODY()
-	
-	//UFUNCTION(BlueprintPure, Category = "Chess logic")
-	bool IsMoveValid(const FCGSquareCoord& coord) override;
 
 	void AvailableMoves(TSet<ACGBoardTile*>& set) override;
 

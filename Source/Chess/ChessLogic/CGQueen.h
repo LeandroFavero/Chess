@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "ChessLogic/CGPiece.h"
+#include "CGCanBePromotedInto.h"
 #include "CGQueen.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class CHESS_API ACGQueen : public ACGPiece
+class CHESS_API ACGQueen : public ACGPiece, public ICGCanBePromotedInto
 {
 	GENERATED_BODY()
 
@@ -19,5 +20,5 @@ public:
 	ACGQueen();
 
 	const FString GetFenChars() const override { return "Qq"; }
-
+	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265B") : TEXT("\u2655")); }
 };

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CGSquareCoord.h"
+//#include "CGSquareCoord.h"
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "CGPieceMovementBase.generated.h"
@@ -26,11 +26,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess logic")
-	int Range;
-
 	UFUNCTION(BlueprintPure, Category="Chess logic")
-	virtual bool IsMoveValid(const FCGSquareCoord& coord);
+	virtual bool IsMoveValid(const ACGBoardTile* pTile);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess logic")
 	virtual void AvailableMoves(TSet<ACGBoardTile*>& set);

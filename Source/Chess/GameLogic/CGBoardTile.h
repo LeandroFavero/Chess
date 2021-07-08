@@ -11,6 +11,28 @@ class ACGPiece;
 #include "GameFramework/Actor.h"
 #include "CGBoardTile.generated.h"
 
+UENUM()
+enum class EDir : uint8
+{
+	NORTH			,
+	NORTH_EAST		,
+	EAST			,
+	SOUTH_EAST		,
+	SOUTH			,
+	SOUTH_WEST		,
+	WEST			,
+	NORTH_WEST		,
+	KNIGHT1			,
+	KNIGHT2			,
+	KNIGHT3			,
+	KNIGHT4			,
+	KNIGHT5			,
+	KNIGHT6			,
+	KNIGHT7			,
+	KNIGHT8			,
+	Size
+};
+
 UCLASS()
 class CHESS_API ACGBoardTile : public AActor
 {
@@ -35,10 +57,10 @@ public:
 	static const int KNIGHT8{ 15 };
 
 	UPROPERTY()
-	TSet<ACGPiece*> AttackedBy;
+	TArray<ACGPiece*> AttackedBy;
 
-	UPROPERTY()
-	TSet<ACGPiece*> OccupiedBy;
+	UPROPERTY(Replicated)
+	TArray<ACGPiece*> OccupiedBy;
 
 	UPROPERTY()
 	bool m_isBlack{ false };
@@ -97,4 +119,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual void ClearAttackers();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 };

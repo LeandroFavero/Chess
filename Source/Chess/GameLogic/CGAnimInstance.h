@@ -15,7 +15,7 @@ class CHESS_API UCGAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess Anim")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess Anim")
 	bool bIsGrabbed{ false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess Anim")
@@ -23,4 +23,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess Anim")
 	float Scale{ 1.0f };
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
