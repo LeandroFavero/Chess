@@ -40,7 +40,6 @@ ACGPiece::ACGPiece()
 	{
 		Mesh->SetCollisionProfileName(FName("NoCollision"), false);
 		Collision->SetCollisionProfileName(FName("ChessPiece"), false);
-		
 	}
 
 	bReplicates = true;
@@ -72,7 +71,6 @@ void ACGPiece::PostInitializeComponents()
 void ACGPiece::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ACGPiece::Destroyed()
@@ -123,90 +121,36 @@ void ACGPiece::ClientSnapToPlace_Implementation()
 	SnapToPlace();
 }
 
-void ACGPiece::MoveTo(const FCGSquareCoord& coord, bool bypassCheck)
-{
-	if (!Board)
-	{
-		return;
-	}
-	MoveToTile(Board->GetTile(coord), bypassCheck);
-}
-
-
-void ACGPiece::MoveToTile(ACGBoardTile* pTile, bool bypassCheck)
+void ACGPiece::MoveToTile(ACGBoardTile* pTile)
 {
 	if (!Board || !pTile)
 	{
 		return;
 	}
-	FCGUndo* undo = nullptr;
-	if (!bypassCheck)
+	TSet<ACGBoardTile*> moves = AvailableMoves();
+	if (!moves.Contains(pTile))
 	{
-		TSet<ACGBoardTile*> moves = AvailableMoves();
-		if (!moves.Contains(pTile))
-		{
-			OnInvalidMove();
-			return;
-		}
-		/*
-		TArray<UCGPieceMovementBase*> validators;
-		GetComponents<UCGPieceMovementBase>(validators);
-		for (UCGPieceMovementBase* v : validators)
-		{
-			ensure(v);
-			if (!v->IsMoveValid(pTile))
-			{
-				OnInvalidMove();
-				return;
-			}
-		}
-		*/
-		undo = &Board->CreateUndo();
-		undo->From = Tile;
-		undo->Piece = this;
+		OnInvalidMove();
+		return;
 	}
-	if (Tile)
-	{
-		Tile->OccupiedBy.Remove(this);
-	}
-	Position = pTile->Position;
-	Tile = pTile;
-	if (!bypassCheck)
-	{
-		undo->To = Tile;
-		undo->Flags = Flags;
-		if (Tile)
-		{
-			//Capture
-			for(int i = Tile->OccupiedBy.Num()-1;i>=0;--i)
-			{
-				ACGPiece* p = Tile->OccupiedBy[i];
-				if (p && (p->IsBlack() != IsBlack()))
-				{
-					undo->Capture = p;
-					p->Capture();
-				}
-			}
-		}
-	}
-	Tile->OccupiedBy.AddUnique(this);
+	FCGUndo& undo = Board->CreateUndo();
+
+	MoveToTileInternal(pTile, undo, true);
 	SnapToPlace();
-	if (!bypassCheck)
+
+	//listen server has to update the ui
+	if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
 	{
-		//listen server has to update the ui
-		if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
-		{
-			Board->UndoNotify();
-			OnPieceMoved();
-		}
-		else
-		{
-			ClientOnPieceMoved();
-		}
+		Board->UndoNotify();
+		OnPieceMoved();
+	}
+	else
+	{
+		ClientOnPieceMoved();
 	}
 }
 
-void ACGPiece::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo)
+void ACGPiece::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEvents)
 {
 	if (!Board || !pTile)
 	{
@@ -214,7 +158,10 @@ void ACGPiece::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo)
 	}
 	undo.From = Tile;
 	undo.Piece = this;
-	Tile->OccupiedBy.Remove(this);
+	if(Tile)
+	{
+		Tile->OccupiedBy.Remove(this);
+	}
 	Position = pTile->Position;
 	Tile = pTile;
 	undo.To = Tile;
@@ -229,15 +176,14 @@ void ACGPiece::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo)
 			if (p && (p->IsBlack() != IsBlack()))
 			{
 				undo.Capture = p;
-				p->Tile->OccupiedBy.Remove(this);
-				p->Flags |= EPieceFlags::Captured;
+				p->Capture(pEvents);
+				//p->Tile->OccupiedBy.Remove(this);
+				//p->Flags |= EPieceFlags::Captured;
 			}
 		}
 	}
 	Tile->OccupiedBy.AddUnique(this);
 }
-
-
 
 TSet<ACGBoardTile*> ACGPiece::AvailableMoves()
 {
@@ -255,7 +201,7 @@ TSet<ACGBoardTile*> ACGPiece::AvailableMoves()
 	{
 		FCGUndo undo;
 		ACGBoardTile* t = *it;
-		MoveToTileInternal(t, undo);
+		MoveToTileInternal(t, undo, false);
 		//check check
 		Board->RebuildAttackMap(IsWhite());
 		if (IsBlack() ? Board->BlackKing->IsInCheck() : Board->WhiteKing->IsInCheck())
@@ -269,6 +215,10 @@ TSet<ACGBoardTile*> ACGPiece::AvailableMoves()
 
 void ACGPiece::FillAttackMap()
 {
+	if (IsCaptured())
+	{
+		return;
+	}
 	TSet<ACGBoardTile*> tiles;
 	TArray<UCGPieceMovementBase*> validators;
 	GetComponents<UCGPieceMovementBase>(validators);
@@ -284,7 +234,7 @@ void ACGPiece::FillAttackMap()
 	}
 }
 
-void ACGPiece::Capture()
+void ACGPiece::Capture(bool pAddToCaptured)
 {
 	if (!Board && !Tile)
 	{
@@ -292,18 +242,21 @@ void ACGPiece::Capture()
 	}
 	Tile->OccupiedBy.Remove(this);
 	Flags |= EPieceFlags::Captured;
-	if (IsBlack())
+	if (pAddToCaptured)
 	{
-		if (Board->CapturedBlack)
+		if (IsBlack())
 		{
-			Board->CapturedBlack->Add(this);
+			if (Board->CapturedBlack)
+			{
+				Board->CapturedBlack->Add(this);
+			}
 		}
-	}
-	else
-	{
-		if (Board->CapturedWhite)
+		else
 		{
-			Board->CapturedWhite->Add(this);
+			if (Board->CapturedWhite)
+			{
+				Board->CapturedWhite->Add(this);
+			}
 		}
 	}
 }

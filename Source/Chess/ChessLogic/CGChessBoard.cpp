@@ -237,9 +237,11 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 			{
 				if (ACGGameMode* gameMode = world->GetAuthGameMode<ACGGameMode>())
 				{
+					FCGUndo dummyUndo;//we don't want to undo the initial piece spawns!
 					for (TSubclassOf<class ACGPiece> temp : gameMode->PieceTemplates)
 					{
-						if (temp) {
+						if (temp) 
+						{
 							ACGPiece* def = Cast<ACGPiece>(temp.Get()->GetDefaultObject());
 							if (def)
 							{
@@ -255,7 +257,7 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 										newPiece->SetMaterial(isWhite ? gameMode->WhiteMaterial : gameMode->BlackMaterial);
 										newPiece->SetColor(isWhite);
 										newPiece->Board = this;
-										newPiece->MoveTo(FCGSquareCoord(x, y), true);
+										newPiece->MoveToTileInternal(GetTile({ x,y }), dummyUndo, false);
 										Pieces.Add(newPiece);
 
 										//ptr to the kings
@@ -273,6 +275,8 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 
 										charHandled = true;
 										x += 1;
+
+										goto continuePieceDone;
 									}
 								}
 							}
@@ -280,6 +284,9 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 					}
 				}
 			}
+
+			continuePieceDone:;
+
 			if (x >= Size.X)
 			{
 				x = 0;
@@ -288,13 +295,26 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 		}
 		if (!charHandled)
 		{
+			break;
 			return false;
 		}
-		if (x == Size.X && y == 0)
+		if (x == Size.X && y <= 0)
 		{
 			boardFinished = true;
 			//TODO: remove this!
-			return true;
+			break;
+			//return true;
+		}
+	}
+	for (ACGPiece* p : Pieces)
+	{
+		if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
+		{
+			p->SnapToPlace();
+		}
+		else
+		{
+			p->ClientSnapToPlace();
 		}
 	}
 	return true;
@@ -333,7 +353,6 @@ FCGSquareCoord ACGChessBoard::LocationToCoord(const FVector& location)
 
 ACGBoardTile* ACGChessBoard::GetTile(const FCGSquareCoord& coord)
 {
-	//FCGSquareCoord coord{ i / Size.Y,i % Size.Y };
 	ACGBoardTile* ret = Board[coord.X * Size.X + coord.Y];
 	ensure(coord == ret->Position);
 	return ret;
@@ -353,15 +372,18 @@ FCGUndo& ACGChessBoard::CreateUndo()
 
 void ACGChessBoard::UndoInternal(FCGUndo& pUndo)
 {
+	FCGUndo dummyUndo;
 	if (pUndo.Piece)
 	{
-		pUndo.Piece->MoveTo(pUndo.From->Position, true);
+		pUndo.Piece->MoveToTileInternal(pUndo.From, dummyUndo, false);
 		pUndo.Piece->Flags = pUndo.Flags;
+		pUndo.Piece->ClientSnapToPlace();
 	}
 	if (pUndo.Capture)
 	{
 		pUndo.Capture->UnCapture();
-		pUndo.Capture->MoveTo(pUndo.To->Position, true);
+		pUndo.Capture->MoveToTileInternal(pUndo.To, dummyUndo, false);
+		pUndo.Capture->ClientSnapToPlace();
 	}
 	if (pUndo.Promotion)
 	{

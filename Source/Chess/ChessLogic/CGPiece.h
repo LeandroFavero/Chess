@@ -19,12 +19,13 @@ struct EPieceFlags
 {
 	enum EPieceFlagsValues
 	{
-		IsBlack = 1 << 0,		//bit0
-		CanCastle = 1 << 1,		//bit1
-		Captured = 1 << 2,		//bit2
-		Moved = 1 << 3,			//bit3
-		OrderStart = 1 << 4,	//bit4-
-		OrderEnd = 1 << 7,		//7
+		IsBlack = 1 << 0,			//bit0
+		CanCastle = 1 << 1,			//bit1
+		Captured = 1 << 2,			//bit2
+		Moved = 1 << 3,				//bit3
+		EnPassantCaptured = 1 << 4,	//bit4
+		/*OrderStart = 1 << 4,	//bit4-
+		OrderEnd = 1 << 7,		//7*/
 	};
 };
 
@@ -93,19 +94,15 @@ public:
 
 	UFUNCTION()
 	virtual void SnapToPlace();
-	//virtual void SnapToPlace_Implementation();
-
+	
 	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "Chess")
 	virtual void ClientSnapToPlace();
 	virtual void ClientSnapToPlace_Implementation();
 
-	UFUNCTION(BlueprintCallable, /*Server, Reliable,*/ Category = "Chess")
-	virtual void MoveTo(const FCGSquareCoord& coord, bool bypassCheck = false);
-
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void MoveToTile(ACGBoardTile* pTile, bool bypassCheck = false);
+	virtual void MoveToTile(ACGBoardTile* pTile);
 
-	virtual void MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo);
+	virtual void MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEvents = true);
 
 	UFUNCTION(BlueprintPure, Category = "Chess")
 	virtual bool IsBlack() const { return (Flags & EPieceFlags::IsBlack) == EPieceFlags::IsBlack; }
@@ -120,10 +117,9 @@ public:
 	virtual void FillAttackMap();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void Capture();
+	virtual void Capture(bool pAddToCaptured = true);
 
-
-	UFUNCTION(BlueprintCallable, Category = "Chess")
+	//UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void UnCapture();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")

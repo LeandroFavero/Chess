@@ -3,31 +3,46 @@
 
 #include "ChessLogic/CGPawn.h"
 #include "ChessLogic/CGChessBoard.h"
+#include "GameLogic/CGBoardTile.h"
 #include "ChessLogic/CGPawnMovement.h"
 
 ACGPawn::ACGPawn()
 {
 	UCGPieceMovementBase* moveComp = CreateDefaultSubobject<UCGPawnMovement>(TEXT("MoveValidator"));
 	AddOwnedComponent(moveComp);
-
-	//Flags |= 0x00000100;//Captured order
 }
 
-/*bool ACGPawn::IsDoubleOpenAvailable()
+
+void ACGPawn::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEvents = true)
 {
-	if (Board)
+	//en passant capture
+	if (EnPassantTile && EnPassantTile == pTile)
 	{
-		if (IsBlack())
+		ACGBoardTile* otherPawnTile = EnPassantTile->Neighbours[(IsBlack() ? ACGBoardTile::NORTH : ACGBoardTile::SOUTH)];
+		for (auto it = otherPawnTile->OccupiedBy.CreateIterator(); it; ++it)
 		{
-			return Position.Y == Board->Size.Y - 2;
-		}
-		else
-		{
-			return Position.Y == 1;
+			ACGPawn* otherPawn = Cast<ACGPawn>(*it);
+			if (otherPawn)
+			{
+				it.RemoveCurrent();
+				otherPawn->Flags |= EPieceFlags::EnPassantCaptured;
+				undo.Capture = otherPawn;
+				otherPawn->Capture(pEvents);
+			}
 		}
 	}
-	return false;
-}*/
+	//en passant restore
+	if ((Flags & EPieceFlags::EnPassantCaptured) == EPieceFlags::EnPassantCaptured)
+	{
+		//fix the position of this pawn
+		Super::MoveToTileInternal(pTile->Neighbours[IsBlack() ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH], undo, pEvents);
+		Flags = Flags & ~EPieceFlags::EnPassantCaptured;
+	}
+	else
+	{
+		Super::MoveToTileInternal(pTile, undo, pEvents);
+	}
+}
 
 void ACGPawn::BeginPromotion()
 {

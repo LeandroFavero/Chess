@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "ChessLogic/CGPiece.h"
+#include "GameLogic/CGUndo.h"
 #include "CGPawn.generated.h"
 
+class ACGBoardTile;
 /**
  * 
  */
@@ -17,12 +19,13 @@ public:
 	ACGPawn();
 
 	const FString GetFenChars() const override { return "Pp"; }
-	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265F") : TEXT("\u2659")); }//U+265F : U+2659
+	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265F") : TEXT("\u2659")); }
 
-	//bool IsDoubleOpenAvailable();
-
+	ACGBoardTile* EnPassantTile = nullptr;
 
 	void BeginPromotion();
+
+	void MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEvents) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	void EndPromotion();

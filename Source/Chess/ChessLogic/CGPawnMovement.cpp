@@ -22,7 +22,6 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 			if (t->OccupiedBy.Num() == 0)
 			{
 				set.Add(t);
-
 				//can double open?
 				if ((pawn->IsBlack() && pawn->Position.Y == pawn->Board->Size.Y - 2) || (pawn->IsWhite() && pawn->Position.Y == 1))
 				{
@@ -74,7 +73,8 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 						{
 							if (undo.From && undo.To && (abs(undo.From->Position.Y - undo.To->Position.Y) == 2))//was the last move double open?
 							{
-								set.Add(t->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH]);
+								pawn->EnPassantTile = t->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH];
+								set.Add(pawn->EnPassantTile);
 								break;
 							}
 						}
