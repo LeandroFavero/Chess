@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CGPiece.h"
+#include "CGKing.h"
 #include "Misc/Char.h"
 #include "GameLogic/CGHighlightableComponent.h"
 #include "GameLogic/CGAnimInstance.h"
@@ -13,16 +14,14 @@
 #include "GameLogic/CGGameState.h"
 #include "Net/UnrealNetwork.h"
 
-//#define Dbg(...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, __VA_ARGS__); }
-
 #define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
-
 
 // Sets default values
 ACGPiece::ACGPiece()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
+
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	Collision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Collision"));
@@ -44,7 +43,6 @@ ACGPiece::ACGPiece()
 		
 	}
 
-	//SetReplicates(true);
 	bReplicates = true;
 	bOnlyRelevantToOwner = false;
 }
@@ -108,16 +106,21 @@ void ACGPiece::ServerGrab(bool isGrabbed)
 	}
 	if (!isGrabbed)
 	{
-		SnapToPlace();
+		ClientSnapToPlace();
 	}
 }
 
-void ACGPiece::SnapToPlace_Implementation()
+void ACGPiece::SnapToPlace()
 {
 	if (Board)
 	{
 		SetActorRelativeTransform(Board->CoordToTransform(Position));
 	}
+}
+
+void ACGPiece::ClientSnapToPlace_Implementation()
+{
+	SnapToPlace();
 }
 
 void ACGPiece::MoveTo(const FCGSquareCoord& coord, bool bypassCheck)
@@ -139,6 +142,13 @@ void ACGPiece::MoveToTile(ACGBoardTile* pTile, bool bypassCheck)
 	FCGUndo* undo = nullptr;
 	if (!bypassCheck)
 	{
+		TSet<ACGBoardTile*> moves = AvailableMoves();
+		if (!moves.Contains(pTile))
+		{
+			OnInvalidMove();
+			return;
+		}
+		/*
 		TArray<UCGPieceMovementBase*> validators;
 		GetComponents<UCGPieceMovementBase>(validators);
 		for (UCGPieceMovementBase* v : validators)
@@ -150,7 +160,7 @@ void ACGPiece::MoveToTile(ACGBoardTile* pTile, bool bypassCheck)
 				return;
 			}
 		}
-
+		*/
 		undo = &Board->CreateUndo();
 		undo->From = Tile;
 		undo->Piece = this;
@@ -160,7 +170,7 @@ void ACGPiece::MoveToTile(ACGBoardTile* pTile, bool bypassCheck)
 		Tile->OccupiedBy.Remove(this);
 	}
 	Position = pTile->Position;
-	Tile = Board->GetTile(Position);
+	Tile = pTile;
 	if (!bypassCheck)
 	{
 		undo->To = Tile;
@@ -178,7 +188,6 @@ void ACGPiece::MoveToTile(ACGBoardTile* pTile, bool bypassCheck)
 				}
 			}
 		}
-		//Dbg("New position: %d,%d", pTile->Position.X, pTile->Position.Y);
 	}
 	Tile->OccupiedBy.AddUnique(this);
 	SnapToPlace();
@@ -197,6 +206,37 @@ void ACGPiece::MoveToTile(ACGBoardTile* pTile, bool bypassCheck)
 	}
 }
 
+void ACGPiece::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo)
+{
+	if (!Board || !pTile)
+	{
+		return;
+	}
+	undo.From = Tile;
+	undo.Piece = this;
+	Tile->OccupiedBy.Remove(this);
+	Position = pTile->Position;
+	Tile = pTile;
+	undo.To = Tile;
+	undo.Flags = Flags;
+	Flags |= EPieceFlags::Moved;
+	if (Tile)
+	{
+		//Capture
+		for (int i = Tile->OccupiedBy.Num() - 1; i >= 0; --i)
+		{
+			ACGPiece* p = Tile->OccupiedBy[i];
+			if (p && (p->IsBlack() != IsBlack()))
+			{
+				undo.Capture = p;
+				p->Tile->OccupiedBy.Remove(this);
+				p->Flags |= EPieceFlags::Captured;
+			}
+		}
+	}
+	Tile->OccupiedBy.AddUnique(this);
+}
+
 
 
 TSet<ACGBoardTile*> ACGPiece::AvailableMoves()
@@ -209,12 +249,39 @@ TSet<ACGBoardTile*> ACGPiece::AvailableMoves()
 		ensure(v);
 		v->AvailableMoves(ret);
 	}
+
+	//check check
+	for (auto it = ret.CreateIterator(); it; ++it)
+	{
+		FCGUndo undo;
+		ACGBoardTile* t = *it;
+		MoveToTileInternal(t, undo);
+		//check check
+		Board->RebuildAttackMap(IsWhite());
+		if (IsBlack() ? Board->BlackKing->IsInCheck() : Board->WhiteKing->IsInCheck())
+		{
+			it.RemoveCurrent();
+		}
+		Board->UndoInternal(undo);
+	}
 	return ret;
 }
 
 void ACGPiece::FillAttackMap()
 {
-
+	TSet<ACGBoardTile*> tiles;
+	TArray<UCGPieceMovementBase*> validators;
+	GetComponents<UCGPieceMovementBase>(validators);
+	for (UCGPieceMovementBase* v : validators)
+	{
+		ensure(v);
+		v->AttackedTiles(tiles);
+	}
+	for (ACGBoardTile* t : tiles)
+	{
+		ensure(t);
+		t->AttackedBy.Add(this);
+	}
 }
 
 void ACGPiece::Capture()

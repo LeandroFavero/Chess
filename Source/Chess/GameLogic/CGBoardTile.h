@@ -3,13 +3,14 @@
 #pragma once
 
 #include "ChessLogic/CGSquareCoord.h"
-class ACGChessBoard;
-class UCGLabelWidgetComponent;
-class ACGPiece;
 #include "Components/StaticMeshComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "CGBoardTile.generated.h"
+
+class ACGChessBoard;
+class UCGLabelWidgetComponent;
+class ACGPiece;
 
 UENUM()
 enum class EDir : uint8

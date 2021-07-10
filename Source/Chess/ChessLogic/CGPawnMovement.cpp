@@ -4,11 +4,11 @@
 #include "ChessLogic/CGPawnMovement.h"
 #include "ChessLogic/CGPawn.h"
 #include "ChessLogic/CGPiece.h"
+#include "ChessLogic/CGChessBoard.h"
 #include "GameLogic/CGBoardTile.h"
+#include "GameLogic/CGUndo.h"
 #include "CGChessBoard.h"
 
-
-//TODO: EN PASSANT !!!
 //TODO: promotion !!!
 
 void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
@@ -59,6 +59,29 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 				}
 			}
 		}
+		//en passant
+		if (pawn->Board->Undos.Num() > 0 && (pawn->IsBlack() ? pawn->Position.Y == 3 : pawn->Board->Size.Y - 4))//is in the good rank
+		{
+			for (int dir : {ACGBoardTile::EAST, ACGBoardTile::WEST})
+			{
+				t = pawn->Tile->Neighbours[dir];
+				if (t)
+				{
+					for (const ACGPiece* other : t->OccupiedBy)
+					{
+						const FCGUndo& undo = pawn->Board->Undos.Last();
+						if (other->IsA(ACGPawn::StaticClass()) && undo.Piece == other)//are we standing next to the last moved pawn
+						{
+							if (undo.From && undo.To && (abs(undo.From->Position.Y - undo.To->Position.Y) == 2))//was the last move double open?
+							{
+								set.Add(t->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH]);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -79,4 +102,5 @@ void UCGPawnMovement::AttackedTiles(TSet<ACGBoardTile*>& set)
 			set.Add(t);
 		}
 	}
+	//en passant can't attack kings so it should not matter.
 }

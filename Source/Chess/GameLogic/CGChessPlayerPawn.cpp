@@ -69,7 +69,6 @@ void ACGChessPlayerPawn::TraceCursor()
 	{
 		if (bIsAdjustingCamera)
 		{
-			SetMouseoverHighlighted(false);
 			EndGrabPiece();
 			return;
 		}
@@ -84,10 +83,7 @@ void ACGChessPlayerPawn::TraceCursor()
 		}
 		if (hitResult.Actor != MouseoveredActor)
 		{
-			SetMouseoverHighlighted(false);
 			MouseoveredActor = hitResult.Actor;
-			SetMouseoverHighlighted(true);
-
 		}
 
 		if (GrabbedPiece.IsValid())
@@ -95,20 +91,6 @@ void ACGChessPlayerPawn::TraceCursor()
 			pc->ServerUpdateGrab(GrabbedPiece.Get(), hitResult.Location);
 		}
 	}
-}
-
-void ACGChessPlayerPawn::SetMouseoverHighlighted(bool value)
-{
-	/*
-	if (MouseoveredActor.IsValid())
-	{
-		UCGHighlightableComponent* highlight = MouseoveredActor.Get()->FindComponentByClass<UCGHighlightableComponent>();
-		if (highlight)
-		{
-			highlight->SetHighlighted(value);
-		}
-	}
-	*/
 }
 
 void ACGChessPlayerPawn::BeginTurnCamera()
@@ -119,7 +101,6 @@ void ACGChessPlayerPawn::BeginTurnCamera()
 	{
 		pc->bShowMouseCursor = false;
 		pc->GetMousePosition(lastMouseX, lastMouseY);
-		//pc->SetInputMode(FInputModeGameOnly());
 	}
 	bIsAdjustingCamera = true;
 }
@@ -191,7 +172,6 @@ void ACGChessPlayerPawn::BeginGrabPiece()
 		if (GrabbedPiece.IsValid())
 		{
 			pc->ServerGrab(GrabbedPiece.Get(), false);
-			//GrabbedPiece.Get()->Grab(false);
 		}
 		if (MouseoveredActor.IsValid())
 		{

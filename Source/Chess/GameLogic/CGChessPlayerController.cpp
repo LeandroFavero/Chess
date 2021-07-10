@@ -13,9 +13,6 @@ ACGChessPlayerController::ACGChessPlayerController()
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	bEnableTouchEvents = true;
-	//SetInputMode(FInputModeGameAndUI());
-	//input
-	//DefaultMouseCursor = EMouseCursor::Crosshairs;
 }
 
 void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGBoardTile* pTile)

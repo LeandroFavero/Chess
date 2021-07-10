@@ -2,16 +2,19 @@
 
 #pragma once
 
-class ACGBoardTile;
 #include "Math/IntPoint.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-class ACGChessPlayerController;
-class UCGCapturedPieces;
 #include "ChessLogic/CGSquareCoord.h"
 #include "GameLogic/CGUndo.h"
 #include "CGChessBoard.generated.h"
 
+
+class ACGChessPlayerController;
+class UCGCapturedPieces;
+class ACGBoardTile;
+class ACGKing;
+class ACGPiece;
 
 
 UCLASS(Blueprintable)
@@ -33,11 +36,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	FString DefaultBoardFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-	UPROPERTY(EditAnywhere, Replicated, Category = "Chess setup")
+	UPROPERTY(Replicated)
 	TArray<ACGBoardTile*> Board;
 	
 	UPROPERTY(Replicated)
 	TArray<ACGPiece*> Pieces;
+
+	UPROPERTY(Replicated)
+	ACGKing* WhiteKing;
+
+	UPROPERTY(Replicated)
+	ACGKing* BlackKing;
 
 	UMaterialInstance* umi;
 
@@ -72,6 +81,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual bool FenStringToChessPieces(FString fen);
 
+	virtual bool CheckTest() { return false; };
+
+	virtual void RebuildAttackMap(bool pIsBlack);
+
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual void ApplySkin(ACGChessPlayerController* playerController, int skin);
 
@@ -87,7 +100,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual FCGSquareCoord LocationToCoord(const FVector& location);
 
-	UFUNCTION(BlueprintPure, Category = "Chess setup")
+	UFUNCTION()
 	virtual ACGBoardTile* GetTile(const FCGSquareCoord& coord);
 
 	virtual FCGUndo& CreateUndo();
@@ -95,20 +108,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void UndoTo(int pMoveNum);
 
+	virtual void UndoInternal(FCGUndo& pUndo);
+
+	//TODO... Let's just cut this for now....
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void RequestUndoTo(int pMoveNum);
 
 	UFUNCTION()
 	virtual void UndoNotify();
-	/*
-	UFUNCTION(BlueprintNativeEvent, Category = "Chess events")
-	void OnValidMove(const FCGUndo& undo);
-	void OnValidMove_Implementation(const FCGUndo& undo);
-	*/
+
 	//UFUNCTION(BlueprintPure, Category = "Chess")
 	static void CoordToLabel(const FCGSquareCoord coord, TCHAR& X, TCHAR& Y);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:
-	
 };

@@ -35,14 +35,15 @@ bool UCGPieceMovementBase::IsMoveValid(const ACGBoardTile* pTile)
 	}
 	TSet<ACGBoardTile*> set;
 	AvailableMoves(set);
-	for (const ACGBoardTile* t : set)
+	return set.Contains(pTile);
+	/*for (const ACGBoardTile* t : set)
 	{
 		if (t == pTile)
 		{
 			return true;
 		}
 	}
-	return false;
+	return false;*/
 }
 
 void UCGPieceMovementBase::AvailableMoves(TSet<ACGBoardTile*>& set)

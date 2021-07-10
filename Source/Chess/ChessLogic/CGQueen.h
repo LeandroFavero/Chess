@@ -4,14 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "ChessLogic/CGPiece.h"
-#include "CGCanBePromotedInto.h"
 #include "CGQueen.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class CHESS_API ACGQueen : public ACGPiece, public ICGCanBePromotedInto
+class CHESS_API ACGQueen : public ACGPiece
 {
 	GENERATED_BODY()
 

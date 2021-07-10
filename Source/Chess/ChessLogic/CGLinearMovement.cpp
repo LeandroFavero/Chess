@@ -7,14 +7,13 @@
 
 void UCGLinearMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 {
-	ACGPiece* owner = GetOwner<ACGPiece>();
-	if (owner)
+	ACGPiece* piece = GetOwner<ACGPiece>();
+	if (piece)
 	{
-		
 		for (EDir i : Directions)
 		{
 			int dir = static_cast<int>(i);
-			ACGBoardTile* t = owner->Tile;
+			ACGBoardTile* t = piece->Tile;
 			for(int remaining = Range;t && remaining != 0; --remaining)
 			{
 				t = t->Neighbours[dir];
@@ -22,7 +21,7 @@ void UCGLinearMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 				{
 					for (ACGPiece* other : t->OccupiedBy)
 					{
-						if (owner->IsBlack() != other->IsBlack())
+						if (piece->IsBlack() != other->IsBlack())
 						{
 							set.Add(t);
 							goto continue_directions;

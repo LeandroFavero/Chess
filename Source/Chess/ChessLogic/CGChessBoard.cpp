@@ -3,14 +3,15 @@
 #include "CGChessBoard.h"
 #include "GameLogic/CGGameState.h"
 #include "GameLogic/CGGameMode.h"
-#include "CGPiece.h"
+//#include "CGPiece.h"
+#include "CGKing.h"
 #include "GameLogic/CGBoardTile.h"
 #include "GameLogic/CGChessPlayerController.h"
 #include "GameLogic/CGCapturedPieces.h"
 #include "UI/CGHUD.h"
 #include "Net/UnrealNetwork.h"
 
-#define Dbg(x) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT(x));}
+#define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
 
 // Sets default values
 ACGChessBoard::ACGChessBoard()
@@ -18,6 +19,7 @@ ACGChessBoard::ACGChessBoard()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	bRunConstructionScriptOnDrag = false;
+
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SetRootComponent(Root);
 
@@ -178,10 +180,13 @@ void ACGChessBoard::Destroyed()
 
 void ACGChessBoard::StartGame(ACGChessPlayerController* p1, ACGChessPlayerController* p2)
 {
-
 	//TODO: remove
-	FenStringToChessPieces(DefaultBoardFen);
-	Undos.Empty();
+		
+	if (HasAuthority())
+	{
+		FenStringToChessPieces(DefaultBoardFen);
+		Undos.Empty();
+	}
 }
 
 
@@ -252,6 +257,19 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 										newPiece->Board = this;
 										newPiece->MoveTo(FCGSquareCoord(x, y), true);
 										Pieces.Add(newPiece);
+
+										//ptr to the kings
+										if (newPiece->IsA(ACGKing::StaticClass()))
+										{
+											if (newPiece->IsBlack())
+											{
+												BlackKing = Cast<ACGKing>(newPiece);
+											}
+											else
+											{
+												WhiteKing = Cast<ACGKing>(newPiece);
+											}
+										}
 
 										charHandled = true;
 										x += 1;
@@ -333,25 +351,29 @@ FCGUndo& ACGChessBoard::CreateUndo()
 	return Undos.Last();
 }
 
+void ACGChessBoard::UndoInternal(FCGUndo& pUndo)
+{
+	if (pUndo.Piece)
+	{
+		pUndo.Piece->MoveTo(pUndo.From->Position, true);
+		pUndo.Piece->Flags = pUndo.Flags;
+	}
+	if (pUndo.Capture)
+	{
+		pUndo.Capture->UnCapture();
+		pUndo.Capture->MoveTo(pUndo.To->Position, true);
+	}
+	if (pUndo.Promotion)
+	{
+		pUndo.Promotion->Destroy();
+	}
+}
+
 void ACGChessBoard::UndoTo(int pMoveNum)
 {
 	for (int i = Undos.Num() - 1; i >= pMoveNum;--i)
 	{
-		FCGUndo u = Undos[i];
-		if (u.Piece)
-		{
-			u.Piece->MoveTo(u.From->Position, true);
-			u.Piece->Flags = u.Flags;
-		}
-		if (u.Capture)
-		{
-			u.Capture->UnCapture();
-			u.Capture->MoveTo(u.To->Position, true);
-		}
-		if (u.Promotion)
-		{
-			u.Promotion->Destroy();
-		}
+		UndoInternal(Undos[i]);
 		Undos.RemoveAt(i);
 	}
 	//listen server has to update the ui
@@ -384,6 +406,24 @@ void ACGChessBoard::UndoNotify()
 	}
 }
 
+void ACGChessBoard::RebuildAttackMap(bool pIsBlack)
+{
+	for (ACGBoardTile* t : Board)
+	{
+		if (t)
+		{
+			t->AttackedBy.Empty();
+		}
+	}
+	for (ACGPiece* p : Pieces)
+	{
+		if (p && p->IsBlack() == pIsBlack)
+		{
+			p->FillAttackMap();
+		}
+	}
+}
+
 void ACGChessBoard::ApplySkin(ACGChessPlayerController* playerController, int skin)
 {
 
@@ -398,12 +438,6 @@ void ACGChessBoard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(ACGChessBoard, CapturedBlack)
 	DOREPLIFETIME(ACGChessBoard, Board)
 	DOREPLIFETIME(ACGChessBoard, Undos)
-
+	DOREPLIFETIME(ACGChessBoard, WhiteKing)
+	DOREPLIFETIME(ACGChessBoard, BlackKing)
 }
-
-/*
-void ACGChessBoard::OnValidMove_Implementation(const FCGUndo& undo)
-{
-
-}
-*/

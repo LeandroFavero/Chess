@@ -19,11 +19,12 @@ struct EPieceFlags
 {
 	enum EPieceFlagsValues
 	{
-		IsBlack = 1 << 0,	//bit0
-		CanCastle = 1 << 1,	//bit1
-		Captured = 1 << 2,	//bit2
+		IsBlack = 1 << 0,		//bit0
+		CanCastle = 1 << 1,		//bit1
+		Captured = 1 << 2,		//bit2
+		Moved = 1 << 3,			//bit3
 		OrderStart = 1 << 4,	//bit4-
-		OrderEnd = 1 << 7	//7
+		OrderEnd = 1 << 7,		//7
 	};
 };
 
@@ -90,24 +91,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void ServerGrab(bool isGrabbed);
 
-	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "Chess")
+	UFUNCTION()
 	virtual void SnapToPlace();
-	virtual void SnapToPlace_Implementation();
+	//virtual void SnapToPlace_Implementation();
+
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "Chess")
+	virtual void ClientSnapToPlace();
+	virtual void ClientSnapToPlace_Implementation();
 
 	UFUNCTION(BlueprintCallable, /*Server, Reliable,*/ Category = "Chess")
 	virtual void MoveTo(const FCGSquareCoord& coord, bool bypassCheck = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void MoveToTile(ACGBoardTile* pTile, bool bypassCheck = false);
-	//virtual void MoveToTile_Implementation(ACGBoardTile* pTile, bool bypassCheck = false);
-	
-	/*
-	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void MoveTo(ACGBoardTile* tile, bool bypassCheck = false);
 
-	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void MoveTo(ACGPiece* piece, bool bypassCheck = false);
-	*/
+	virtual void MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo);
 
 	UFUNCTION(BlueprintPure, Category = "Chess")
 	virtual bool IsBlack() const { return (Flags & EPieceFlags::IsBlack) == EPieceFlags::IsBlack; }
@@ -123,6 +121,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void Capture();
+
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void UnCapture();

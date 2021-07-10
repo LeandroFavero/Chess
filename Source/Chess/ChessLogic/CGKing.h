@@ -17,4 +17,7 @@ public:
 	ACGKing();
 	const FString GetFenChars() const override { return "Kk"; }
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265A") : TEXT("\u2654")); }
+
+	UFUNCTION()
+	virtual bool IsInCheck();
 };

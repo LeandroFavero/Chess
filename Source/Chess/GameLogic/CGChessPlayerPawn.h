@@ -110,8 +110,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void TraceCursor();
-	virtual void SetMouseoverHighlighted(bool value);
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
