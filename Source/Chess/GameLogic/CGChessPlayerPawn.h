@@ -9,7 +9,7 @@
 #include "CGChessPlayerPawn.generated.h"
 
 class ACGPiece;
-class ACGBoardTile;
+class ACGTile;
 
 UENUM(BlueprintType)
 enum class ESide: uint8
@@ -103,7 +103,7 @@ private:
 	void HighlightTiles(bool val);
 
 	UPROPERTY()
-	TSet<ACGBoardTile* > HighlightedTiles;
+	TSet<ACGTile* > HighlightedTiles;
 
 protected:
 	// Called when the game starts or when spawned

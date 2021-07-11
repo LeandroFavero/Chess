@@ -4,7 +4,7 @@
 #include "Engine/World.h"
 #include "ChessLogic/CGPiece.h"
 #include "DrawDebugHelpers.h"
-#include "CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 #include "CGChessPlayerController.h"
 #include "UI/CGHUD.h"
 
@@ -203,7 +203,7 @@ void ACGChessPlayerPawn::EndGrabPiece(bool moveTo)
 			ACGChessPlayerController* controller = GetController<ACGChessPlayerController>();
 			if (controller)
 			{
-				controller->ServerMoveToTile(GrabbedPiece.Get(), Cast<ACGBoardTile>(MouseoveredActor.Get()));
+				controller->ServerMoveToTile(GrabbedPiece.Get(), Cast<ACGTile>(MouseoveredActor.Get()));
 			}
 		}
 		if (GrabbedPiece.IsValid())
@@ -216,7 +216,7 @@ void ACGChessPlayerPawn::EndGrabPiece(bool moveTo)
 
 void ACGChessPlayerPawn::HighlightTiles(bool val)
 {
-	for (ACGBoardTile* t : HighlightedTiles)
+	for (ACGTile* t : HighlightedTiles)
 	{
 		if (t)
 		{

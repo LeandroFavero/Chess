@@ -5,18 +5,18 @@
 #include "ChessLogic/CGPawn.h"
 #include "ChessLogic/CGPiece.h"
 #include "ChessLogic/CGChessBoard.h"
-#include "GameLogic/CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 #include "GameLogic/CGUndo.h"
 #include "CGChessBoard.h"
 
 //TODO: promotion !!!
 
-void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
+void UCGPawnMovement::AvailableMoves(TSet<ACGTile*>& set)
 {
 	ACGPawn* pawn = GetOwner<ACGPawn>();
 	if (pawn && pawn->Tile && pawn->Board)
 	{
-		ACGBoardTile* t = pawn->Tile->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH];
+		ACGTile* t = pawn->Tile->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
 		if (t)
 		{
 			if (t->OccupiedBy.Num() == 0)
@@ -25,7 +25,7 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 				//can double open?
 				if ((pawn->IsBlack() && pawn->Position.Y == pawn->Board->Size.Y - 2) || (pawn->IsWhite() && pawn->Position.Y == 1))
 				{
-					t = t->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH];
+					t = t->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
 					if (t && t->OccupiedBy.Num() == 0)
 					{
 						set.Add(t);
@@ -34,7 +34,7 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 			}
 		}
 		//attack
-		t = pawn->Tile->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH_EAST : ACGBoardTile::NORTH_EAST];
+		t = pawn->Tile->Neighbours[pawn->IsBlack() ? EDir::SOUTH_EAST : EDir::NORTH_EAST];
 		if(t)
 		{
 			for (const ACGPiece* p : t->OccupiedBy)
@@ -46,7 +46,7 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 				}
 			}
 		}
-		t = pawn->Tile->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH_WEST : ACGBoardTile::NORTH_WEST];
+		t = pawn->Tile->Neighbours[pawn->IsBlack() ? EDir::SOUTH_WEST : EDir::NORTH_WEST];
 		if (t)
 		{
 			for (const ACGPiece* p : t->OccupiedBy)
@@ -61,7 +61,7 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 		//en passant
 		if (pawn->Board->Undos.Num() > 0 && (pawn->IsBlack() ? pawn->Position.Y == 3 : pawn->Board->Size.Y - 4))//is in the good rank
 		{
-			for (int dir : {ACGBoardTile::EAST, ACGBoardTile::WEST})
+			for (EDir dir : {EDir::EAST, EDir::WEST})
 			{
 				t = pawn->Tile->Neighbours[dir];
 				if (t)
@@ -73,7 +73,7 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 						{
 							if (undo.From && undo.To && (abs(undo.From->Position.Y - undo.To->Position.Y) == 2))//was the last move double open?
 							{
-								pawn->EnPassantTile = t->Neighbours[pawn->IsBlack() ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH];
+								pawn->EnPassantTile = t->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
 								set.Add(pawn->EnPassantTile);
 								break;
 							}
@@ -85,18 +85,18 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGBoardTile*>& set)
 	}
 }
 
-void UCGPawnMovement::AttackedTiles(TSet<ACGBoardTile*>& set)
+void UCGPawnMovement::AttackedTiles(TSet<ACGTile*>& set)
 {
 	ACGPawn* owner = GetOwner<ACGPawn>();
 	if (owner)
 	{
-		ACGBoardTile* t;
-		t = owner->Tile->Neighbours[owner->IsBlack() ? ACGBoardTile::SOUTH_WEST : ACGBoardTile::NORTH_WEST];
+		ACGTile* t;
+		t = owner->Tile->Neighbours[owner->IsBlack() ? EDir::SOUTH_WEST : EDir::NORTH_WEST];
 		if (t)
 		{
 			set.Add(t);
 		}
-		t = owner->Tile->Neighbours[owner->IsBlack() ? ACGBoardTile::SOUTH_EAST : ACGBoardTile::NORTH_EAST];
+		t = owner->Tile->Neighbours[owner->IsBlack() ? EDir::SOUTH_EAST : EDir::NORTH_EAST];
 		if (t)
 		{
 			set.Add(t);

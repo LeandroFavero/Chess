@@ -7,7 +7,7 @@
 #include "Components/ActorComponent.h"
 #include "CGPieceMovementBase.generated.h"
 
-class ACGBoardTile;
+class ACGTile;
 
 UCLASS(Blueprintable, ClassGroup=(Chess))
 class CHESS_API UCGPieceMovementBase : public UActorComponent
@@ -26,12 +26,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION(BlueprintPure, Category="Chess logic")
-	virtual bool IsMoveValid(const ACGBoardTile* pTile);
+	//UFUNCTION(BlueprintPure, Category="Chess logic")
+	//virtual bool IsMoveValid(const ACGTile* pTile);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess logic")
-	virtual void AvailableMoves(TSet<ACGBoardTile*>& set);
+	virtual void AvailableMoves(TSet<ACGTile*>& set);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess logic")
-	virtual void AttackedTiles(TSet<ACGBoardTile*>& set);
+	virtual void AttackedTiles(TSet<ACGTile*>& set);
 };

@@ -2,10 +2,10 @@
 
 
 #include "ChessLogic/CGPieceMovementBase.h"
-#include <GameLogic/CGBoardTile.h>
+#include <ChessLogic/CGTile.h>
 
 #include "ChessLogic/CGPiece.h"
-#include "GameLogic/CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 
 // Sets default values for this component's properties
 UCGPieceMovementBase::UCGPieceMovementBase()
@@ -27,31 +27,23 @@ void UCGPieceMovementBase::TickComponent(float DeltaTime, ELevelTick TickType, F
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-bool UCGPieceMovementBase::IsMoveValid(const ACGBoardTile* pTile)
+/*bool UCGPieceMovementBase::IsMoveValid(const ACGTile* pTile)
 {
 	if (!pTile)
 	{
 		return false;
 	}
-	TSet<ACGBoardTile*> set;
+	TSet<ACGTile*> set;
 	AvailableMoves(set);
 	return set.Contains(pTile);
-	/*for (const ACGBoardTile* t : set)
-	{
-		if (t == pTile)
-		{
-			return true;
-		}
-	}
-	return false;*/
-}
+}*/
 
-void UCGPieceMovementBase::AvailableMoves(TSet<ACGBoardTile*>& set)
+void UCGPieceMovementBase::AvailableMoves(TSet<ACGTile*>& set)
 {
 
 }
 
-void UCGPieceMovementBase::AttackedTiles(TSet<ACGBoardTile*>& set)
+void UCGPieceMovementBase::AttackedTiles(TSet<ACGTile*>& set)
 {
 	AvailableMoves(set);
 }

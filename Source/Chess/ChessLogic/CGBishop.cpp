@@ -3,7 +3,7 @@
 
 #include "ChessLogic/CGBishop.h"
 #include "ChessLogic/CGLinearMovement.h"
-#include "GameLogic/CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 
 ACGBishop::ACGBishop()
 {

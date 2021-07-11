@@ -7,7 +7,7 @@
 #include "GameLogic/CGUndo.h"
 #include "CGPawn.generated.h"
 
-class ACGBoardTile;
+class ACGTile;
 /**
  * 
  */
@@ -21,12 +21,14 @@ public:
 	const FString GetFenChars() const override { return "Pp"; }
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265F") : TEXT("\u2659")); }
 
-	ACGBoardTile* EnPassantTile = nullptr;
+	ACGTile* EnPassantTile = nullptr;
 
-	void BeginPromotion();
+	void MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents) override;
 
-	void MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEvents) override;
-
-	UFUNCTION(BlueprintCallable, Category = "Chess")
-	void EndPromotion();
+	UFUNCTION(Client, Reliable)
+	void ClientBeginPromotion();
+	void ClientBeginPromotion_Implementation();
+	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
+	void ServerEndPromotion();
+	void ServerEndPromotion_Implementation();
 };

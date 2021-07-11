@@ -5,11 +5,8 @@
 #include "CGUndo.generated.h"
 
 class ACGPiece;
-class ACGBoardTile;
+class ACGTile;
 
-/**
- *
- */
 USTRUCT(BlueprintType)
 struct CHESS_API FCGUndo
 {
@@ -28,29 +25,20 @@ struct CHESS_API FCGUndo
 	ACGPiece* Capture {nullptr};
 
 	UPROPERTY(VisibleAnywhere)
-	ACGPiece* Castle {nullptr};
+	ACGPiece* CastleRook {nullptr};
 
 	UPROPERTY(VisibleAnywhere)
-	ACGBoardTile* From {nullptr};
+	ACGTile* CastleRookTile {nullptr};
 
 	UPROPERTY(VisibleAnywhere)
-	ACGBoardTile* To {nullptr};
+	ACGTile* From {nullptr};
+
+	UPROPERTY(VisibleAnywhere)
+	ACGTile* To {nullptr};
 
 	UPROPERTY(VisibleAnywhere)
 	uint8 Flags {0};
 	
 	FCGUndo(int pMoveNumber):MoveNumber(pMoveNumber) {}
 	FCGUndo() {}
-
-	//virtual bool operator == (const FCGUndo& other)
-	//{
-	//	return MoveNumber == other.MoveNumber /* && Piece == other.Piece*/ && From == other.From && To == other.To && Flags == other.Flags;
-	//}
-	/*FORCEINLINE	friend uint32 GetTypeHash(const FCGUndo& Undo)
-	{
-		uint32 ret = static_cast<uint32>(Undo.Flags) << 24;
-		uint32 ret = Coord.X << 8;
-		ret += Coord.Y;
-		return ret;
-	}*/
 };

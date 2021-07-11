@@ -7,7 +7,7 @@
 #include "CGChessPlayerController.generated.h"
 
 class ACGPiece;
-class ACGBoardTile;
+class ACGTile;
 
 
 UCLASS()
@@ -24,8 +24,8 @@ public:
 	int PreferredSide;
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
-	void ServerMoveToTile(ACGPiece* pPiece, ACGBoardTile* pTile);
-	void ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGBoardTile* pTile);
+	void ServerMoveToTile(ACGPiece* pPiece, ACGTile* pTile);
+	void ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGTile* pTile);
 
 	UFUNCTION(BlueprintCallable, Server, Unreliable, Category = "Chess")
 	void ServerUpdateGrab(ACGPiece* pPiece, FVector_NetQuantize Location);

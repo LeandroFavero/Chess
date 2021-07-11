@@ -11,7 +11,7 @@
 class UCGAnimInstance;
 class ACGChessPlayerController;
 class ACGChessBoard;
-class ACGBoardTile;
+class ACGTile;
 
 
 //UENUM()
@@ -58,7 +58,7 @@ public:
 	ACGChessBoard* Board;
 
 	UPROPERTY(Replicated)
-	ACGBoardTile* Tile;
+	ACGTile* Tile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	uint8 Flags {0};
@@ -100,9 +100,9 @@ public:
 	virtual void ClientSnapToPlace_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void MoveToTile(ACGBoardTile* pTile);
+	virtual void MoveToTile(ACGTile* pTile);
 
-	virtual void MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEvents = true);
+	virtual void MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents = true);
 
 	UFUNCTION(BlueprintPure, Category = "Chess")
 	virtual bool IsBlack() const { return (Flags & EPieceFlags::IsBlack) == EPieceFlags::IsBlack; }
@@ -110,8 +110,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Chess")
 	virtual bool IsWhite() const { return (Flags & EPieceFlags::IsBlack) != EPieceFlags::IsBlack; }
 
+	UFUNCTION(BlueprintPure, Category = "Chess")
+	virtual bool IsMoved() const { return (Flags & EPieceFlags::Moved) == EPieceFlags::Moved; }
+
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual TSet<ACGBoardTile*> AvailableMoves();
+	virtual TSet<ACGTile*> AvailableMoves();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void FillAttackMap();

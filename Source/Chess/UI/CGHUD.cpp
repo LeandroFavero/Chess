@@ -2,7 +2,7 @@
 
 #include "CGHUD.h"
 #include "ChessLogic/CGPiece.h"
-#include "GameLogic/CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 #include "ChessLogic/CGChessBoard.h"
 
 #define Dbg(x) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT(x));}

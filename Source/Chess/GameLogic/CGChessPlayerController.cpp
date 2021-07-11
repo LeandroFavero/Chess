@@ -2,7 +2,7 @@
 
 #include "CGChessPlayerController.h"
 #include "ChessLogic/CGPiece.h"
-#include "GameLogic/CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 #include "ChessLogic/CGChessBoard.h"
 #include "Net/UnrealNetwork.h"
 #include "GameLogic/CGGameState.h"
@@ -15,7 +15,7 @@ ACGChessPlayerController::ACGChessPlayerController()
 	bEnableTouchEvents = true;
 }
 
-void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGBoardTile* pTile)
+void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGTile* pTile)
 {
 	if (pPiece && pTile)
 	{

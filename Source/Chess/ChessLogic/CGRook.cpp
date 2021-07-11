@@ -3,12 +3,12 @@
 
 #include "ChessLogic/CGRook.h"
 #include "CGLinearMovement.h"
-#include "GameLogic/CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 
 ACGRook::ACGRook()
 {
 	UCGLinearMovement* moveComp = CreateDefaultSubobject<UCGLinearMovement>(TEXT("MoveValidator"));
-	moveComp->Directions = {EDir::NORTH, EDir::EAST, EDir::SOUTH, EDir::WEST };
+	moveComp->Directions = { EDir::NORTH, EDir::EAST, EDir::SOUTH, EDir::WEST };
 	AddOwnedComponent(moveComp);
 
 	//Flags |= 0x00000001;//Captured order

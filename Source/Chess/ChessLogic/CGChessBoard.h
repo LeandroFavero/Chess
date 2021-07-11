@@ -12,7 +12,7 @@
 
 class ACGChessPlayerController;
 class UCGCapturedPieces;
-class ACGBoardTile;
+class ACGTile;
 class ACGKing;
 class ACGPiece;
 
@@ -25,7 +25,7 @@ class CHESS_API ACGChessBoard : public AActor
 public:
 	
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	TSubclassOf<class ACGBoardTile> TileTemplate;
+	TSubclassOf<class ACGTile> TileTemplate;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	FCGSquareCoord Size {8, 8};
@@ -37,7 +37,7 @@ public:
 	FString DefaultBoardFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 	UPROPERTY(Replicated)
-	TArray<ACGBoardTile*> Board;
+	TArray<ACGTile*> Board;
 	
 	UPROPERTY(Replicated)
 	TArray<ACGPiece*> Pieces;
@@ -101,7 +101,7 @@ public:
 	virtual FCGSquareCoord LocationToCoord(const FVector& location);
 
 	UFUNCTION()
-	virtual ACGBoardTile* GetTile(const FCGSquareCoord& coord);
+	virtual ACGTile* GetTile(const FCGSquareCoord& coord);
 
 	virtual FCGUndo& CreateUndo();
 

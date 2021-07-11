@@ -5,7 +5,7 @@
 #include "GameLogic/CGGameMode.h"
 //#include "CGPiece.h"
 #include "CGKing.h"
-#include "GameLogic/CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 #include "GameLogic/CGChessPlayerController.h"
 #include "GameLogic/CGCapturedPieces.h"
 #include "UI/CGHUD.h"
@@ -77,7 +77,7 @@ void ACGChessBoard::OnConstruction(const FTransform& transform)
 		{
 			FActorSpawnParameters params;
 			params.Owner = this;
-			ACGBoardTile* newTile = world->SpawnActor<ACGBoardTile>(TileTemplate, params);
+			ACGTile* newTile = world->SpawnActor<ACGTile>(TileTemplate, params);
 			newTile->Board = this;
 			Board.Add(newTile);
 		}
@@ -90,7 +90,7 @@ void ACGChessBoard::OnConstruction(const FTransform& transform)
 	}
 	for (int32 i = 0; i < tileCount; ++i)
 	{
-		ACGBoardTile* tile = Board[i];
+		ACGTile* tile = Board[i];
 		if (tile)
 		{
 			FCGSquareCoord coord{ i / Size.Y,i % Size.Y };
@@ -101,7 +101,7 @@ void ACGChessBoard::OnConstruction(const FTransform& transform)
 	//set up neighbour references
 	for (int32 i = 0; i < tileCount; ++i)
 	{
-		ACGBoardTile* tile = Board[i];
+		ACGTile* tile = Board[i];
 
 		int otherIdx = i + 1;
 		tile->Neighbours[static_cast<int>(EDir::NORTH)] = (otherIdx % Size.Y == 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
@@ -158,7 +158,7 @@ void ACGChessBoard::OnConstruction(const FTransform& transform)
 
 void ACGChessBoard::Destroyed()
 {
-	for (ACGBoardTile* t : Board)
+	for (ACGTile* t : Board)
 	{
 		if (t)
 		{
@@ -188,7 +188,6 @@ void ACGChessBoard::StartGame(ACGChessPlayerController* p1, ACGChessPlayerContro
 		Undos.Empty();
 	}
 }
-
 
 /*
 	default fen:
@@ -329,7 +328,7 @@ FTransform ACGChessBoard::CoordToTransform(const FCGSquareCoord& coord) const
 	FVector tileLocation = tileTransform.GetLocation();
 
 	tileLocation.X += coord.X * TileSize.X - boardHalfSizeX;
-	tileLocation.Y += coord.Y * TileSize.Y - boardHalfSizeY;
+	tileLocation.Y += (Size.Y-1-coord.Y) * TileSize.Y - boardHalfSizeY;
 	tileTransform.SetLocation(tileLocation);
 	return tileTransform;
 }
@@ -348,12 +347,12 @@ FCGSquareCoord ACGChessBoard::LocationToCoord(const FVector& location)
 	boardLoc.X += boardHalfSizeX;
 	boardLoc.Y += boardHalfSizeY;
 	boardLoc -= location;
-	return FCGSquareCoord(Size.X - boardLoc.X / TileSize.X, Size.Y - boardLoc.Y / TileSize.Y);
+	return FCGSquareCoord(Size.X - boardLoc.X / TileSize.X, boardLoc.Y / TileSize.Y);
 }
 
-ACGBoardTile* ACGChessBoard::GetTile(const FCGSquareCoord& coord)
+ACGTile* ACGChessBoard::GetTile(const FCGSquareCoord& coord)
 {
-	ACGBoardTile* ret = Board[coord.X * Size.X + coord.Y];
+	ACGTile* ret = Board[coord.X * Size.X + coord.Y];
 	ensure(coord == ret->Position);
 	return ret;
 }
@@ -384,6 +383,11 @@ void ACGChessBoard::UndoInternal(FCGUndo& pUndo)
 		pUndo.Capture->UnCapture();
 		pUndo.Capture->MoveToTileInternal(pUndo.To, dummyUndo, false);
 		pUndo.Capture->ClientSnapToPlace();
+	}
+	if (pUndo.CastleRook)
+	{
+		pUndo.CastleRook->MoveToTileInternal(pUndo.CastleRookTile, dummyUndo, false);
+		pUndo.CastleRook->ClientSnapToPlace();
 	}
 	if (pUndo.Promotion)
 	{
@@ -430,7 +434,7 @@ void ACGChessBoard::UndoNotify()
 
 void ACGChessBoard::RebuildAttackMap(bool pIsBlack)
 {
-	for (ACGBoardTile* t : Board)
+	for (ACGTile* t : Board)
 	{
 		if (t)
 		{

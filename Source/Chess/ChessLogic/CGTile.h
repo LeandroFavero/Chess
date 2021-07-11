@@ -6,41 +6,41 @@
 #include "Components/StaticMeshComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "CGBoardTile.generated.h"
+#include "CGTile.generated.h"
 
 class ACGChessBoard;
 class UCGLabelWidgetComponent;
 class ACGPiece;
 
-UENUM()
-enum class EDir : uint8
+UENUM(BlueprintType)
+enum EDir
 {
-	NORTH			,
-	NORTH_EAST		,
-	EAST			,
-	SOUTH_EAST		,
-	SOUTH			,
-	SOUTH_WEST		,
-	WEST			,
-	NORTH_WEST		,
-	KNIGHT1			,
-	KNIGHT2			,
-	KNIGHT3			,
-	KNIGHT4			,
-	KNIGHT5			,
-	KNIGHT6			,
-	KNIGHT7			,
-	KNIGHT8			,
+	NORTH		=0,
+	NORTH_EAST	=1,
+	EAST		=2,
+	SOUTH_EAST	=3,
+	SOUTH		=4,
+	SOUTH_WEST	=5,
+	WEST		=6,
+	NORTH_WEST	=7,
+	KNIGHT1		=8,
+	KNIGHT2		=9,
+	KNIGHT3		=10,
+	KNIGHT4		=11,
+	KNIGHT5		=12,
+	KNIGHT6		=13,
+	KNIGHT7		=14,
+	KNIGHT8		=15,
 	Size
 };
 
 UCLASS()
-class CHESS_API ACGBoardTile : public AActor
+class CHESS_API ACGTile : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	static const int NORTH{ 0 };
+	/*static const int NORTH{0};
 	static const int NORTH_EAST{ 1 };
 	static const int EAST{ 2 };
 	static const int SOUTH_EAST{ 3 };
@@ -55,7 +55,7 @@ public:
 	static const int KNIGHT5{ 12 };
 	static const int KNIGHT6{ 13 };
 	static const int KNIGHT7{ 14 };
-	static const int KNIGHT8{ 15 };
+	static const int KNIGHT8{ 15 };*/
 
 	UPROPERTY()
 	TArray<ACGPiece*> AttackedBy;
@@ -67,7 +67,7 @@ public:
 	bool m_isBlack{ false };
 
 	UPROPERTY()
-	TArray<ACGBoardTile*> Neighbours;
+	TArray<ACGTile*> Neighbours;
 
 public:
 
@@ -91,13 +91,13 @@ public:
 	TSubclassOf<class UCGLabelWidgetComponent> WidgetTemplate;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FRotator WidgetRotation {0.0f, 90.0f, 0.0f};
+	FRotator WidgetRotation {0.0f, 0.0f, 90.0f};
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FVector WidgetOffset {100, 100, 1};
+	FVector WidgetOffset {0, 165, 1};
 
 	// Sets default values for this actor's properties
-	ACGBoardTile();
+	ACGTile();
 
 protected:
 	// Called when the game starts or when spawned

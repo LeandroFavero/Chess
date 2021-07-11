@@ -8,7 +8,7 @@
 #include "ChessLogic/CGChessBoard.h"
 #include "ChessLogic/CGPieceMovementBase.h"
 #include "GameLogic/CGChessPlayerController.h"
-#include "GameLogic/CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 #include "GameLogic/CGUndo.h"
 #include "GameLogic/CGCapturedPieces.h"
 #include "GameLogic/CGGameState.h"
@@ -121,23 +121,22 @@ void ACGPiece::ClientSnapToPlace_Implementation()
 	SnapToPlace();
 }
 
-void ACGPiece::MoveToTile(ACGBoardTile* pTile)
+void ACGPiece::MoveToTile(ACGTile* pTile)
 {
 	if (!Board || !pTile)
 	{
 		return;
 	}
-	TSet<ACGBoardTile*> moves = AvailableMoves();
+	TSet<ACGTile*> moves = AvailableMoves();
 	if (!moves.Contains(pTile))
 	{
 		OnInvalidMove();
 		return;
 	}
 	FCGUndo& undo = Board->CreateUndo();
-
 	MoveToTileInternal(pTile, undo, true);
 	SnapToPlace();
-
+	Flags |= EPieceFlags::Moved;
 	//listen server has to update the ui
 	if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
 	{
@@ -150,7 +149,7 @@ void ACGPiece::MoveToTile(ACGBoardTile* pTile)
 	}
 }
 
-void ACGPiece::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEvents)
+void ACGPiece::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
 {
 	if (!Board || !pTile)
 	{
@@ -166,7 +165,6 @@ void ACGPiece::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEven
 	Tile = pTile;
 	undo.To = Tile;
 	undo.Flags = Flags;
-	Flags |= EPieceFlags::Moved;
 	if (Tile)
 	{
 		//Capture
@@ -185,9 +183,9 @@ void ACGPiece::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEven
 	Tile->OccupiedBy.AddUnique(this);
 }
 
-TSet<ACGBoardTile*> ACGPiece::AvailableMoves()
+TSet<ACGTile*> ACGPiece::AvailableMoves()
 {
-	TSet<ACGBoardTile*> ret;
+	TSet<ACGTile*> ret;
 	TArray<UCGPieceMovementBase*> validators;
 	GetComponents<UCGPieceMovementBase>(validators);
 	for (UCGPieceMovementBase* v : validators)
@@ -200,7 +198,7 @@ TSet<ACGBoardTile*> ACGPiece::AvailableMoves()
 	for (auto it = ret.CreateIterator(); it; ++it)
 	{
 		FCGUndo undo;
-		ACGBoardTile* t = *it;
+		ACGTile* t = *it;
 		MoveToTileInternal(t, undo, false);
 		//check check
 		Board->RebuildAttackMap(IsWhite());
@@ -219,7 +217,7 @@ void ACGPiece::FillAttackMap()
 	{
 		return;
 	}
-	TSet<ACGBoardTile*> tiles;
+	TSet<ACGTile*> tiles;
 	TArray<UCGPieceMovementBase*> validators;
 	GetComponents<UCGPieceMovementBase>(validators);
 	for (UCGPieceMovementBase* v : validators)
@@ -227,7 +225,7 @@ void ACGPiece::FillAttackMap()
 		ensure(v);
 		v->AttackedTiles(tiles);
 	}
-	for (ACGBoardTile* t : tiles)
+	for (ACGTile* t : tiles)
 	{
 		ensure(t);
 		t->AttackedBy.Add(this);

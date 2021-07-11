@@ -3,7 +3,7 @@
 
 #include "ChessLogic/CGPawn.h"
 #include "ChessLogic/CGChessBoard.h"
-#include "GameLogic/CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 #include "ChessLogic/CGPawnMovement.h"
 
 ACGPawn::ACGPawn()
@@ -12,13 +12,12 @@ ACGPawn::ACGPawn()
 	AddOwnedComponent(moveComp);
 }
 
-
-void ACGPawn::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEvents = true)
+void ACGPawn::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
 {
 	//en passant capture
 	if (EnPassantTile && EnPassantTile == pTile)
 	{
-		ACGBoardTile* otherPawnTile = EnPassantTile->Neighbours[(IsBlack() ? ACGBoardTile::NORTH : ACGBoardTile::SOUTH)];
+		ACGTile* otherPawnTile = EnPassantTile->Neighbours[(IsBlack() ? EDir::NORTH : EDir::SOUTH)];
 		for (auto it = otherPawnTile->OccupiedBy.CreateIterator(); it; ++it)
 		{
 			ACGPawn* otherPawn = Cast<ACGPawn>(*it);
@@ -35,7 +34,7 @@ void ACGPawn::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEvent
 	if ((Flags & EPieceFlags::EnPassantCaptured) == EPieceFlags::EnPassantCaptured)
 	{
 		//fix the position of this pawn
-		Super::MoveToTileInternal(pTile->Neighbours[IsBlack() ? ACGBoardTile::SOUTH : ACGBoardTile::NORTH], undo, pEvents);
+		Super::MoveToTileInternal(pTile->Neighbours[IsBlack() ? EDir::SOUTH : EDir::NORTH], undo, pEvents);
 		Flags = Flags & ~EPieceFlags::EnPassantCaptured;
 	}
 	else
@@ -44,12 +43,12 @@ void ACGPawn::MoveToTileInternal(ACGBoardTile* pTile, FCGUndo& undo, bool pEvent
 	}
 }
 
-void ACGPawn::BeginPromotion()
+void ACGPawn::ClientBeginPromotion_Implementation()
 {
 
 }
 
-void ACGPawn::EndPromotion()
+void ACGPawn::ServerEndPromotion_Implementation()
 {
 
 }

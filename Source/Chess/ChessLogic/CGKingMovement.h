@@ -15,5 +15,5 @@ class CHESS_API UCGKingMovement : public UCGPieceMovementBase
 	GENERATED_BODY()
 
 public:
-	void AvailableMoves(TSet<ACGBoardTile*>& set) override;
+	void AvailableMoves(TSet<ACGTile*>& set) override;
 };

@@ -6,7 +6,7 @@
 #include "ChessLogic/CGPieceMovementBase.h"
 #include "CGPawnMovement.generated.h"
 
-class ACGBoardTile;
+class ACGTile;
 /**
  * 
  */
@@ -15,7 +15,7 @@ class CHESS_API UCGPawnMovement : public UCGPieceMovementBase
 {
 	GENERATED_BODY()
 
-	void AvailableMoves(TSet<ACGBoardTile*>& set) override;
+	void AvailableMoves(TSet<ACGTile*>& set) override;
 
-	void AttackedTiles(TSet<ACGBoardTile*>& set) override;
+	void AttackedTiles(TSet<ACGTile*>& set) override;
 };

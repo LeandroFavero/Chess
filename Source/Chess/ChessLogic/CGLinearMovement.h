@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ChessLogic/CGPieceMovementBase.h"
-#include "GameLogic/CGBoardTile.h"
+#include "ChessLogic/CGTile.h"
 #include "CGLinearMovement.generated.h"
 
 /**
@@ -19,8 +19,8 @@ public:
 	int Range{ -1 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess logic")
-	TSet<EDir> Directions;
+	TSet<TEnumAsByte<EDir>> Directions;
 
-	void AvailableMoves(TSet<ACGBoardTile*>& set) override;
+	void AvailableMoves(TSet<ACGTile*>& set) override;
 
 };
