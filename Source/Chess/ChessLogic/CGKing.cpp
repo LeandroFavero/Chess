@@ -24,19 +24,16 @@ void ACGKing::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
 		EDir otherSide = Position.X > pTile->Position.X ? EDir::EAST : EDir::WEST;
 		for (ACGTile* t = pTile->Neighbours[side]; t; t = t->Neighbours[side])
 		{
-			if (t)
+			if (t && t->OccupiedBy)
 			{
-				for (ACGPiece* p : t->OccupiedBy)
+				if (ACGRook* r = Cast<ACGRook>(t->OccupiedBy))
 				{
-					if (ACGRook* r = Cast<ACGRook>(p))
-					{
-						undo.CastleRook = r;
-						undo.CastleRookTile = t;
-						FCGUndo dummyUndo;
-						r->MoveToTileInternal(pTile->Neighbours[otherSide], dummyUndo, false);
-						r->ClientSnapToPlace();
-						break;
-					}
+					undo.CastleRook = r;
+					undo.CastleRookTile = t;
+					FCGUndo dummyUndo;
+					r->MoveToTileInternal(pTile->Neighbours[otherSide], dummyUndo, false);
+					r->ClientSnapToPlace();
+					break;
 				}
 			}
 		}

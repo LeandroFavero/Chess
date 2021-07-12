@@ -18,16 +18,11 @@ void ACGPawn::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
 	if (EnPassantTile && EnPassantTile == pTile)
 	{
 		ACGTile* otherPawnTile = EnPassantTile->Neighbours[(IsBlack() ? EDir::NORTH : EDir::SOUTH)];
-		for (auto it = otherPawnTile->OccupiedBy.CreateIterator(); it; ++it)
+		if (ACGPawn* otherPawn = Cast<ACGPawn>(otherPawnTile->OccupiedBy))
 		{
-			ACGPawn* otherPawn = Cast<ACGPawn>(*it);
-			if (otherPawn)
-			{
-				it.RemoveCurrent();
-				otherPawn->Flags |= EPieceFlags::EnPassantCaptured;
-				undo.Capture = otherPawn;
-				otherPawn->Capture(pEvents);
-			}
+			otherPawn->Flags |= EPieceFlags::EnPassantCaptured;
+			undo.Capture = otherPawn;
+			otherPawn->Capture(pEvents);
 		}
 	}
 	//en passant restore

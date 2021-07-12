@@ -17,11 +17,11 @@ void UCGKingMovement::AvailableMoves(TSet<ACGTile*>& set)
 			ACGTile* t = piece->Tile->Neighbours[i];
 			if (t)
 			{
-				for (ACGPiece* other : t->OccupiedBy)
+				if (ACGPiece* other = Cast<ACGPiece>(t->OccupiedBy))
 				{
 					if (piece->IsBlack() == other->IsBlack())
 					{
-						goto continue_directions;
+						continue;
 					}
 				}
 				if (t->AttackedBy.Num() == 0)//the king can only move to not attacked tiles
@@ -29,7 +29,6 @@ void UCGKingMovement::AvailableMoves(TSet<ACGTile*>& set)
 					set.Add(t);
 				}
 			}
-			continue_directions:;
 		}
 		//can castle?
 		if (!piece->IsMoved())
@@ -45,27 +44,44 @@ void UCGKingMovement::AvailableMoves(TSet<ACGTile*>& set)
 						if (distance < 2 && t->AttackedBy.Num() > 0)
 						{
 							//bail, can't move the king over attacked tiles
-							goto continueNextDirection;
+							break;
 						}
 						if (distance == 1)
 						{
 							tileAtTwoDistance = t;
 						}
-						for (ACGPiece* p : t->OccupiedBy)
+						if (t->OccupiedBy)
 						{
-							if (p->IsA(ACGRook::StaticClass()) && p->IsBlack() == piece->IsBlack() && !p->IsMoved())
+							if (t->OccupiedBy->IsA(ACGRook::StaticClass()) && t->OccupiedBy->IsBlack() == piece->IsBlack() && !t->OccupiedBy->IsMoved())
 							{
 								//can castle this way
 								piece->CastleTiles.Add(tileAtTwoDistance);
 								set.Add(tileAtTwoDistance);
 							}
-							//bail, something is blocking the way
-							goto continueNextDirection;
+							else
+							{
+								break;
+							}
 						}
+						
 					}
 					distance += 1;
 				}
-				continueNextDirection:;
+			}
+		}
+	}
+}
+
+void UCGKingMovement::AttackedTiles(TSet<ACGTile*>& set)
+{
+	ACGKing* piece = GetOwner<ACGKing>();
+	if (piece && piece->Tile && piece->Board)
+	{
+		for (int i = EDir::NORTH; i <= EDir::NORTH_WEST; ++i)
+		{
+			if (ACGTile* t = piece->Tile->Neighbours[i])
+			{
+				set.Add(t);
 			}
 		}
 	}

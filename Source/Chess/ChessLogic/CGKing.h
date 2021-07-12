@@ -19,8 +19,6 @@ public:
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265A") : TEXT("\u2654")); }
 
 	TSet<ACGTile*> CastleTiles;
-	//= nullptr;
-	//ACGTile* CastleEast = nullptr;
 
 	void MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents) override;
 

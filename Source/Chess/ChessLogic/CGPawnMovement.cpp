@@ -17,45 +17,34 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGTile*>& set)
 	if (pawn && pawn->Tile && pawn->Board)
 	{
 		ACGTile* t = pawn->Tile->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
-		if (t)
+		if (t && t->OccupiedBy == nullptr)
 		{
-			if (t->OccupiedBy.Num() == 0)
+			set.Add(t);
+			//can double open?
+			if ((pawn->IsBlack() && pawn->Position.Y == pawn->Board->Size.Y - 2) || (pawn->IsWhite() && pawn->Position.Y == 1))
 			{
-				set.Add(t);
-				//can double open?
-				if ((pawn->IsBlack() && pawn->Position.Y == pawn->Board->Size.Y - 2) || (pawn->IsWhite() && pawn->Position.Y == 1))
+				t = t->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
+				if (t && t->OccupiedBy == nullptr)
 				{
-					t = t->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
-					if (t && t->OccupiedBy.Num() == 0)
-					{
-						set.Add(t);
-					}
+					set.Add(t);
 				}
 			}
 		}
 		//attack
 		t = pawn->Tile->Neighbours[pawn->IsBlack() ? EDir::SOUTH_EAST : EDir::NORTH_EAST];
-		if(t)
+		if(t && t->OccupiedBy)
 		{
-			for (const ACGPiece* p : t->OccupiedBy)
+			if (t->OccupiedBy->IsBlack() != pawn->IsBlack())
 			{
-				if (p->IsBlack() != pawn->IsBlack())
-				{
-					set.Add(t);
-					break;
-				}
+				set.Add(t);
 			}
 		}
 		t = pawn->Tile->Neighbours[pawn->IsBlack() ? EDir::SOUTH_WEST : EDir::NORTH_WEST];
-		if (t)
+		if (t && t->OccupiedBy)
 		{
-			for (const ACGPiece* p : t->OccupiedBy)
+			if (t->OccupiedBy->IsBlack() != pawn->IsBlack())
 			{
-				if (p->IsBlack() != pawn->IsBlack())
-				{
-					set.Add(t);
-					break;
-				}
+				set.Add(t);
 			}
 		}
 		//en passant
@@ -64,19 +53,16 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGTile*>& set)
 			for (EDir dir : {EDir::EAST, EDir::WEST})
 			{
 				t = pawn->Tile->Neighbours[dir];
-				if (t)
+				if (t && t->OccupiedBy)
 				{
-					for (const ACGPiece* other : t->OccupiedBy)
+					const FCGUndo& undo = pawn->Board->Undos.Last();
+					if (t->OccupiedBy->IsA(ACGPawn::StaticClass()) && undo.Piece == t->OccupiedBy)//are we standing next to the last moved pawn
 					{
-						const FCGUndo& undo = pawn->Board->Undos.Last();
-						if (other->IsA(ACGPawn::StaticClass()) && undo.Piece == other)//are we standing next to the last moved pawn
+						if (undo.From && undo.To && (abs(undo.From->Position.Y - undo.To->Position.Y) == 2))//was the last move double open?
 						{
-							if (undo.From && undo.To && (abs(undo.From->Position.Y - undo.To->Position.Y) == 2))//was the last move double open?
-							{
-								pawn->EnPassantTile = t->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
-								set.Add(pawn->EnPassantTile);
-								break;
-							}
+							pawn->EnPassantTile = t->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
+							set.Add(pawn->EnPassantTile);
+							break;
 						}
 					}
 				}

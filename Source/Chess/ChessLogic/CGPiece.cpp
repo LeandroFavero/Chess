@@ -159,28 +159,24 @@ void ACGPiece::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
 	undo.Piece = this;
 	if(Tile)
 	{
-		Tile->OccupiedBy.Remove(this);
+		//Tile->OccupiedBy.Remove(this);
+		Tile->OccupiedBy = nullptr;
 	}
 	Position = pTile->Position;
 	Tile = pTile;
 	undo.To = Tile;
 	undo.Flags = Flags;
-	if (Tile)
+	if (Tile && Tile->OccupiedBy)
 	{
 		//Capture
-		for (int i = Tile->OccupiedBy.Num() - 1; i >= 0; --i)
+		ACGPiece* p = Tile->OccupiedBy;
+		if (p && (p->IsBlack() != IsBlack()))
 		{
-			ACGPiece* p = Tile->OccupiedBy[i];
-			if (p && (p->IsBlack() != IsBlack()))
-			{
-				undo.Capture = p;
-				p->Capture(pEvents);
-				//p->Tile->OccupiedBy.Remove(this);
-				//p->Flags |= EPieceFlags::Captured;
-			}
+			undo.Capture = p;
+			p->Capture(pEvents);
 		}
 	}
-	Tile->OccupiedBy.AddUnique(this);
+	Tile->OccupiedBy = this;
 }
 
 TSet<ACGTile*> ACGPiece::AvailableMoves()
@@ -238,7 +234,7 @@ void ACGPiece::Capture(bool pAddToCaptured)
 	{
 		return;
 	}
-	Tile->OccupiedBy.Remove(this);
+	Tile->OccupiedBy = nullptr;
 	Flags |= EPieceFlags::Captured;
 	if (pAddToCaptured)
 	{

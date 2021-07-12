@@ -6,7 +6,6 @@
 #include "GameLogic/CGChessPlayerController.h"
 #include "MaterialShared.h"
 #include "UI/CGHUD.h"
-#include "ChessLogic/CGCanBePromotedInto.h"
 #include "ChessLogic/CGPiece.h"
 
 

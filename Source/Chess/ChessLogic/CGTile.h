@@ -40,31 +40,16 @@ class CHESS_API ACGTile : public AActor
 	GENERATED_BODY()
 
 public:
-	/*static const int NORTH{0};
-	static const int NORTH_EAST{ 1 };
-	static const int EAST{ 2 };
-	static const int SOUTH_EAST{ 3 };
-	static const int SOUTH{ 4 };
-	static const int SOUTH_WEST{ 5 };
-	static const int WEST{ 6 };
-	static const int NORTH_WEST{ 7 };
-	static const int KNIGHT1{ 8 };
-	static const int KNIGHT2{ 9 };
-	static const int KNIGHT3{ 10 };
-	static const int KNIGHT4{ 11 };
-	static const int KNIGHT5{ 12 };
-	static const int KNIGHT6{ 13 };
-	static const int KNIGHT7{ 14 };
-	static const int KNIGHT8{ 15 };*/
 
 	UPROPERTY()
 	TArray<ACGPiece*> AttackedBy;
 
 	UPROPERTY(Replicated)
-	TArray<ACGPiece*> OccupiedBy;
+		//TArray<ACGPiece*> OccupiedBy;
+	ACGPiece* OccupiedBy {nullptr};
 
 	UPROPERTY()
-	bool m_isBlack{ false };
+	bool mIsBlack{ false };
 
 	UPROPERTY()
 	TArray<ACGTile*> Neighbours;
@@ -87,7 +72,6 @@ public:
 	ACGChessBoard* Board;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	//TSubclassOf<class UCGLabelWidget> WidgetTemplate;
 	TSubclassOf<class UCGLabelWidgetComponent> WidgetTemplate;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
@@ -122,5 +106,4 @@ public:
 	virtual void ClearAttackers();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 };

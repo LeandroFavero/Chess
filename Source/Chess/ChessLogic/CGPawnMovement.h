@@ -14,7 +14,7 @@ UCLASS(Blueprintable, ClassGroup = (Chess), meta = (BlueprintSpawnableComponent)
 class CHESS_API UCGPawnMovement : public UCGPieceMovementBase
 {
 	GENERATED_BODY()
-
+public:
 	void AvailableMoves(TSet<ACGTile*>& set) override;
 
 	void AttackedTiles(TSet<ACGTile*>& set) override;

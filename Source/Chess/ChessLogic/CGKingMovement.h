@@ -16,4 +16,6 @@ class CHESS_API UCGKingMovement : public UCGPieceMovementBase
 
 public:
 	void AvailableMoves(TSet<ACGTile*>& set) override;
+
+	void AttackedTiles(TSet<ACGTile*>& set) override;
 };

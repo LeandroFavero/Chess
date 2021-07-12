@@ -55,10 +55,8 @@ void ACGTile::SetCoord(const FCGSquareCoord coord)
 		return;
 	}
 	FString newName = FString::Printf(TEXT("Tile_%dx%d_"), coord.X, coord.Y);
-	//Rename(*newName);
 	SetActorLabel(*newName);
 	
-
 	bool horizontal = Position.X == 0 || Position.X == (Board->Size.X - 1);
 	bool vertical = Position.Y == 0 || Position.Y == (Board->Size.Y - 1);
 	TArray<UCGLabelWidgetComponent*> comps;
@@ -135,13 +133,13 @@ void ACGTile::SetCoord(const FCGSquareCoord coord)
 
 void ACGTile::SetBlack(bool value)
 {
-	m_isBlack = value;
-	Mesh->SetMaterial(0, m_isBlack? Black : White);
+	mIsBlack = value;
+	Mesh->SetMaterial(0, mIsBlack? Black : White);
 }
 
 bool ACGTile::IsBlack()
 {
-	return m_isBlack;
+	return mIsBlack;
 }
 
 void ACGTile::ClearAttackers()

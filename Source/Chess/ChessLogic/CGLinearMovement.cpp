@@ -7,35 +7,46 @@
 
 void UCGLinearMovement::AvailableMoves(TSet<ACGTile*>& set)
 {
+	Generate(set, false);
+}
+
+void UCGLinearMovement::AttackedTiles(TSet<ACGTile*>& set)
+{
+	Generate(set, true);
+}
+
+void UCGLinearMovement::Generate(TSet<ACGTile*>& set, bool pIsAttack)
+{
 	ACGPiece* piece = GetOwner<ACGPiece>();
 	if (piece)
 	{
 		for (EDir dir : Directions)
 		{
-			//int dir = static_cast<int>(i);
 			ACGTile* t = piece->Tile;
-			for(int remaining = Range;t && remaining != 0; --remaining)
+			for (int remaining = Range; t && remaining != 0; --remaining)
 			{
 				t = t->Neighbours[dir];
 				if (t)
 				{
-					for (ACGPiece* other : t->OccupiedBy)
+					if (t->OccupiedBy)
 					{
-						if (piece->IsBlack() != other->IsBlack())
+						if (piece->IsBlack() != t->OccupiedBy->IsBlack())
 						{
 							set.Add(t);
-							goto continue_directions;
+							break;
 						}
 						else
 						{
-							goto continue_directions;
+							if (pIsAttack)
+							{
+								set.Add(t);
+							}
+							break;
 						}
 					}
 					set.Add(t);
 				}
 			}
-		continue_directions:;
 		}
-
 	}
 }

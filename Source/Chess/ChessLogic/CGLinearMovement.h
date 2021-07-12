@@ -23,4 +23,8 @@ public:
 
 	void AvailableMoves(TSet<ACGTile*>& set) override;
 
+	void AttackedTiles(TSet<ACGTile*>& set) override;
+
+private:
+	void Generate(TSet<ACGTile*>& set, bool pIsAttack);
 };
