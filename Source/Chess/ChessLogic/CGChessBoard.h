@@ -16,7 +16,6 @@ class ACGTile;
 class ACGKing;
 class ACGPiece;
 
-
 UCLASS(Blueprintable)
 class CHESS_API ACGChessBoard : public AActor
 {
@@ -35,6 +34,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	FString DefaultBoardFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	bool EnforceMoveOrder{ true };
 
 	UPROPERTY(Replicated)
 	TArray<ACGTile*> Board;
@@ -100,6 +102,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual FCGSquareCoord LocationToCoord(const FVector& location);
 
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual bool HasValidMove(bool pIsBlack);
+
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual bool GameOverCheck(bool pIsBlack);
+
+
 	UFUNCTION()
 	virtual ACGTile* GetTile(const FCGSquareCoord& coord);
 
@@ -122,4 +131,14 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:
+};
+
+enum FenField
+{
+	PIECE_PLACEMENT = 0,
+	NEXT_MOVE = 1,
+	CASTLING_AVAILABILITY = 2,
+	EN_PASSANT_TARGET_SQUARE = 3,
+	HALFMOVE_CLOCK = 4,
+	FULLMOVE_NUMBER = 5
 };

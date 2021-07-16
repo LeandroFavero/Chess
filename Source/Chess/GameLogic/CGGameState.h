@@ -9,9 +9,14 @@
 
 class ACGChessBoard;
 
-
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnValidMoveSignature, struct FCGUndo, FCGUndo);
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRollbackToSignature, int, FMove);
+UENUM(BlueprintType)
+enum EGameResult
+{
+	BLACK_WINS = 0,
+	WHITE_WINS = 1,
+	DRAW = 2,
+	DISCONNECT = 3,
+};
 
 UCLASS()
 class CHESS_API ACGGameState : public AGameState
@@ -22,11 +27,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	ACGChessBoard* Board;
 
-	//UPROPERTY(BlueprintAssignable, Replicated, Category = "Chess")
-	//FOnValidMoveSignature OnValidMove;
-
-	//UPROPERTY(BlueprintAssignable, Replicated, Category = "Chess")
-	//FOnRollbackToSignature OnRollbackTo;
+	UFUNCTION(NetMulticast, Reliable)
+	void ClientGameFinished(const EGameResult pResult);
+	void ClientGameFinished_Implementation(const EGameResult pResult);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 };

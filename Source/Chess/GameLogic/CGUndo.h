@@ -38,6 +38,18 @@ struct CHESS_API FCGUndo
 
 	UPROPERTY(VisibleAnywhere)
 	uint8 Flags {0};
+
+	UPROPERTY(VisibleAnywhere)
+	bool SimpleNotation{ true };
+
+	UPROPERTY(VisibleAnywhere)
+	bool Check{ false };
+
+	UPROPERTY(VisibleAnywhere)
+	bool LastMoveIsBlack{ false };
+
+	UPROPERTY(VisibleAnywhere)
+	bool Imported{ false };
 	
 	FCGUndo(int pMoveNumber):MoveNumber(pMoveNumber) {}
 	FCGUndo() {}

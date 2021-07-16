@@ -40,6 +40,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float BlackRotation = 270.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float WhiteRotation = 90.0f;
 
@@ -48,11 +49,18 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float CameraArmSpeed = 1.5f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
-	bool bIsAdjustingCamera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
-	bool bIsLeftClicking;
+	bool bIsAdjustingCamera{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	bool bIsLeftClicking{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	bool bIsSpinnyMenu{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	float SpinnyMenuSpeed{ -10.0f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float CameraArmLengthDefault = 2500.0f;
@@ -71,7 +79,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	TWeakObjectPtr<class AActor> MouseoveredActor{};
-
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	float DragTreshold = 3;
@@ -99,6 +106,7 @@ private:
 	void MouseMoveX(float Val);
 	void MouseMoveY(float Val);
 	void Zoom(float Val);
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	void OrbitCamera(float X, float Y, bool absolute = false);
 	void HighlightTiles(bool val);
 

@@ -50,7 +50,6 @@ void ACGChessPlayerController::ServerUndoTo_Implementation(int pMoveNum)
 	}
 }
 
-
 void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	DOREPLIFETIME(ACGChessPlayerController, SelectedSkinId)

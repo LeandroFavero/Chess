@@ -23,6 +23,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	int PreferredSide;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
+	bool IsBlack;
+
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
 	void ServerMoveToTile(ACGPiece* pPiece, ACGTile* pTile);
 	void ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGTile* pTile);
@@ -38,6 +41,15 @@ public:
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
 	void ServerUndoTo(int pMoveNum);
 	void ServerUndoTo_Implementation(int pMoveNum);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
+	void OnWin();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
+	void OnLose();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
+	void OnDraw();
 
 	virtual void BeginPlayingState() override;
 

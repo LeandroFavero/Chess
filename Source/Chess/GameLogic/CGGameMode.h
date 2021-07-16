@@ -19,6 +19,7 @@ class CHESS_API ACGGameMode : public AGameMode
 public:
 	ACGGameMode();
 
+	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	UDataTable* Skins;

@@ -60,10 +60,10 @@ void UCGKingMovement::AvailableMoves(TSet<ACGTile*>& set)
 							}
 							else
 							{
+								//own piece blocks the way
 								break;
 							}
 						}
-						
 					}
 					distance += 1;
 				}

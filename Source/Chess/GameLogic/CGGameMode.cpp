@@ -14,8 +14,11 @@ ACGGameMode::ACGGameMode()
 	DefaultPawnClass = ACGChessPlayerPawn::StaticClass();
 	PlayerControllerClass = ACGChessPlayerController::StaticClass();
 	HUDClass = ACGHUD::StaticClass();
+}
 
-
+void ACGGameMode::BeginPlay()
+{
+    
 }
 
 int ACGGameMode::GetCurrentViewMode(const APlayerController* PlayerController)

@@ -7,9 +7,11 @@
 #include "ChessLogic/CGTile.h"
 #include "CGChessPlayerController.h"
 #include "UI/CGHUD.h"
-
 #include "CGHighlightableComponent.h"
 #include "GameLogic/CGGameState.h"
+#include "GameLogic/CGGameMode.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 ACGChessPlayerPawn::ACGChessPlayerPawn() : Super()
@@ -34,16 +36,37 @@ void ACGChessPlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	OrbitCamera(WhiteRotation, CameraArmYDefault, true);
-	
+
+	if (UWorld* w = GetWorld())
+	{
+		if (ACGGameMode* mode = Cast<ACGGameMode>(w->GetAuthGameMode()))
+		{
+			if (mode->OptionsString.IsEmpty())
+			{
+				bIsSpinnyMenu = true;
+			}
+			else
+			{
+				FString m = UGameplayStatics::ParseOption(mode->OptionsString, "Mode");
+			}
+		}
+		else
+		{
+			//no game mode, we're client
+		}
+	}
 }
 
 // Called every frame
 void ACGChessPlayerPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//calculate mouseover
 	if (IsLocallyControlled()) 
 	{
+		if (bIsSpinnyMenu)
+		{
+			OrbitCamera(SpinnyMenuSpeed * DeltaTime, 0, false);
+		}
 		TraceCursor();
 	}
 }

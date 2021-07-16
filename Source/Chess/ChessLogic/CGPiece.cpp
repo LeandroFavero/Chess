@@ -127,16 +127,44 @@ void ACGPiece::MoveToTile(ACGTile* pTile)
 	{
 		return;
 	}
+	//is it my turn?
+	if (Board->EnforceMoveOrder)
+	{
+		if ((Board->Undos.Num() == 0 && IsBlack()) || (Board->Undos.Last().LastMoveIsBlack == IsBlack()))
+		{
+			return;
+		}
+	}
+
 	TSet<ACGTile*> moves = AvailableMoves();
 	if (!moves.Contains(pTile))
 	{
 		OnInvalidMove();
 		return;
 	}
+
 	FCGUndo& undo = Board->CreateUndo();
+
+	//can other similar piece move to the same tile? if yes we can't use simple notation
+	if (ACGPiece** other = Board->Pieces.FindByPredicate([&](ACGPiece* p) {
+		return p && p->GetClass() == GetClass() && p != this && p->IsBlack() == IsBlack() && p->AvailableMoves().Contains(pTile);
+	}))
+	{
+		undo.SimpleNotation = false;
+	}
+
 	MoveToTileInternal(pTile, undo, true);
 	SnapToPlace();
 	Flags |= EPieceFlags::Moved;
+	
+	//did we give check?
+	if (ACGKing* k = (IsBlack() ? Board->WhiteKing : Board->BlackKing))
+	{
+		Board->RebuildAttackMap(IsBlack());
+		undo.Check = k->IsInCheck();
+	}
+	undo.LastMoveIsBlack = IsBlack();
+
 	//listen server has to update the ui
 	if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
 	{
@@ -159,7 +187,6 @@ void ACGPiece::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
 	undo.Piece = this;
 	if(Tile)
 	{
-		//Tile->OccupiedBy.Remove(this);
 		Tile->OccupiedBy = nullptr;
 	}
 	Position = pTile->Position;
@@ -205,6 +232,12 @@ TSet<ACGTile*> ACGPiece::AvailableMoves()
 		Board->UndoInternal(undo);
 	}
 	return ret;
+}
+
+bool ACGPiece::HasAvailableMoves()
+{
+	//TODO: optimize
+	return AvailableMoves().Num() > 0;
 }
 
 void ACGPiece::FillAttackMap()

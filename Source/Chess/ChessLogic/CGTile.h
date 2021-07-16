@@ -12,6 +12,7 @@ class ACGChessBoard;
 class UCGLabelWidgetComponent;
 class ACGPiece;
 
+//Directions on the board from the white player's pov
 UENUM(BlueprintType)
 enum EDir
 {

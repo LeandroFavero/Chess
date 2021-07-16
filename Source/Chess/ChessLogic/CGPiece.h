@@ -116,6 +116,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual TSet<ACGTile*> AvailableMoves();
 
+	UFUNCTION(BlueprintPure, Category = "Chess")
+	virtual bool HasAvailableMoves();
+
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void FillAttackMap();
 
