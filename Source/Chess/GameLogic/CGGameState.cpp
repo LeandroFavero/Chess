@@ -4,6 +4,7 @@
 #include "GameLogic/CGGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "GameLogic/CGChessPlayerController.h"
+#include "ChessLogic/CGChessBoard.h"
 
 void ACGGameState::ClientGameFinished_Implementation(const EGameResult pResult)
 {
@@ -29,9 +30,19 @@ void ACGGameState::ClientGameFinished_Implementation(const EGameResult pResult)
 	}
 }
 
+void ACGGameState::ColorsChanged()
+{
+	if (Board)
+	{
+		Board->RefreshPieceColors();
+	}
+}
+
 void ACGGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ACGGameState, Board)
+	DOREPLIFETIME(ACGGameState, BlackMaterial)
+	DOREPLIFETIME(ACGGameState, WhiteMaterial)
 }

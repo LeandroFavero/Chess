@@ -83,8 +83,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Chess setup")
 	virtual const FString GetUnicode() const { return ""; }
 
-	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void SetMaterial(UMaterialInstance* mat);
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	virtual void RefreshMaterial();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual void SetColor(bool isWhite);

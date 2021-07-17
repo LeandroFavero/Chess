@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "GameLogic/CGGameState.h"
 #include "UI/CGHUD.h"
+#include "GameLogic/CGGameInstance.h"
 
 ACGChessPlayerController::ACGChessPlayerController() 
 {
@@ -59,8 +60,13 @@ void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 
 void ACGChessPlayerController::BeginPlayingState()
 {
-		if (ACGHUD* hud = GetHUD<ACGHUD>())
-		{
-			hud->ShowHud();
-		}
+	if (UCGGameInstance* gi = GetGameInstance<UCGGameInstance>())
+	{
+		gi->LoadCfg();
+
+	}
+	if (ACGHUD* hud = GetHUD<ACGHUD>())
+	{
+		hud->ShowHud();
+	}
 }

@@ -2,7 +2,7 @@
 
 #include "CGChessBoard.h"
 #include "GameLogic/CGGameState.h"
-#include "GameLogic/CGGameMode.h"
+#include "GameLogic/CGGameState.h"
 #include "CGRook.h"
 #include "CGKing.h"
 #include "ChessLogic/CGTile.h"
@@ -241,10 +241,10 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 		}
 		else
 		{
-			if (ACGGameMode* gameMode = world->GetAuthGameMode<ACGGameMode>())
+			if (ACGGameState* gameState = world->GetGameState<ACGGameState>())
 			{
 				FCGUndo dummyUndo;//we don't want to undo the initial piece spawns!
-				for (TSubclassOf<class ACGPiece> temp : gameMode->PieceTemplates)
+				for (TSubclassOf<class ACGPiece> temp : gameState->PieceTemplates)
 				{
 					if (temp)
 					{
@@ -260,7 +260,7 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 									bool isWhite = TChar<TCHAR>::IsUpper(pieceChr);
 									params.Owner = this;
 									ACGPiece* newPiece = world->SpawnActor<ACGPiece>(temp, params);
-									newPiece->SetMaterial(isWhite ? gameMode->WhiteMaterial : gameMode->BlackMaterial);
+									//newPiece->SetMaterial(isWhite ? gameState->WhiteMaterial : gameState->BlackMaterial);
 									newPiece->SetColor(isWhite);
 									newPiece->Board = this;
 									newPiece->MoveToTileInternal(GetTile({ x,y }), dummyUndo, false);
@@ -496,6 +496,17 @@ bool ACGChessBoard::GameOverCheck(bool pIsBlack)
 		}
 	}
 	return false;
+}
+
+void ACGChessBoard::RefreshPieceColors()
+{
+	for (ACGPiece * p : Pieces)
+	{
+		if (p)
+		{
+			p->RefreshMaterial();
+		}
+	}
 }
 
 ACGTile* ACGChessBoard::GetTile(const FCGSquareCoord& coord)

@@ -10,14 +10,21 @@
  * 
  */
 USTRUCT(BlueprintType)
-struct CHESS_API FCGSkinData : public FTableRowBase
+struct CHESS_API FCGDataBase : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FText Name;
+};
+
+USTRUCT(BlueprintType)
+struct CHESS_API FCGSkinData : public FCGDataBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName Id;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FText Name;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UMaterialInstance* WhiteMaterial;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

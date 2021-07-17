@@ -108,6 +108,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual bool GameOverCheck(bool pIsBlack);
 
+	virtual void RefreshPieceColors();
+
 
 	UFUNCTION()
 	virtual ACGTile* GetTile(const FCGSquareCoord& coord);

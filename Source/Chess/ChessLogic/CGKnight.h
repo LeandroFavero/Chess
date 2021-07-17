@@ -17,10 +17,10 @@ public:
 	ACGKnight();
 
 	UPROPERTY(EditAnywhere, Category="Chess setup")
-	float BlackMeshRotation{ 270 };
+	float BlackMeshRotation{ 90 };
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	float WhiteMeshRotation{ 90 };
+	float WhiteMeshRotation{ 270 };
 
 	const FString GetFenChars() const override { return "Nn"; }
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265E") : TEXT("\u2658")); }

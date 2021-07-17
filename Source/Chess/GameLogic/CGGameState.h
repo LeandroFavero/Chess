@@ -8,6 +8,7 @@
 #include "CGGameState.generated.h"
 
 class ACGChessBoard;
+class UDataTable;
 
 UENUM(BlueprintType)
 enum EGameResult
@@ -24,12 +25,28 @@ class CHESS_API ACGGameState : public AGameState
 	GENERATED_BODY()
 public:
 
+	UPROPERTY(EditAnywhere, Category = "Chess setup")
+	UDataTable* Skins;
+
+	UPROPERTY(ReplicatedUsing=ColorsChanged, EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
+	UMaterialInstance* BlackMaterial;
+
+	UPROPERTY(ReplicatedUsing=ColorsChanged, EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
+	UMaterialInstance* WhiteMaterial;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	ACGChessBoard* Board;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
+	TArray<TSubclassOf<class ACGPiece>> PieceTemplates;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void ClientGameFinished(const EGameResult pResult);
 	void ClientGameFinished_Implementation(const EGameResult pResult);
+
+	UFUNCTION()
+	void ColorsChanged();
+
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

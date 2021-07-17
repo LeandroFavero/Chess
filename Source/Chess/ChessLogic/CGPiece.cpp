@@ -56,6 +56,7 @@ void ACGPiece::SetColor(bool isWhite)
 {
 	Flags &= Flags & ~EPieceFlags::IsBlack;//Clear
 	Flags |= static_cast<uint8>(!isWhite) & EPieceFlags::IsBlack;//Set
+	RefreshMaterial();
 }
 
 void ACGPiece::PostInitializeComponents()
@@ -82,11 +83,12 @@ void ACGPiece::Destroyed()
 	Super::Destroyed();
 }
 
-void ACGPiece::SetMaterial(UMaterialInstance* mat)
+void ACGPiece::RefreshMaterial()
 {
-	if (Mesh)
+	ACGGameState* state = GetWorld()->GetGameState<ACGGameState>();
+	if (Mesh && state)
 	{
-		Mesh->SetMaterial(0, mat);
+		Mesh->SetMaterial(0, IsWhite() ? state->WhiteMaterial : state->BlackMaterial);
 	}
 }
 
@@ -112,6 +114,7 @@ void ACGPiece::SnapToPlace()
 {
 	if (Board)
 	{
+		ensure(!IsCaptured());
 		SetActorRelativeTransform(Board->CoordToTransform(Position));
 	}
 }
@@ -130,7 +133,14 @@ void ACGPiece::MoveToTile(ACGTile* pTile)
 	//is it my turn?
 	if (Board->EnforceMoveOrder)
 	{
-		if ((Board->Undos.Num() == 0 && IsBlack()) || (Board->Undos.Last().LastMoveIsBlack == IsBlack()))
+		if (Board->Undos.Num() == 0)
+		{
+			if (IsBlack())
+			{
+				return;
+			}
+		}
+		else if(Board->Undos.Last().LastMoveIsBlack == IsBlack())
 		{
 			return;
 		}
@@ -147,7 +157,7 @@ void ACGPiece::MoveToTile(ACGTile* pTile)
 
 	//can other similar piece move to the same tile? if yes we can't use simple notation
 	if (ACGPiece** other = Board->Pieces.FindByPredicate([&](ACGPiece* p) {
-		return p && p->GetClass() == GetClass() && p != this && p->IsBlack() == IsBlack() && p->AvailableMoves().Contains(pTile);
+		return p && !p->IsCaptured() && p->GetClass() == GetClass() && p != this && p->IsBlack() == IsBlack() && p->AvailableMoves().Contains(pTile);
 	}))
 	{
 		undo.SimpleNotation = false;

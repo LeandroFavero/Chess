@@ -2,5 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+//#include "CoreMinimal.h" we're using Engine.h instead
 
+#include "Engine.h"
+#include "Net/UnrealNetwork.h"
+#include "Online.h"

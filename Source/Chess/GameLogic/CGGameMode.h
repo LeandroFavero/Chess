@@ -21,17 +21,7 @@ public:
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	UDataTable* Skins;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
-	UMaterialInstance* BlackMaterial;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
-	UMaterialInstance* WhiteMaterial;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
-	TArray<TSubclassOf<class ACGPiece>> PieceTemplates;
+	
 
 	UFUNCTION(BlueprintCallable, Category = "Debug")
 	int GetCurrentViewMode(const APlayerController* PlayerController);

@@ -28,18 +28,6 @@ void ACGHUD::ShowHud()
 
 }
 
-//void ACGHUD::UpdateHud()
-//{
-//}
-
-void ACGHUD::ShowOptions()
-{
-	if (OptionsMenu)
-	{
-		OptionsMenu->AddToViewport();
-	}
-}
-
 FString ACGHUD::UndoToNotationString(const FCGUndo& undo) const
 {
 	if (undo.Imported)

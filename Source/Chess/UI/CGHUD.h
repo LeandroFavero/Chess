@@ -35,10 +35,6 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
 	void UpdateHud();
-	//void UpdateHud_Implementation();
-
-	UFUNCTION(BlueprintCallable, Category = "Chess HUD")
-	void ShowOptions();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess HUD")
 	FString UndoToNotationString(const FCGUndo& undo) const;
