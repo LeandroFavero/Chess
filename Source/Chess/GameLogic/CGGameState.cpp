@@ -8,6 +8,7 @@
 
 void ACGGameState::ClientGameFinished_Implementation(const EGameResult pResult)
 {
+	GameState = pResult;
 	if (UWorld* w = GetWorld())
 	{
 		if (ACGChessPlayerController* pc = Cast<ACGChessPlayerController>(w->GetFirstPlayerController()))
@@ -19,11 +20,11 @@ void ACGGameState::ClientGameFinished_Implementation(const EGameResult pResult)
 				break;
 
 			case EGameResult::WHITE_WINS:
-				pc->IsBlack ? pc->OnLose() : pc->OnWin();
+				pc->bIsBlack ? pc->OnLose() : pc->OnWin();
 				break;
 				
 			case EGameResult::BLACK_WINS:
-				pc->IsBlack ? pc->OnWin() : pc->OnLose();
+				pc->bIsBlack ? pc->OnWin() : pc->OnLose();
 				break;
 			}
 		}

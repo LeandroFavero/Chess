@@ -7,8 +7,8 @@
 #include "MaterialShared.h"
 #include "UI/CGHUD.h"
 #include "ChessLogic/CGPiece.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameLogic/CGGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 ACGGameMode::ACGGameMode()
 {
@@ -19,35 +19,29 @@ ACGGameMode::ACGGameMode()
 
 void ACGGameMode::BeginPlay()
 {
-    FString m = UGameplayStatics::ParseOption(OptionsString, "Mode");
-    if (m.Equals("HS", ESearchCase::IgnoreCase))
-    {
-        //solo mode
-        bHotSeatMode = true;
-        if (ACGGameState* state = GetGameState<ACGGameState>())
-        {
-            if (state->Board)
-            {
-                FString fen = UGameplayStatics::ParseOption(OptionsString, "Fen");
-                state->Board->StartGame(fen, GetWorld()->GetFirstPlayerController<ACGChessPlayerController>());
-            }
-        }
-    }
+    
 }
 
 void ACGGameMode::GenericPlayerInitialization(AController* Controller)
 {
     if (GetNumPlayers() == 2)
     {
-
-    }
-    /*if (UWorld* w = GetWorld())
-    {
-        if (w->GetNumPlayerControllers() == 2 )
+        if (UWorld* w = GetWorld())
         {
-            
+            ACGGameState* state = w->GetGameState<ACGGameState>();
+            ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>();
+            if (state && mode && state->Board)
+            {
+                FString fen = UGameplayStatics::ParseOption(mode->OptionsString, "Fen");
+                auto it = w->GetPlayerControllerIterator();
+                ACGChessPlayerController* pc1 = Cast<ACGChessPlayerController>((*it).Get());
+                ++it;
+                ACGChessPlayerController* pc2 = Cast<ACGChessPlayerController>((*it).Get());
+                state->Board->StartGame(fen, pc1, pc2);
+            }
         }
-    }*/
+    }
+    Super::GenericPlayerInitialization(Controller);
 }
 
 int ACGGameMode::GetCurrentViewMode(const APlayerController* PlayerController)

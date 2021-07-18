@@ -113,19 +113,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Chess")
 	virtual bool IsMoved() const { return (Flags & EPieceFlags::Moved) == EPieceFlags::Moved; }
 
-	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual TSet<ACGTile*> AvailableMoves();
-
-	UFUNCTION(BlueprintPure, Category = "Chess")
 	virtual bool HasAvailableMoves();
-
-	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void FillAttackMap();
-
-	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void Capture(bool pAddToCaptured = true);
-
-	//UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void UnCapture();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")

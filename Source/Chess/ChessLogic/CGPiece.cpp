@@ -13,6 +13,7 @@
 #include "GameLogic/CGCapturedPieces.h"
 #include "GameLogic/CGGameState.h"
 #include "Net/UnrealNetwork.h"
+#include "Blueprint/CGBPUtils.h"
 
 #define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
 
@@ -176,7 +177,7 @@ void ACGPiece::MoveToTile(ACGTile* pTile)
 	undo.LastMoveIsBlack = IsBlack();
 
 	//listen server has to update the ui
-	if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
+	if (UCGBPUtils::IsListenServer(this))
 	{
 		Board->UndoNotify();
 		OnPieceMoved();

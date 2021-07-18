@@ -7,21 +7,49 @@
 
 #define Dbg(x) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT(x));}
 
-void ACGHUD::ShowHud()
+ACGHUD::ACGHUD()
 {
-	if (MainMenuTemplate)
+	
+}
+
+void ACGHUD::ShowMenu()
+{
+	if (MainMenuTemplate && !MainMenu)
 	{
 		MainMenu = CreateWidget<UUserWidget>(GetOwningPlayerController(), MainMenuTemplate);
-		if (MainMenu)
-		{
-			MainMenu->AddToViewport();
-		}
 	}
-	if (InGameTemplate)
+	if (InGameTemplate && !InGame)
 	{
 		InGame = CreateWidget<UUserWidget>(GetOwningPlayerController(), InGameTemplate);
 	}
+	if (InGame)
+	{
+		InGame->RemoveFromViewport();
+	}
+	if (MainMenu)
+	{
+		MainMenu->AddToViewport();
+	}
+}
 
+void ACGHUD::ShowGame()
+{
+	if (MainMenuTemplate && !MainMenu)
+	{
+		MainMenu = CreateWidget<UUserWidget>(GetOwningPlayerController(), MainMenuTemplate);
+	}
+	if (InGameTemplate && !InGame)
+	{
+		InGame = CreateWidget<UUserWidget>(GetOwningPlayerController(), InGameTemplate);
+	}
+	if (MainMenu)
+	{
+		MainMenu->RemoveFromViewport();
+	}
+	if (InGame)
+	{
+		InGame->AddToViewport();
+	}
 }
 
 FString ACGHUD::UndoToNotationString(const FCGUndo& undo) const

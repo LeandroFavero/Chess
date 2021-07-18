@@ -10,6 +10,7 @@
 #include "GameLogic/CGGameInstance.h"
 #include "GameLogic/CGChessPlayerPawn.h"
 #include "GameLogic/CGGameMode.h"
+#include "Blueprint/CGBPUtils.h"
 
 ACGChessPlayerController::ACGChessPlayerController() 
 {
@@ -53,6 +54,28 @@ void ACGChessPlayerController::ServerUndoTo_Implementation(int pMoveNum)
 	}
 }
 
+void ACGChessPlayerController::ServerConcede_Implementation()
+{
+	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
+	{
+		if (UCGBPUtils::IsHotSeatMode(this))
+		{
+			if (state->Board->Undos.Num() == 0)
+			{
+				state->ClientGameFinished(EGameResult::BLACK_WINS);
+			}
+			else
+			{
+				state->ClientGameFinished(state->Board->Undos.Last().LastMoveIsBlack ? EGameResult::BLACK_WINS : EGameResult::WHITE_WINS);
+			}
+		}
+		else
+		{
+			state->ClientGameFinished(bIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS);
+		}
+	}
+}
+
 void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	DOREPLIFETIME(ACGChessPlayerController, SelectedSkinId)
@@ -60,17 +83,9 @@ void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(ACGChessPlayerController, PreferredSide)
 }
 
-void ACGChessPlayerController::BeginPlay()
+void ACGChessPlayerController::SideChanged()
 {
-	if (UCGGameInstance* gi = GetGameInstance<UCGGameInstance>())
-	{
-		gi->LoadCfg();
 
-	}
-	if (ACGHUD* hud = GetHUD<ACGHUD>())
-	{
-		hud->ShowHud();
-	}
 }
 
 void ACGChessPlayerController::BeginPlayingState()
@@ -82,10 +97,25 @@ void ACGChessPlayerController::BeginPlayingState()
 	}
 	if (ACGHUD* hud = GetHUD<ACGHUD>())
 	{
-		hud->ShowHud();
+		if (ACGGameMode* mode = GetWorld()->GetAuthGameMode<ACGGameMode>())
+		{
+			if (mode->bHotSeatMode)
+			{
+				hud->ShowGame();
+			}
+			else
+			{
+				hud->ShowMenu();
+			}
+		}
+		else
+		{
+			hud->ShowGame();
+		}
 	}
 }
 
+/*
 void ACGChessPlayerController::SetPawn(APawn* InPawn)
 {
 	if (ACGGameMode* mode = GetWorld()->GetAuthGameMode<ACGGameMode>())
@@ -97,3 +127,4 @@ void ACGChessPlayerController::SetPawn(APawn* InPawn)
 	}
 	Super::SetPawn(InPawn);
 }
+*/

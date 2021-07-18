@@ -62,9 +62,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
 	float SpinnyMenuSpeed{ -10.0f };
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
-	bool bIsHotSeat{ false };
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float CameraArmLengthDefault = 2500.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
@@ -112,6 +109,7 @@ private:
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	void OrbitCamera(float X, float Y, bool absolute = false);
 	void HighlightTiles(bool val);
+	//bool IsHotSeat();
 
 	UPROPERTY()
 	TSet<ACGTile* > HighlightedTiles;

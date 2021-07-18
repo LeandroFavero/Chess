@@ -2,7 +2,7 @@
 
 #include "CGChessBoard.h"
 #include "GameLogic/CGGameState.h"
-#include "GameLogic/CGGameState.h"
+#include "GameLogic/CGGameMode.h"
 #include "CGRook.h"
 #include "CGKing.h"
 #include "ChessLogic/CGTile.h"
@@ -11,6 +11,7 @@
 #include "UI/CGHUD.h"
 #include "Misc/Char.h"
 #include "Net/UnrealNetwork.h"
+#include "Blueprint/CGBPUtils.h"
 
 #define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
 
@@ -28,18 +29,13 @@ ACGChessBoard::ACGChessBoard()
 	bOnlyRelevantToOwner = false;
 }
 
-// Called when the game starts or when spawned
 void ACGChessBoard::BeginPlay()
 {
 	Super::BeginPlay();
-	if (UWorld* w = GetWorld())
+
+	if (UCGBPUtils::IsHotSeatMode(this))
 	{
-		//GetGameState
-		ACGGameState* gameState = Cast<ACGGameState>(w->GetGameState());
-		if (gameState)
-		{
-			gameState->Board = this;
-		}
+		StartGame(UCGBPUtils::FenFromMapParameter(this), GetWorld()->GetFirstPlayerController<ACGChessPlayerController>());
 	}
 }
 
@@ -69,13 +65,13 @@ void ACGChessBoard::OnConstruction(const FTransform& transform)
 		Board[i]->Destroy();
 		Board.RemoveAt(i);
 	}
-	if (UWorld* world = GetWorld())
+	if (UWorld* w = GetWorld())
 	{
 		for (int32 i = Board.Num(); i < tileCount; ++i)
 		{
 			FActorSpawnParameters params;
 			params.Owner = this;
-			ACGTile* newTile = world->SpawnActor<ACGTile>(TileTemplate, params);
+			ACGTile* newTile = w->SpawnActor<ACGTile>(TileTemplate, params);
 			newTile->Board = this;
 			Board.Add(newTile);
 		}
@@ -178,10 +174,47 @@ void ACGChessBoard::Destroyed()
 
 void ACGChessBoard::StartGame(const FString& fen, ACGChessPlayerController* p1, ACGChessPlayerController* p2)
 {
-	//TODO: remove
 	if (HasAuthority())
 	{
 		FenStringToChessPieces(DefaultBoardFen);
+		if (p2)
+		{
+			if (p1)
+			{
+				//randomize
+				if (p1->PreferredSide == p2->PreferredSide && (p1->PreferredSide == 0 || p1->PreferredSide == 1))
+				{
+					p1->bIsBlack = static_cast<bool>(FMath::RandRange(0, 1));
+					p2->bIsBlack = !p1->bIsBlack;
+				}
+				else
+				{
+					//give them what they want
+					if (p1->PreferredSide == 2)
+					{
+						p1->bIsBlack = p2->PreferredSide == 0;
+					}
+					else
+					{
+						p1->bIsBlack = p1->PreferredSide == 1;
+					}
+					if (p2->PreferredSide == 2)
+					{
+						p2->bIsBlack = p1->PreferredSide == 0;
+					}
+					else
+					{
+						p2->bIsBlack = p2->PreferredSide == 1;
+					}
+				}
+			}
+		}
+		else
+		{
+			//solo mode
+
+		}
+		
 	}
 }
 
@@ -415,7 +448,7 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& fen)
 
 	for (ACGPiece* p : Pieces)
 	{
-		if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
+		if (UCGBPUtils::IsListenServer(this))
 		{
 			p->SnapToPlace();
 		}
@@ -426,10 +459,11 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& fen)
 	}
 
 	//update moves on listen server
-	if (Undos.Num() > 0 && GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
+	if (Undos.Num() > 0 && UCGBPUtils::IsListenServer(this))
 	{
 		UndoNotify();
 	}
+	GameStarted();
 	return !malformed;
 }
 
@@ -550,6 +584,18 @@ void ACGChessBoard::UndoInternal(FCGUndo& pUndo)
 	}
 }
 
+void ACGChessBoard::GameStarted_Implementation()
+{
+	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
+	{
+		state->GameState = EGameResult::NOT_FINISHED;
+	}
+	if (ACGHUD* hud = GetWorld()->GetFirstPlayerController()->GetHUD<ACGHUD>())
+	{
+		hud->ShowGame();
+	}
+}
+
 void ACGChessBoard::UndoTo(int pMoveNum)
 {
 	for (int i = Undos.Num() - 1; i >= pMoveNum;--i)
@@ -561,7 +607,7 @@ void ACGChessBoard::UndoTo(int pMoveNum)
 		}
 	}
 	//listen server has to update the ui
-	if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
+	if (UCGBPUtils::IsListenServer(this))
 	{
 		UndoNotify();
 	}

@@ -81,52 +81,52 @@ public:
 
 	//https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual bool FenStringToChessPieces(const FString& fen);
+	virtual bool FenStringToChessPieces(const FString& Fen);
 
 	virtual bool CheckTest() { return false; };
 
-	virtual void RebuildAttackMap(bool pIsBlack);
+	virtual void RebuildAttackMap(bool IsBlack);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual void StartGame(const FString& fen, ACGChessPlayerController* p1, ACGChessPlayerController* p2 = nullptr);
+	virtual void StartGame(const FString& Fen, ACGChessPlayerController* P1, ACGChessPlayerController* P2 = nullptr);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual FTransform CoordToTransform(const FCGSquareCoord& coord) const;
+	virtual FTransform CoordToTransform(const FCGSquareCoord& Coord) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual FCGSquareCoord TransformToCoord(const FTransform& transform);
+	virtual FCGSquareCoord TransformToCoord(const FTransform& Transform);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual FCGSquareCoord LocationToCoord(const FVector& location);
+	virtual FCGSquareCoord LocationToCoord(const FVector& Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual bool HasValidMove(bool pIsBlack);
+	virtual bool HasValidMove(bool IsBlack);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual bool GameOverCheck(bool pIsBlack);
+	virtual bool GameOverCheck(bool IsBlack);
+
 
 	virtual void RefreshPieceColors();
-
-
-	UFUNCTION()
-	virtual ACGTile* GetTile(const FCGSquareCoord& coord);
-
+	virtual ACGTile* GetTile(const FCGSquareCoord& Coord);
 	virtual FCGUndo& CreateUndo();
 
-	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void UndoTo(int pMoveNum);
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void GameStarted();
+	virtual void GameStarted_Implementation();
 
-	virtual void UndoInternal(FCGUndo& pUndo);
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	virtual void UndoTo(int MoveNum);
+
+	virtual void UndoInternal(FCGUndo& Undo);
 
 	//TODO... Let's just cut this for now....
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void RequestUndoTo(int pMoveNum);
+	virtual void RequestUndoTo(int MoveNum);
 
 	UFUNCTION()
 	virtual void UndoNotify();
 
-	//UFUNCTION(BlueprintPure, Category = "Chess")
-	static void CoordToLabel(const FCGSquareCoord coord, TCHAR& X, TCHAR& Y);
+	static void CoordToLabel(const FCGSquareCoord Coord, TCHAR& X, TCHAR& Y);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:

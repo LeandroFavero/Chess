@@ -13,10 +13,12 @@ class UDataTable;
 UENUM(BlueprintType)
 enum EGameResult
 {
-	BLACK_WINS = 0,
-	WHITE_WINS = 1,
-	DRAW = 2,
-	DISCONNECT = 3,
+	NOT_STARTED,
+	NOT_FINISHED,
+	BLACK_WINS,
+	WHITE_WINS,
+	DRAW,
+	DISCONNECT
 };
 
 UCLASS()
@@ -40,9 +42,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
 	TArray<TSubclassOf<class ACGPiece>> PieceTemplates;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
+	TEnumAsByte<EGameResult> GameState {EGameResult::NOT_STARTED};
+
 	UFUNCTION(NetMulticast, Reliable)
-	void ClientGameFinished(const EGameResult pResult);
-	void ClientGameFinished_Implementation(const EGameResult pResult);
+	void ClientGameFinished(const EGameResult Result);
+	void ClientGameFinished_Implementation(const EGameResult Result);
 
 	UFUNCTION()
 	void ColorsChanged();

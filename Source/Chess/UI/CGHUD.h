@@ -20,6 +20,7 @@ public:
 	UUserWidget* MainMenu;
 	UUserWidget* InGame;
 
+	ACGHUD();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UUserWidget> MainMenuTemplate;
@@ -27,7 +28,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UUserWidget> InGameTemplate;
 
-	virtual void ShowHud();
+	//virtual void ShowHud();
+
+	void ShowMenu();
+	void ShowGame();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
 	void UpdateHud();

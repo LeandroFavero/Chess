@@ -10,7 +10,8 @@
 #include "CGHighlightableComponent.h"
 #include "GameLogic/CGGameState.h"
 #include "GameLogic/CGGameMode.h"
-#include "Kismet/GameplayStatics.h"
+#include "Blueprint/CGBPUtils.h"
+//#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -36,25 +37,6 @@ void ACGChessPlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	OrbitCamera(WhiteRotation, CameraArmYDefault, true);
-
-	/*if (UWorld* w = GetWorld())
-	{
-		if (ACGGameMode* mode = Cast<ACGGameMode>(w->GetAuthGameMode()))
-		{
-			if (mode->OptionsString.IsEmpty())
-			{
-				bIsSpinnyMenu = true;
-			}
-			else
-			{
-				FString m = UGameplayStatics::ParseOption(mode->OptionsString, "Mode");
-			}
-		}
-		else
-		{
-			//no game mode, we're client
-		}
-	}*/
 }
 
 // Called every frame
@@ -204,12 +186,15 @@ void ACGChessPlayerPawn::BeginGrabPiece()
 				{
 					return;
 				}
+				//can we move it?
+				if (piece->IsBlack() == pc->bIsBlack || UCGBPUtils::IsHotSeatMode(this))
+				{
+					GrabbedPiece = piece;
+					pc->ServerGrab(piece, true);
 
-				GrabbedPiece = piece;
-				pc->ServerGrab(piece, true);
-
-				HighlightedTiles = piece->AvailableMoves();
-				HighlightTiles(true);
+					HighlightedTiles = piece->AvailableMoves();
+					HighlightTiles(true);
+				}
 			}
 		}
 	}
@@ -251,6 +236,16 @@ void ACGChessPlayerPawn::HighlightTiles(bool val)
 		}
 	}
 }
+
+/*bool ACGChessPlayerPawn::IsHotSeat()
+{
+	ACGGameMode* mode = GetWorld()->GetAuthGameMode<ACGGameMode>();
+	if (mode && mode->bHotSeatMode)
+	{
+		return true;
+	}
+	return false;
+}*/
 
 void ACGChessPlayerPawn::Zoom(float val)
 {

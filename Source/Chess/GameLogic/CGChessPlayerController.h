@@ -19,11 +19,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Chess setup")
 	int SelectedSkinId{ 0 };
 
+	//0white 1black 2no
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	int PreferredSide;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
-	bool IsBlack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=SideChanged, Category = "Chess setup")
+	bool bIsBlack{ false };
 	
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
 	void ServerMoveToTile(ACGPiece* pPiece, ACGTile* pTile);
@@ -41,6 +42,10 @@ public:
 	void ServerUndoTo(int pMoveNum);
 	void ServerUndoTo_Implementation(int pMoveNum);
 
+	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
+	void ServerConcede();
+	void ServerConcede_Implementation();
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
 	void OnWin();
 
@@ -50,11 +55,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
 	void OnDraw();
 
-	virtual void BeginPlay() override;
+	UFUNCTION()
+	void SideChanged();
 
 	virtual void BeginPlayingState() override;
 
-	virtual void SetPawn(APawn* InPawn) override;
+	//virtual void SetPawn(APawn* InPawn) override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
