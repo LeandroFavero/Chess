@@ -37,7 +37,7 @@ void ACGChessPlayerPawn::BeginPlay()
 	Super::BeginPlay();
 	OrbitCamera(WhiteRotation, CameraArmYDefault, true);
 
-	if (UWorld* w = GetWorld())
+	/*if (UWorld* w = GetWorld())
 	{
 		if (ACGGameMode* mode = Cast<ACGGameMode>(w->GetAuthGameMode()))
 		{
@@ -54,7 +54,7 @@ void ACGChessPlayerPawn::BeginPlay()
 		{
 			//no game mode, we're client
 		}
-	}
+	}*/
 }
 
 // Called every frame

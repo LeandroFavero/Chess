@@ -17,10 +17,6 @@ void ACGHUD::ShowHud()
 			MainMenu->AddToViewport();
 		}
 	}
-	if (OptionsMenuTemplate)
-	{
-		OptionsMenu = CreateWidget<UUserWidget>(GetOwningPlayerController(), OptionsMenuTemplate);
-	}
 	if (InGameTemplate)
 	{
 		InGame = CreateWidget<UUserWidget>(GetOwningPlayerController(), InGameTemplate);

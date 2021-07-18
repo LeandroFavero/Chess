@@ -8,6 +8,8 @@
 #include "GameLogic/CGGameState.h"
 #include "UI/CGHUD.h"
 #include "GameLogic/CGGameInstance.h"
+#include "GameLogic/CGChessPlayerPawn.h"
+#include "GameLogic/CGGameMode.h"
 
 ACGChessPlayerController::ACGChessPlayerController() 
 {
@@ -58,6 +60,19 @@ void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(ACGChessPlayerController, PreferredSide)
 }
 
+void ACGChessPlayerController::BeginPlay()
+{
+	if (UCGGameInstance* gi = GetGameInstance<UCGGameInstance>())
+	{
+		gi->LoadCfg();
+
+	}
+	if (ACGHUD* hud = GetHUD<ACGHUD>())
+	{
+		hud->ShowHud();
+	}
+}
+
 void ACGChessPlayerController::BeginPlayingState()
 {
 	if (UCGGameInstance* gi = GetGameInstance<UCGGameInstance>())
@@ -69,4 +84,16 @@ void ACGChessPlayerController::BeginPlayingState()
 	{
 		hud->ShowHud();
 	}
+}
+
+void ACGChessPlayerController::SetPawn(APawn* InPawn)
+{
+	if (ACGGameMode* mode = GetWorld()->GetAuthGameMode<ACGGameMode>())
+	{
+		if (ACGChessPlayerPawn* p = Cast<ACGChessPlayerPawn>(InPawn))
+		{
+			p->bIsHotSeat = mode->bHotSeatMode;
+		}
+	}
+	Super::SetPawn(InPawn);
 }

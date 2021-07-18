@@ -18,16 +18,12 @@ class CHESS_API ACGHUD : public AHUD
 
 public:
 	UUserWidget* MainMenu;
-	UUserWidget* OptionsMenu;
 	UUserWidget* InGame;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UUserWidget> MainMenuTemplate;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<class UUserWidget> OptionsMenuTemplate;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UUserWidget> InGameTemplate;
 

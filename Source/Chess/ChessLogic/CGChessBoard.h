@@ -81,17 +81,14 @@ public:
 
 	//https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual bool FenStringToChessPieces(FString fen);
+	virtual bool FenStringToChessPieces(const FString& fen);
 
 	virtual bool CheckTest() { return false; };
 
 	virtual void RebuildAttackMap(bool pIsBlack);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual void ApplySkin(ACGChessPlayerController* playerController, int skin);
-
-	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual void StartGame(ACGChessPlayerController* p1, ACGChessPlayerController* p2 = nullptr);
+	virtual void StartGame(const FString& fen, ACGChessPlayerController* p1, ACGChessPlayerController* p2 = nullptr);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual FTransform CoordToTransform(const FCGSquareCoord& coord) const;

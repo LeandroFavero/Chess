@@ -40,9 +40,6 @@ void ACGChessBoard::BeginPlay()
 		{
 			gameState->Board = this;
 		}
-
-		//TODO remove?
-		StartGame(Cast<ACGChessPlayerController>(w->GetFirstPlayerController()));
 	}
 }
 
@@ -179,10 +176,9 @@ void ACGChessBoard::Destroyed()
 	Super::Destroyed();
 }
 
-void ACGChessBoard::StartGame(ACGChessPlayerController* p1, ACGChessPlayerController* p2)
+void ACGChessBoard::StartGame(const FString& fen, ACGChessPlayerController* p1, ACGChessPlayerController* p2)
 {
 	//TODO: remove
-		
 	if (HasAuthority())
 	{
 		FenStringToChessPieces(DefaultBoardFen);
@@ -193,7 +189,7 @@ void ACGChessBoard::StartGame(ACGChessPlayerController* p1, ACGChessPlayerContro
 	default fen:
 	rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 */
-bool ACGChessBoard::FenStringToChessPieces(FString fen)
+bool ACGChessBoard::FenStringToChessPieces(const FString& fen)
 {
 	//clear the pieces from the board
 	for (ACGPiece* p : Pieces)
@@ -216,7 +212,7 @@ bool ACGChessBoard::FenStringToChessPieces(FString fen)
 	}
 
 	int field = 0;
-	auto it = fen.CreateIterator();
+	auto it = fen.CreateConstIterator();
 	for ( ;field == FenField::PIECE_PLACEMENT && it && *it != ' '; ++it)
 	{
 		const TCHAR& chr = *it;
@@ -610,11 +606,6 @@ void ACGChessBoard::RebuildAttackMap(bool pIsBlack)
 			p->FillAttackMap();
 		}
 	}
-}
-
-void ACGChessBoard::ApplySkin(ACGChessPlayerController* playerController, int skin)
-{
-
 }
 
 void ACGChessBoard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

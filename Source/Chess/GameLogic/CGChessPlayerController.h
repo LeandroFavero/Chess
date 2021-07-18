@@ -9,7 +9,6 @@
 class ACGPiece;
 class ACGTile;
 
-
 UCLASS()
 class CHESS_API ACGChessPlayerController : public APlayerController
 {
@@ -25,7 +24,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	bool IsBlack;
-
+	
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
 	void ServerMoveToTile(ACGPiece* pPiece, ACGTile* pTile);
 	void ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGTile* pTile);
@@ -51,7 +50,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
 	void OnDraw();
 
+	virtual void BeginPlay() override;
+
 	virtual void BeginPlayingState() override;
+
+	virtual void SetPawn(APawn* InPawn) override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

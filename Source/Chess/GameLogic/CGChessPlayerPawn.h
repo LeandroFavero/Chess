@@ -62,6 +62,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
 	float SpinnyMenuSpeed{ -10.0f };
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	bool bIsHotSeat{ false };
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float CameraArmLengthDefault = 2500.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)

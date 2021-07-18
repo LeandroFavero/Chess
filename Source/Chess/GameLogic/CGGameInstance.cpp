@@ -49,7 +49,7 @@ bool UCGGameInstance::Host()
 {
 	//GetFirstLocalPlayerController()->getprefe
 	//const TSharedPtr<const FUniqueNetId> netID = UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
-	return HostSession(UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId(), "Teszt", true, false, 2);
+	return HostSession(UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId(), "Teszt", true, true, 2);
 }
 
 bool UCGGameInstance::HostSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, bool bIsLAN, bool bIsPresence, int32 MaxNumPlayers)
@@ -103,6 +103,11 @@ void UCGGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucces
 {
 	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("OnCreateSessionComplete %s, %d"), *SessionName.ToString(), bWasSuccessful));
 
+	if (!bWasSuccessful)
+	{
+		//SessSessions->DestroySession(GameSessionName);
+		//retry
+	}
 	// Get the OnlineSubsystem so we can get the Session Interface
 	IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
 	if (OnlineSub)
@@ -121,6 +126,10 @@ void UCGGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucces
 
 				// Our StartSessionComplete delegate should get called after this
 				Sessions->StartSession(SessionName);
+			}
+			else
+			{
+				Sessions->DestroySession(SessionName);
 			}
 		}
 	}
@@ -202,6 +211,7 @@ void UCGGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("OFindSessionsComplete bSuccess: %d"), bWasSuccessful));
 
+	TArray<FJoinableGame> results;
 	// Get OnlineSubsystem we want to work with
 	IOnlineSubsystem* const OnlineSub = IOnlineSubsystem::Get();
 	if (OnlineSub)
@@ -219,17 +229,24 @@ void UCGGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
 			// If we have found at least 1 session, we just going to debug them. You could add them to a list of UMG Widgets, like it is done in the BP version!
 			if (SessionSearch->SearchResults.Num() > 0)
 			{
+				//SearchComplete(SessionSearch->SearchResults, bWasSuccessful);
 				// "SessionSearch->SearchResults" is an Array that contains all the information. You can access the Session in this and get a lot of information.
 				// This can be customized later on with your own classes to add more information that can be set and displayed
-				for (int32 SearchIdx = 0; SearchIdx < SessionSearch->SearchResults.Num(); SearchIdx++)
+				for (FOnlineSessionSearchResult& res : SessionSearch->SearchResults)
+				{
+					//res.Session.SessionInfo.Get()->name
+					results.Emplace( "", res);
+				}
+				/*for (int32 SearchIdx = 0; SearchIdx < SessionSearch->SearchResults.Num(); SearchIdx++)
 				{
 					// OwningUserName is just the SessionName for now. I guess you can create your own Host Settings class and GameSession Class and add a proper GameServer Name here.
 					// This is something you can't do in Blueprint for example!
 					GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("Session Number: %d | Sessionname: %s "), SearchIdx + 1, *(SessionSearch->SearchResults[SearchIdx].Session.OwningUserName)));
-				}
+				}*/
 			}
 		}
 	}
+	SearchComplete(results, bWasSuccessful);
 }
 
 void UCGGameInstance::Join()

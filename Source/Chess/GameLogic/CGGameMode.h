@@ -19,9 +19,12 @@ class CHESS_API ACGGameMode : public AGameMode
 public:
 	ACGGameMode();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
+	bool bHotSeatMode;
+
 	virtual void BeginPlay() override;
 
-	
+	void GenericPlayerInitialization(AController* Controller) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Debug")
 	int GetCurrentViewMode(const APlayerController* PlayerController);

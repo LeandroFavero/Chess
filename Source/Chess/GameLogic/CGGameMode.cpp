@@ -7,7 +7,8 @@
 #include "MaterialShared.h"
 #include "UI/CGHUD.h"
 #include "ChessLogic/CGPiece.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "GameLogic/CGGameState.h"
 
 ACGGameMode::ACGGameMode()
 {
@@ -18,7 +19,35 @@ ACGGameMode::ACGGameMode()
 
 void ACGGameMode::BeginPlay()
 {
-    
+    FString m = UGameplayStatics::ParseOption(OptionsString, "Mode");
+    if (m.Equals("HS", ESearchCase::IgnoreCase))
+    {
+        //solo mode
+        bHotSeatMode = true;
+        if (ACGGameState* state = GetGameState<ACGGameState>())
+        {
+            if (state->Board)
+            {
+                FString fen = UGameplayStatics::ParseOption(OptionsString, "Fen");
+                state->Board->StartGame(fen, GetWorld()->GetFirstPlayerController<ACGChessPlayerController>());
+            }
+        }
+    }
+}
+
+void ACGGameMode::GenericPlayerInitialization(AController* Controller)
+{
+    if (GetNumPlayers() == 2)
+    {
+
+    }
+    /*if (UWorld* w = GetWorld())
+    {
+        if (w->GetNumPlayerControllers() == 2 )
+        {
+            
+        }
+    }*/
 }
 
 int ACGGameMode::GetCurrentViewMode(const APlayerController* PlayerController)

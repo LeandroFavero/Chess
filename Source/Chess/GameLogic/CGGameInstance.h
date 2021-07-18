@@ -5,11 +5,12 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Chess.h"
-#include "Templates/SharedPointer.h"
-#include "OnlineSessionSettings.h"
+//#include "Templates/SharedPointer.h"
+//#include "OnlineSessionSettings.h"
 #include "CGGameInstance.generated.h"
 
 class UCGSettingsSave;
+class FOnlineSessionSearchResult;
 
 USTRUCT(BlueprintType)
 struct FJoinableGame
@@ -19,8 +20,10 @@ struct FJoinableGame
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString Name;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	FString Address;
+	FOnlineSessionSearchResult SessionInfo;
+
+	FJoinableGame() {};
+	FJoinableGame(const FString name, const FOnlineSessionSearchResult sessionInfo) :Name(name), SessionInfo(sessionInfo){};
 };
 /**
  * 
@@ -81,7 +84,8 @@ public:
 	void Search();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess settings")
-	void SearchComplete(/*TArray<const FJoinableGame> Games*/);
+	void SearchComplete(const TArray<FJoinableGame>& Games, bool bWasSuccessful);
+	
 	/**
 *	Find an online session
 *
