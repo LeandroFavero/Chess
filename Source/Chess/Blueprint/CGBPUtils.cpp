@@ -162,14 +162,14 @@ FString UCGBPUtils::UndoToNotationString(const FCGUndo& undo)
 	ret.Append(*undo.Piece->GetUnicode());
 	if (!undo.SimpleNotation)
 	{
-		ret.AppendChar('A' + (undo.Piece->Board->Size.X - undo.From->Position.X));
+		ret.AppendChar('A' + undo.From->Position.X);
 		ret.AppendChar('1' + undo.From->Position.Y);
 	}
 	if (undo.Capture || !undo.SimpleNotation)
 	{
 		ret.AppendChar(undo.Capture ? 'x' : '-');
 	}
-	ret.AppendChar('A' + (undo.Piece->Board->Size.X - undo.To->Position.X));
+	ret.AppendChar('A' + undo.To->Position.X);
 	ret.AppendChar('1' + undo.To->Position.Y);
 	if (undo.Promotion)
 	{

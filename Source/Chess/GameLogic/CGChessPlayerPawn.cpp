@@ -29,8 +29,9 @@ ACGChessPlayerPawn::ACGChessPlayerPawn() : Super()
 	CameraArm->TargetArmLength = CameraArmLengthDefault;
 	CameraArm->bDoCollisionTest = false;
 
-	bOnlyRelevantToOwner = true;
+	SetRootComponent(CameraArm);
 
+	bOnlyRelevantToOwner = true;
 	SetActorEnableCollision(false);
 }
 
@@ -174,9 +175,7 @@ bool ACGChessPlayerPawn::IsDragged()
 
 void ACGChessPlayerPawn::BeginGrabPiece()
 {
-	ACGChessPlayerController* pc = GetController<ACGChessPlayerController>();
-	ACGGameState* state = GetWorld()->GetGameState<ACGGameState>();
-	if (pc && state)
+	if (ACGChessPlayerController* pc = GetController<ACGChessPlayerController>())
 	{
 		if (GrabbedPiece.IsValid())
 		{
@@ -191,7 +190,9 @@ void ACGChessPlayerPawn::BeginGrabPiece()
 					return;
 				}
 				//can we move it?
-				if (state->IsMatchInProgress() && (piece->IsBlack() == pc->bIsBlack || UCGBPUtils::IsHotSeatMode(this)))
+				if (piece->Board && piece->Board->ReadyForNextMove() &&
+					(piece->IsBlack() == pc->bIsBlack || UCGBPUtils::IsHotSeatMode(this)) &&
+					(piece->Board->NextMoveIsBlack() == piece->IsBlack()))
 				{
 					GrabbedPiece = piece;
 					pc->ServerGrab(piece, true);

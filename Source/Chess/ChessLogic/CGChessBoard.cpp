@@ -29,16 +29,6 @@ ACGChessBoard::ACGChessBoard()
 	bOnlyRelevantToOwner = false;
 }
 
-void ACGChessBoard::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (UCGBPUtils::IsHotSeatMode(this))
-	{
-		StartGame(UCGBPUtils::FenFromMapParameter(this), GetWorld()->GetFirstPlayerController<ACGChessPlayerController>());
-	}
-}
-
 void ACGChessBoard::OnConstruction(const FTransform& transform)
 {
 	Super::OnConstruction(transform);
@@ -639,6 +629,37 @@ void ACGChessBoard::RebuildAttackMap(bool pIsBlack)
 			p->FillAttackMap();
 		}
 	}
+}
+
+bool ACGChessBoard::NextMoveIsBlack() const
+{
+	if (Undos.Num() == 0)
+	{
+		return false;
+	}
+	else
+	{
+		return !Undos.Last().LastMoveIsBlack;
+	}
+}
+
+bool ACGChessBoard::ReadyForNextMove() const
+{
+	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
+	{
+		if (state->IsMatchInProgress())
+		{
+			if (Undos.Num() == 0)
+			{
+				return true;
+			}
+			else
+			{
+				return Undos.Last().Promotion != Undos.Last().Piece;
+			}
+		}
+	}
+	return false;
 }
 
 void ACGChessBoard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -55,8 +55,11 @@ ACGPiece::ACGPiece(ACGChessBoard* pBoard, uint8 pFlags):ACGPiece()
 
 void ACGPiece::SetColor(bool isWhite)
 {
-	Flags &= Flags & ~EPieceFlags::IsBlack;//Clear
-	Flags |= static_cast<uint8>(!isWhite) & EPieceFlags::IsBlack;//Set
+	Flags &= ~EPieceFlags::IsBlack;//Clear
+	if (!isWhite) 
+	{
+		Flags |= EPieceFlags::IsBlack;//Set
+	}
 	RefreshMaterial();
 }
 

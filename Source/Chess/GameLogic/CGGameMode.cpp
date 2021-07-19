@@ -39,22 +39,27 @@ void ACGGameMode::PostLogin(APlayerController* NewPlayer)
     //if we have enough players start the match
     if (NumPlayers == 2)
     {
+        
         SetMatchState(MatchState::InProgress);
     }
 }
 
-void ACGGameMode::GenericPlayerInitialization(AController* Controller)
+void ACGGameMode::HandleMatchHasStarted()
 {
-    if (GetNumPlayers() == 2)
+    if (UWorld* w = GetWorld())
     {
-        if (UWorld* w = GetWorld())
+        ACGGameState* state = w->GetGameState<ACGGameState>();
+        ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>();
+        ACGChessBoard* board = UCGBPUtils::FindBoard(this);
+        if (state && mode && board)
         {
-            ACGGameState* state = w->GetGameState<ACGGameState>();
-            ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>();
-            ACGChessBoard* board = UCGBPUtils::FindBoard(this);
-            if (state && mode && board)
+            FString fen = UGameplayStatics::ParseOption(mode->OptionsString, "Fen");
+            if (UCGBPUtils::IsHotSeatMode(this) || UCGBPUtils::IsStandalone(this))//spawn pieces for the menu?
             {
-                FString fen = UGameplayStatics::ParseOption(mode->OptionsString, "Fen");
+                board->StartGame(fen, w->GetFirstPlayerController<ACGChessPlayerController>());
+            }
+            else
+            {
                 auto it = w->GetPlayerControllerIterator();
                 ACGChessPlayerController* pc1 = Cast<ACGChessPlayerController>((*it).Get());
                 ++it;
@@ -63,6 +68,6 @@ void ACGGameMode::GenericPlayerInitialization(AController* Controller)
             }
         }
     }
-    Super::GenericPlayerInitialization(Controller);
+    Super::HandleMatchHasStarted();
 }
 

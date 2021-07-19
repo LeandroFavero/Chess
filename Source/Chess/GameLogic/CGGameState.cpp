@@ -25,7 +25,7 @@ void ACGGameState::HandleMatchHasStarted()
 	{
 		if (ACGHUD* hud = pc->GetHUD<ACGHUD>())
 		{
-			if (UCGBPUtils::IsHotSeatMode(this))
+			if (UCGBPUtils::IsHotSeatMode(this) || UCGBPUtils::IsListenServer(this) || UCGBPUtils::IsClient(this))
 			{
 				hud->ShowGame();
 			}
@@ -41,6 +41,28 @@ void ACGGameState::HandleMatchHasStarted()
 void ACGGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
+
+	if (UWorld* w = GetWorld())
+	{
+		if (ACGChessPlayerController* pc = Cast<ACGChessPlayerController>(w->GetFirstPlayerController()))
+		{
+			pc->OnGameOver.Broadcast(GameResult);
+			/*switch (GameResult)
+			{
+			case EGameResult::DRAW:
+				pc->OnDraw();
+				break;
+
+			case EGameResult::WHITE_WINS:
+				pc->bIsBlack ? pc->OnLose() : pc->OnWin();
+				break;
+
+			case EGameResult::BLACK_WINS:
+				pc->bIsBlack ? pc->OnWin() : pc->OnLose();
+				break;
+			}*/
+		}
+	}
 }
 
 void ACGGameState::HandleMatchIsWaitingToStart()
@@ -55,29 +77,14 @@ void ACGGameState::HandleMatchIsWaitingToStart()
 	}
 }
 
+bool ACGGameState::IsMatchInProgress() const
+{
+	return Super::IsMatchInProgress();
+}
+
 void ACGGameState::ResultNotify()
 {
-	if (UWorld* w = GetWorld())
-	{
-		if (ACGChessPlayerController* pc = Cast<ACGChessPlayerController>(w->GetFirstPlayerController()))
-		{
-			pc->OnGameOver.Broadcast(GameResult);
-			switch (GameResult)
-			{
-			case EGameResult::DRAW:
-				pc->OnDraw();
-				break;
-
-			case EGameResult::WHITE_WINS:
-				pc->bIsBlack ? pc->OnLose() : pc->OnWin();
-				break;
-
-			case EGameResult::BLACK_WINS:
-				pc->bIsBlack ? pc->OnWin() : pc->OnLose();
-				break;
-			}
-		}
-	}
+	
 }
 
 void ACGGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -41,7 +41,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
 	TArray<TSubclassOf<class ACGPiece>> PieceTemplates;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=ResultNotify, Category = "Chess setup")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	TEnumAsByte<EGameResult> GameResult {EGameResult::NOT_FINISHED};
 
 	UFUNCTION()
@@ -53,6 +53,8 @@ public:
 	void HandleMatchHasStarted() override;
 	void HandleMatchHasEnded() override;
 	void HandleMatchIsWaitingToStart() override;
+	UFUNCTION(BlueprintCallable, Category= "Chess")
+	bool IsMatchInProgress() const override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

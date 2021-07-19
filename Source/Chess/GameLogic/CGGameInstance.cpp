@@ -17,6 +17,7 @@ UCGGameInstance::UCGGameInstance(const FObjectInitializer& ObjectInitializer): S
 	OnJoinSessionCompleteDelegate = FOnJoinSessionCompleteDelegate::CreateUObject(this, &UCGGameInstance::OnJoinSessionComplete);
 	/** Bind function for DESTROYING a Session */
 	OnDestroySessionCompleteDelegate = FOnDestroySessionCompleteDelegate::CreateUObject(this, &UCGGameInstance::OnDestroySessionComplete);
+
 }
 
 void UCGGameInstance::SaveCfg()
@@ -45,11 +46,16 @@ bool UCGGameInstance::LoadCfg()
 	return true;
 }
 
+TSharedPtr<const FUniqueNetId> UCGGameInstance::GetMyId()
+{
+	return UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
+}
+
 bool UCGGameInstance::Host()
 {
 	//GetFirstLocalPlayerController()->getprefe
 	//const TSharedPtr<const FUniqueNetId> netID = UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
-	return HostSession(UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId(), "Teszt", true, true, 2);
+	return HostSession(GetMyId(), GetMyName(), true, true, 2);
 }
 
 bool UCGGameInstance::HostSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, bool bIsLAN, bool bIsPresence, int32 MaxNumPlayers)
@@ -161,7 +167,7 @@ void UCGGameInstance::OnStartOnlineGameComplete(FName SessionName, bool bWasSucc
 
 void UCGGameInstance::Search()
 {
-	FindSessions(UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId(), true, false);
+	FindSessions(GetMyId(), true, false);
 }
 
 void UCGGameInstance::FindSessions(TSharedPtr<const FUniqueNetId> UserId, bool bIsLAN, bool bIsPresence)
@@ -251,9 +257,6 @@ void UCGGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
 
 void UCGGameInstance::Join()
 {
-	//ULocalPlayer* const Player = GetFirstGamePlayer();
-	const TSharedPtr<const FUniqueNetId> netUId = UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
-
 	// Just a SearchResult where we can save the one we want to use, for the case we find more than one!
 	FOnlineSessionSearchResult SearchResult;
 
@@ -263,14 +266,14 @@ void UCGGameInstance::Join()
 		for (int32 i = 0; i < SessionSearch->SearchResults.Num(); i++)
 		{
 			// To avoid something crazy, we filter sessions from ourself
-			if (SessionSearch->SearchResults[i].Session.OwningUserId != netUId)
+			if (SessionSearch->SearchResults[i].Session.OwningUserId != GetMyId())
 			{
 				SearchResult = SessionSearch->SearchResults[i];
 
 				// Once we found sounce a Session that is not ours, just join it. Instead of using a for loop, you could
 				// use a widget where you click on and have a reference for the GameSession it represents which you can use
 				// here
-				JoinSessionInternal(netUId, GameSessionName, SearchResult);
+				JoinSessionInternal(GetMyId(), GameSessionName, SearchResult);
 				break;
 			}
 		}
@@ -349,8 +352,7 @@ void UCGGameInstance::DestroySession()
 		if (Sessions.IsValid())
 		{
 			Sessions->AddOnDestroySessionCompleteDelegate_Handle(OnDestroySessionCompleteDelegate);
-
-			Sessions->DestroySession(GameSessionName);
+			Sessions->DestroySession(GetMyName());
 		}
 	}
 }
@@ -372,10 +374,11 @@ void UCGGameInstance::OnDestroySessionComplete(FName SessionName, bool bWasSucce
 			Sessions->ClearOnDestroySessionCompleteDelegate_Handle(OnDestroySessionCompleteDelegateHandle);
 
 			// If it was successful, we just load another level (could be a MainMenu!)
-			if (bWasSuccessful)
+			UGameplayStatics::OpenLevel(GetWorld(), "Game", true);
+			/*if (bWasSuccessful)
 			{
-				UGameplayStatics::OpenLevel(GetWorld(), "ThirdPersonExampleMap", true);
-			}
+				UGameplayStatics::OpenLevel(GetWorld(), "Game", true);
+			}*/
 		}
 	}
 }

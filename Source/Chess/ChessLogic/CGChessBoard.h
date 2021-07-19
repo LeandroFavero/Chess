@@ -54,11 +54,8 @@ public:
 
 	UPROPERTY()
 	USceneComponent* Root;
-	// Sets default values for this actor's properties
-	ACGChessBoard();
 
-	//UPROPERTY()
-	//uint32 MoveNum {0};
+	ACGChessBoard();
 
 	UPROPERTY(ReplicatedUsing = UndoNotify, BlueprintReadOnly, Category = "Chess")
 	TArray<FCGUndo> Undos;
@@ -68,10 +65,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	UCGCapturedPieces* CapturedBlack;
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
 public:	
 
@@ -86,6 +79,12 @@ public:
 	virtual bool CheckTest() { return false; };
 
 	virtual void RebuildAttackMap(bool IsBlack);
+
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	virtual bool NextMoveIsBlack() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	virtual bool ReadyForNextMove() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual void StartGame(const FString& Fen, ACGChessPlayerController* P1, ACGChessPlayerController* P2 = nullptr);
@@ -104,7 +103,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual bool GameOverCheck(bool IsBlack);
-
 
 	virtual void RefreshPieceColors();
 	virtual ACGTile* GetTile(const FCGSquareCoord& Coord);

@@ -45,6 +45,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess settings")
 	bool LoadCfg();
 
+	const FName GetMyName() const{ return FName(TEXT("Teszt")); };
+
+	TSharedPtr<const FUniqueNetId> GetMyId();
+
 	//https://unreal.gg-labs.com/wiki-archives/networking/how-to-use-sessions-in-c++
 
 	UFUNCTION(BlueprintCallable, Category = "Chess settings")

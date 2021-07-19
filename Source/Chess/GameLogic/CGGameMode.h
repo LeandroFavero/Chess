@@ -28,6 +28,6 @@ public:
 	void StartMatch() override;
 	void PostLogin(APlayerController* NewPlayer) override;
 
-	void GenericPlayerInitialization(AController* Controller) override;
+	void HandleMatchHasStarted() override;
 
 };

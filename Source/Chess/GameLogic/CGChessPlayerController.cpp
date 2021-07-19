@@ -68,22 +68,21 @@ void ACGChessPlayerController::ServerConcede_Implementation()
 		{
 			if (board->Undos.Num() == 0)
 			{
-				mode->EndMatch();
 				state->GameResult = EGameResult::BLACK_WINS;
+				mode->EndMatch();
 			}
 			else
 			{
-				mode->EndMatch();
 				state->GameResult = board->Undos.Last().LastMoveIsBlack ? EGameResult::BLACK_WINS : EGameResult::WHITE_WINS;
+				mode->EndMatch();
 			}
 			state->ResultNotify();
 		}
 		else
 		{
-			mode->EndMatch();
 			state->GameResult = bIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
-			//state->ClientGameFinished();
-			//TODO: notify listenserver?
+			mode->EndMatch();
+
 			if (UCGBPUtils::IsLocalUpdateRequired(this)) 
 			{
 				state->ResultNotify();
@@ -94,12 +93,32 @@ void ACGChessPlayerController::ServerConcede_Implementation()
 
 void ACGChessPlayerController::ServerDisconnect_Implementation()
 {
-	//if leave
+	if (UCGBPUtils::IsHotSeatMode(this))
+	{
+		//just navigate to the main menu
+		UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Game")));
+	}
+	else
+	{
+		//UCGBPUtils::IsList
+		UCGGameInstance* insta = GetGameInstance<UCGGameInstance>();
+		insta->DestroySession();
+	}
 }
 
 void ACGChessPlayerController::BackToMenu()
 {
-
+	if (UCGBPUtils::IsHotSeatMode(this))
+	{
+		//just navigate to the main menu
+		UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Game")));
+	}
+	else
+	{
+		//UCGBPUtils::IsList
+		UCGGameInstance* insta = GetGameInstance<UCGGameInstance>();
+		insta->DestroySession();
+	}
 }
 
 void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -120,11 +139,11 @@ void ACGChessPlayerController::BeginPlayingState()
 		gi->LoadCfg();
 
 	}
-	if (ACGHUD* hud = GetHUD<ACGHUD>())
+	/*if (ACGHUD* hud = GetHUD<ACGHUD>())
 	{
 		if (ACGGameMode* mode = GetWorld()->GetAuthGameMode<ACGGameMode>())
 		{
-			if (mode->bHotSeatMode)
+			if (mode->bHotSeatMode || UCGBPUtils::IsListenServer(this))
 			{
 				hud->ShowGame();
 			}
@@ -137,7 +156,7 @@ void ACGChessPlayerController::BeginPlayingState()
 		{
 			hud->ShowGame();
 		}
-	}
+	}*/
 }
 
 /*

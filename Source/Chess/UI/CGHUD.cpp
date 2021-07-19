@@ -11,11 +11,11 @@ void ACGHUD::InitHUD()
 {
 	if (MainMenuTemplate && !MainMenu)
 	{
-		MainMenu = CreateWidget<UUserWidget>(GetOwningPlayerController(), MainMenuTemplate);
+		
 	}
 	if (InGameTemplate && !InGame)
 	{
-		InGame = CreateWidget<UUserWidget>(GetOwningPlayerController(), InGameTemplate);
+		
 	}
 }
 
@@ -24,9 +24,15 @@ ACGHUD::ACGHUD()
 	
 }
 
+void ACGHUD::BeginPlay()
+{
+	MainMenu = CreateWidget<UUserWidget>(GetOwningPlayerController(), MainMenuTemplate);
+	InGame = CreateWidget<UUserWidget>(GetOwningPlayerController(), InGameTemplate);
+	CurrentWidget = nullptr;
+}
+
 void ACGHUD::ShowMenu()
 {
-	InitHUD();
 	if (CurrentWidget != MainMenu)
 	{
 		if (CurrentWidget)
@@ -43,7 +49,6 @@ void ACGHUD::ShowMenu()
 
 void ACGHUD::ShowGame()
 {
-	InitHUD();
 	if (CurrentWidget != InGame)
 	{
 		if (CurrentWidget)
