@@ -4,10 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GameLogic/CGGameState.h"
 #include "CGChessPlayerController.generated.h"
 
 class ACGPiece;
 class ACGTile;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameStartDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameOverDelegate, EGameResult, Result);
+
 
 UCLASS()
 class CHESS_API ACGChessPlayerController : public APlayerController
@@ -46,6 +52,13 @@ public:
 	void ServerConcede();
 	void ServerConcede_Implementation();
 
+	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
+	void ServerDisconnect();
+	void ServerDisconnect_Implementation();
+
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	void BackToMenu();
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
 	void OnWin();
 
@@ -54,6 +67,15 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
 	void OnDraw();
+
+	UPROPERTY(BlueprintAssignable, Category = "Chess")
+	FOnMoveDelegate OnMove;
+
+	UPROPERTY(BlueprintAssignable, Category = "Chess")
+	FOnGameStartDelegate OnStart;
+
+	UPROPERTY(BlueprintAssignable, Category = "Chess")
+	FOnGameOverDelegate OnGameOver;
 
 	UFUNCTION()
 	void SideChanged();

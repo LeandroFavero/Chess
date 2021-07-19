@@ -177,7 +177,7 @@ void ACGPiece::MoveToTile(ACGTile* pTile)
 	undo.LastMoveIsBlack = IsBlack();
 
 	//listen server has to update the ui
-	if (UCGBPUtils::IsListenServer(this))
+	if (UCGBPUtils::IsLocalUpdateRequired(this))
 	{
 		Board->UndoNotify();
 		OnPieceMoved();

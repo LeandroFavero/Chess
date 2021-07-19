@@ -9,6 +9,7 @@
 #include "GameFramework/GameMode.h"
 #include "CGGameMode.generated.h"
 
+class APlayerController;
 /**
  * 
  */
@@ -22,10 +23,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
 	bool bHotSeatMode;
 
-	virtual void BeginPlay() override;
+	//virtual void BeginPlay() override;
+
+	void StartMatch() override;
+	void PostLogin(APlayerController* NewPlayer) override;
 
 	void GenericPlayerInitialization(AController* Controller) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Debug")
-	int GetCurrentViewMode(const APlayerController* PlayerController);
 };

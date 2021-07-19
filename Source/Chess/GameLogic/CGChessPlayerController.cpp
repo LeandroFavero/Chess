@@ -45,41 +45,66 @@ void ACGChessPlayerController::ServerGrab_Implementation(ACGPiece* pPiece, bool 
 
 void ACGChessPlayerController::ServerUndoTo_Implementation(int pMoveNum)
 {
-	if (UWorld* w = GetWorld())
+	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
 	{
-		if (ACGGameState* state = w->GetGameState<ACGGameState>())
+		if (state->IsMatchInProgress())
 		{
-			state->Board->UndoTo(pMoveNum);
+			if (ACGChessBoard* board = UCGBPUtils::FindBoard(this))
+			{
+				board->UndoTo(pMoveNum);
+			}
 		}
 	}
 }
 
 void ACGChessPlayerController::ServerConcede_Implementation()
 {
-	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
+	ACGGameMode* mode = GetWorld()->GetAuthGameMode<ACGGameMode>();
+	ACGGameState* state = GetWorld()->GetGameState<ACGGameState>();
+	ACGChessBoard* board = UCGBPUtils::FindBoard(this);
+	if (mode && state && board)
 	{
 		if (UCGBPUtils::IsHotSeatMode(this))
 		{
-			if (state->Board->Undos.Num() == 0)
+			if (board->Undos.Num() == 0)
 			{
-				state->ClientGameFinished(EGameResult::BLACK_WINS);
+				mode->EndMatch();
+				state->GameResult = EGameResult::BLACK_WINS;
 			}
 			else
 			{
-				state->ClientGameFinished(state->Board->Undos.Last().LastMoveIsBlack ? EGameResult::BLACK_WINS : EGameResult::WHITE_WINS);
+				mode->EndMatch();
+				state->GameResult = board->Undos.Last().LastMoveIsBlack ? EGameResult::BLACK_WINS : EGameResult::WHITE_WINS;
 			}
+			state->ResultNotify();
 		}
 		else
 		{
-			state->ClientGameFinished(bIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS);
+			mode->EndMatch();
+			state->GameResult = bIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
+			//state->ClientGameFinished();
+			//TODO: notify listenserver?
+			if (UCGBPUtils::IsLocalUpdateRequired(this)) 
+			{
+				state->ResultNotify();
+			}
 		}
 	}
+}
+
+void ACGChessPlayerController::ServerDisconnect_Implementation()
+{
+	//if leave
+}
+
+void ACGChessPlayerController::BackToMenu()
+{
+
 }
 
 void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	DOREPLIFETIME(ACGChessPlayerController, SelectedSkinId)
-
 	DOREPLIFETIME(ACGChessPlayerController, PreferredSide)
 }
 

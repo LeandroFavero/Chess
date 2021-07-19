@@ -16,6 +16,9 @@ class CHESS_API ACGHUD : public AHUD
 {
 	GENERATED_BODY()
 
+	UUserWidget* CurrentWidget;
+	void InitHUD();
+
 public:
 	UUserWidget* MainMenu;
 	UUserWidget* InGame;
@@ -28,16 +31,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UUserWidget> InGameTemplate;
 
-	//virtual void ShowHud();
-
-	void ShowMenu();
-	void ShowGame();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
-	void UpdateHud();
-
-	UFUNCTION(BlueprintCallable, Category = "Chess HUD")
-	FString UndoToNotationString(const FCGUndo& undo) const;
-
+	virtual void ShowMenu();
+	virtual void ShowGame();
 };
 

@@ -448,18 +448,11 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& fen)
 
 	for (ACGPiece* p : Pieces)
 	{
-		if (UCGBPUtils::IsListenServer(this))
-		{
-			p->SnapToPlace();
-		}
-		else
-		{
-			p->ClientSnapToPlace();
-		}
+		p->ClientSnapToPlace();
 	}
 
 	//update moves on listen server
-	if (Undos.Num() > 0 && UCGBPUtils::IsListenServer(this))
+	if (Undos.Num() > 0 && UCGBPUtils::IsLocalUpdateRequired(this))
 	{
 		UndoNotify();
 	}
@@ -515,11 +508,11 @@ bool ACGChessBoard::GameOverCheck(bool pIsBlack)
 				//checkmate?
 				if ((pIsBlack ? BlackKing : WhiteKing)->IsInCheck())
 				{
-					gameState->ClientGameFinished(pIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS);
+					gameState->GameResult = pIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
 				}
 				else
 				{
-					gameState->ClientGameFinished(EGameResult::DRAW);
+					gameState->GameResult = EGameResult::DRAW;
 				}
 				return true;
 			}
@@ -586,10 +579,10 @@ void ACGChessBoard::UndoInternal(FCGUndo& pUndo)
 
 void ACGChessBoard::GameStarted_Implementation()
 {
-	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
+	/*if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
 	{
 		state->GameState = EGameResult::NOT_FINISHED;
-	}
+	}*/
 	if (ACGHUD* hud = GetWorld()->GetFirstPlayerController()->GetHUD<ACGHUD>())
 	{
 		hud->ShowGame();
@@ -607,7 +600,7 @@ void ACGChessBoard::UndoTo(int pMoveNum)
 		}
 	}
 	//listen server has to update the ui
-	if (UCGBPUtils::IsListenServer(this))
+	if (UCGBPUtils::IsLocalUpdateRequired(this))
 	{
 		UndoNotify();
 	}
@@ -623,15 +616,9 @@ void ACGChessBoard::UndoNotify()
 	//GetLoc
 	if (UWorld* w = GetWorld())
 	{
-		if (ULocalPlayer* lp = w->GetFirstLocalPlayerFromController())
+		if (ACGChessPlayerController* pc = w->GetFirstPlayerController<ACGChessPlayerController>())
 		{
-			if (APlayerController* pc = lp->GetPlayerController(w))
-			{
-				if (ACGHUD* hud = pc->GetHUD<ACGHUD>())
-				{
-					hud->UpdateHud();
-				}
-			}
+			pc->OnMove.Broadcast();
 		}
 	}
 }

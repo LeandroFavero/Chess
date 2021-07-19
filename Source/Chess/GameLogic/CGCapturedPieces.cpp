@@ -2,6 +2,7 @@
 #include "CGCapturedPieces.h"
 #include "ChessLogic/CGPiece.h"
 #include "Net/UnrealNetwork.h"
+#include "Blueprint/CGBPUtils.h"
 
 UCGCapturedPieces::UCGCapturedPieces()
 {
@@ -30,7 +31,7 @@ void UCGCapturedPieces::Add(ACGPiece* p)
 {
 	Pieces.Add(p);
 	//update positions if listen server, otherwise it updates from the notify
-	if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
+	if (UCGBPUtils::IsLocalUpdateRequired(this))
 	{
 		RefreshPositions();
 	}
@@ -40,7 +41,7 @@ void UCGCapturedPieces::Remove(ACGPiece* p)
 {
 	Pieces.Remove(p);
 	//update positions if listen server, otherwise it updates from the notify
-	if (GEngine->GetNetMode(GetWorld()) == NM_ListenServer)
+	if (UCGBPUtils::IsLocalUpdateRequired(this))
 	{
 		RefreshPositions();
 	}

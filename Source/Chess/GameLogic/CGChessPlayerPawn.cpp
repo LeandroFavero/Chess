@@ -30,6 +30,8 @@ ACGChessPlayerPawn::ACGChessPlayerPawn() : Super()
 	CameraArm->bDoCollisionTest = false;
 
 	bOnlyRelevantToOwner = true;
+
+	SetActorEnableCollision(false);
 }
 
 // Called when the game starts or when spawned
@@ -172,7 +174,9 @@ bool ACGChessPlayerPawn::IsDragged()
 
 void ACGChessPlayerPawn::BeginGrabPiece()
 {
-	if (ACGChessPlayerController* pc = GetController<ACGChessPlayerController>())
+	ACGChessPlayerController* pc = GetController<ACGChessPlayerController>();
+	ACGGameState* state = GetWorld()->GetGameState<ACGGameState>();
+	if (pc && state)
 	{
 		if (GrabbedPiece.IsValid())
 		{
@@ -187,7 +191,7 @@ void ACGChessPlayerPawn::BeginGrabPiece()
 					return;
 				}
 				//can we move it?
-				if (piece->IsBlack() == pc->bIsBlack || UCGBPUtils::IsHotSeatMode(this))
+				if (state->IsMatchInProgress() && (piece->IsBlack() == pc->bIsBlack || UCGBPUtils::IsHotSeatMode(this)))
 				{
 					GrabbedPiece = piece;
 					pc->ServerGrab(piece, true);
@@ -208,11 +212,7 @@ void ACGChessPlayerPawn::EndGrabPiece(bool moveTo)
 	{
 		if (moveTo)
 		{
-			ACGChessPlayerController* controller = GetController<ACGChessPlayerController>();
-			if (controller)
-			{
-				controller->ServerMoveToTile(GrabbedPiece.Get(), Cast<ACGTile>(MouseoveredActor.Get()));
-			}
+			pc->ServerMoveToTile(GrabbedPiece.Get(), Cast<ACGTile>(MouseoveredActor.Get()));
 		}
 		if (GrabbedPiece.IsValid())
 		{

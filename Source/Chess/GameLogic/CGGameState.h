@@ -13,12 +13,11 @@ class UDataTable;
 UENUM(BlueprintType)
 enum EGameResult
 {
-	NOT_STARTED,
-	NOT_FINISHED,
-	BLACK_WINS,
-	WHITE_WINS,
-	DRAW,
-	DISCONNECT
+	NOT_FINISHED	UMETA(DisplayName = ""),
+	BLACK_WINS		UMETA(DisplayName = "Black wins!"),
+	WHITE_WINS		UMETA(DisplayName = "White wins!"),
+	DRAW			UMETA(DisplayName = "Draw!"),
+	DISCONNECT		UMETA(DisplayName = "")
 };
 
 UCLASS()
@@ -36,22 +35,24 @@ public:
 	UPROPERTY(ReplicatedUsing=ColorsChanged, EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
 	UMaterialInstance* WhiteMaterial;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
-	ACGChessBoard* Board;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
+	//ACGChessBoard* Board;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
 	TArray<TSubclassOf<class ACGPiece>> PieceTemplates;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
-	TEnumAsByte<EGameResult> GameState {EGameResult::NOT_STARTED};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=ResultNotify, Category = "Chess setup")
+	TEnumAsByte<EGameResult> GameResult {EGameResult::NOT_FINISHED};
 
-	UFUNCTION(NetMulticast, Reliable)
-	void ClientGameFinished(const EGameResult Result);
-	void ClientGameFinished_Implementation(const EGameResult Result);
+	UFUNCTION()
+	void ResultNotify();
 
 	UFUNCTION()
 	void ColorsChanged();
 
+	void HandleMatchHasStarted() override;
+	void HandleMatchHasEnded() override;
+	void HandleMatchIsWaitingToStart() override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

@@ -5,15 +5,64 @@
 #include "Net/UnrealNetwork.h"
 #include "GameLogic/CGChessPlayerController.h"
 #include "ChessLogic/CGChessBoard.h"
+#include "UI/CGHUD.h"
+#include "Blueprint/CGBPUtils.h"
 
-void ACGGameState::ClientGameFinished_Implementation(const EGameResult pResult)
+
+void ACGGameState::ColorsChanged()
 {
-	GameState = pResult;
+	if (ACGChessBoard* board = UCGBPUtils::FindBoard(this))
+	{
+		board->RefreshPieceColors();
+	}
+}
+
+void ACGGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+	//show in game or menu
+	if (ACGChessPlayerController* pc = GetWorld()->GetFirstPlayerController<ACGChessPlayerController>())
+	{
+		if (ACGHUD* hud = pc->GetHUD<ACGHUD>())
+		{
+			if (UCGBPUtils::IsHotSeatMode(this))
+			{
+				hud->ShowGame();
+			}
+			else
+			{
+				hud->ShowMenu();
+			}
+		}
+		pc->OnStart.Broadcast();
+	}
+}
+
+void ACGGameState::HandleMatchHasEnded()
+{
+	Super::HandleMatchHasEnded();
+}
+
+void ACGGameState::HandleMatchIsWaitingToStart()
+{
+	Super::HandleMatchIsWaitingToStart();
+	if (APlayerController* pc = GetWorld()->GetFirstPlayerController())
+	{
+		if (ACGHUD* hud = pc->GetHUD<ACGHUD>())
+		{
+			hud->ShowGame();
+		}
+	}
+}
+
+void ACGGameState::ResultNotify()
+{
 	if (UWorld* w = GetWorld())
 	{
 		if (ACGChessPlayerController* pc = Cast<ACGChessPlayerController>(w->GetFirstPlayerController()))
 		{
-			switch (pResult)
+			pc->OnGameOver.Broadcast(GameResult);
+			switch (GameResult)
 			{
 			case EGameResult::DRAW:
 				pc->OnDraw();
@@ -22,7 +71,7 @@ void ACGGameState::ClientGameFinished_Implementation(const EGameResult pResult)
 			case EGameResult::WHITE_WINS:
 				pc->bIsBlack ? pc->OnLose() : pc->OnWin();
 				break;
-				
+
 			case EGameResult::BLACK_WINS:
 				pc->bIsBlack ? pc->OnWin() : pc->OnLose();
 				break;
@@ -31,19 +80,12 @@ void ACGGameState::ClientGameFinished_Implementation(const EGameResult pResult)
 	}
 }
 
-void ACGGameState::ColorsChanged()
-{
-	if (Board)
-	{
-		Board->RefreshPieceColors();
-	}
-}
-
 void ACGGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ACGGameState, Board)
 	DOREPLIFETIME(ACGGameState, BlackMaterial)
 	DOREPLIFETIME(ACGGameState, WhiteMaterial)
 }
+
+

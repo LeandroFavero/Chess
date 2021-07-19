@@ -9,6 +9,7 @@
 #include "ChessLogic/CGPiece.h"
 #include "GameLogic/CGGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Blueprint/CGBPUtils.h"
 
 ACGGameMode::ACGGameMode()
 {
@@ -17,9 +18,29 @@ ACGGameMode::ACGGameMode()
 	HUDClass = ACGHUD::StaticClass();
 }
 
-void ACGGameMode::BeginPlay()
+/*void ACGGameMode::BeginPlay()
 {
     
+}*/
+
+void ACGGameMode::StartMatch()
+{
+    //if hot seat or menu start the game
+    if (UCGBPUtils::IsHotSeatMode(this) || UCGBPUtils::IsStandalone(this))
+    {
+        SetMatchState(MatchState::InProgress);
+    }
+    //can we not call super?
+}
+
+void ACGGameMode::PostLogin(APlayerController* NewPlayer)
+{
+    Super::PostLogin(NewPlayer);
+    //if we have enough players start the match
+    if (NumPlayers == 2)
+    {
+        SetMatchState(MatchState::InProgress);
+    }
 }
 
 void ACGGameMode::GenericPlayerInitialization(AController* Controller)
@@ -30,45 +51,18 @@ void ACGGameMode::GenericPlayerInitialization(AController* Controller)
         {
             ACGGameState* state = w->GetGameState<ACGGameState>();
             ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>();
-            if (state && mode && state->Board)
+            ACGChessBoard* board = UCGBPUtils::FindBoard(this);
+            if (state && mode && board)
             {
                 FString fen = UGameplayStatics::ParseOption(mode->OptionsString, "Fen");
                 auto it = w->GetPlayerControllerIterator();
                 ACGChessPlayerController* pc1 = Cast<ACGChessPlayerController>((*it).Get());
                 ++it;
                 ACGChessPlayerController* pc2 = Cast<ACGChessPlayerController>((*it).Get());
-                state->Board->StartGame(fen, pc1, pc2);
+                board->StartGame(fen, pc1, pc2);
             }
         }
     }
     Super::GenericPlayerInitialization(Controller);
 }
 
-int ACGGameMode::GetCurrentViewMode(const APlayerController* PlayerController)
-{
-
-    if (IsValid(PlayerController))
-    {
-        UGameViewportClient* GameViewportClient = PlayerController->GetWorld()->GetGameViewport();
-        ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer();
-
-        bool ignore = GameViewportClient->IgnoreInput();
-        EMouseCaptureMode capt = GameViewportClient->GetMouseCaptureMode();
-
-        if (ignore == false && capt == EMouseCaptureMode::CaptureDuringMouseDown)
-        {
-            return 0;  // Game And UI
-        }
-        else if (ignore == true && capt == EMouseCaptureMode::NoCapture)
-        {
-            return 1;  // UI Only
-        }
-        else
-        {
-            return 2;  // Game Only
-        }
-    }
-
-    return -1;
-
-}
