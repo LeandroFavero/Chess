@@ -41,8 +41,8 @@ void ACGPawn::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
 	//promotion
 	if (pTile->Position.Y == (IsBlack() ? 0 : Board->Size.Y - 1) && pEvents)
 	{
-		Capture();
 		undo.Promotion = this;
+		//Flags |= EPieceFlags::PromotionInProgress;
 		//notify controller
 		if (ACGChessPlayerController* pc = GetCGController())
 		{
@@ -65,6 +65,7 @@ void ACGPawn::FinishPromotion(const FString& chr, FCGUndo& undo)
 		});
 		if (temp)
 		{
+			Capture();
 			//spawn new piece
 			FActorSpawnParameters params;
 			params.Owner = this;

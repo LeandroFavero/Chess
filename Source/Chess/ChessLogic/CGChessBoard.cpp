@@ -486,22 +486,31 @@ bool ACGChessBoard::HasValidMove(bool pIsBlack)
 	return found != nullptr;
 }
 
-bool ACGChessBoard::GameOverCheck(bool pIsBlack)
+bool ACGChessBoard::GameOverCheck()
 {
-	if (!HasValidMove(pIsBlack))
+	bool isBlack = IsNextMoveBlack();
+	if (!HasValidMove(isBlack))
 	{
 		if (UWorld* w = GetWorld())
 		{
-			if(ACGGameState* gameState = Cast<ACGGameState>(w->GetGameState()))
+			ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>();
+			ACGGameState* state = w->GetGameState<ACGGameState>();
+			if(mode && state)
 			{
 				//checkmate?
-				if ((pIsBlack ? BlackKing : WhiteKing)->IsInCheck())
+				if ((isBlack ? BlackKing : WhiteKing)->IsInCheck())
 				{
-					gameState->GameResult = pIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
+					mode->EndMatch();
+					state->GameResult = isBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
 				}
 				else
 				{
-					gameState->GameResult = EGameResult::DRAW;
+					mode->EndMatch();
+					state->GameResult = EGameResult::DRAW;
+				}
+				if (UCGBPUtils::IsLocalUpdateRequired(this))
+				{
+					state->ResultNotify();
 				}
 				return true;
 			}

@@ -25,6 +25,7 @@ struct EPieceFlags
 		Moved = 1 << 3,				//bit3
 		EnPassantCaptured = 1 << 4,	//bit4
 		DummyCaptured = 1 << 5,		//bit5
+		//PromotionInProgress = 1 << 6//bit6
 	};
 };
 
@@ -124,6 +125,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual const bool IsCaptured() const;
 
+	/*
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess setup")
 	void OnPieceGrabbed(bool isGrabbed);
 
@@ -142,6 +144,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess events")
 	void OnInvalidMove();
+	*/
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

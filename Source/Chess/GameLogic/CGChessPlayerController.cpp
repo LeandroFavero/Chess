@@ -22,11 +22,12 @@ ACGChessPlayerController::ACGChessPlayerController()
 
 void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGTile* pTile)
 {
-	if (pPiece && pTile)
+	if (pPiece && pTile && pPiece->Board)
 	{
 		if (pPiece->IsBlack() == bIsBlack || UCGBPUtils::IsHotSeatMode(this))//NO HAX PLS
 		{
 			pPiece->MoveToTile(pTile);
+			pPiece->Board->GameOverCheck();
 		}
 	}
 }

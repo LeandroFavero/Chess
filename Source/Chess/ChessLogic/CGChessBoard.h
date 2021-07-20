@@ -66,8 +66,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	UCGCapturedPieces* CapturedBlack;
 
-public:	
-
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 	void Destroyed() override;
@@ -76,7 +74,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual bool FenStringToChessPieces(const FString& Fen);
 
-	virtual bool CheckTest() { return false; };
+	//virtual bool CheckTest() { return false; };
 
 	virtual void RebuildAttackMap(bool IsBlack);
 
@@ -102,7 +100,7 @@ public:
 	virtual bool HasValidMove(bool IsBlack);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual bool GameOverCheck(bool IsBlack);
+	virtual bool GameOverCheck();
 
 	virtual void RefreshPieceColors();
 	virtual ACGTile* GetTile(const FCGSquareCoord& Coord);

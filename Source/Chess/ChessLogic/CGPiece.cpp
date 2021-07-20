@@ -100,7 +100,7 @@ void ACGPiece::RefreshMaterial()
 void ACGPiece::ServerGrab(bool isGrabbed)
 {
 	SetReplicateMovement(isGrabbed);
-	OnPieceGrabbed(isGrabbed);
+	//OnPieceGrabbed(isGrabbed);
 	if (Mesh)
 	{
 		if (UCGAnimInstance* animBp = Cast<UCGAnimInstance>(Mesh->GetAnimInstance()))
@@ -153,7 +153,7 @@ void ACGPiece::MoveToTile(ACGTile* pTile)
 	TSet<ACGTile*> moves = AvailableMoves();
 	if (!moves.Contains(pTile))
 	{
-		OnInvalidMove();
+		//OnInvalidMove();
 		return;
 	}
 
@@ -183,12 +183,12 @@ void ACGPiece::MoveToTile(ACGTile* pTile)
 	if (UCGBPUtils::IsLocalUpdateRequired(this))
 	{
 		Board->UndoNotify();
-		OnPieceMoved();
+		//OnPieceMoved();
 	}
-	else
+	/*else
 	{
 		ClientOnPieceMoved();
-	}
+	}*/
 }
 
 void ACGPiece::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
@@ -354,10 +354,10 @@ const bool ACGPiece::IsCaptured() const
 	return (Flags & EPieceFlags::Captured) == EPieceFlags::Captured;
 }
 
-void ACGPiece::ClientOnPieceMoved_Implementation()
+/*void ACGPiece::ClientOnPieceMoved_Implementation()
 {
 	OnPieceMoved();
-}
+}*/
 
 void ACGPiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
