@@ -166,7 +166,7 @@ void ACGChessBoard::StartGame(const FString& fen, ACGChessPlayerController* p1, 
 {
 	if (HasAuthority())
 	{
-		FenStringToChessPieces(DefaultBoardFen);
+		FenStringToChessPieces(fen.IsEmpty() ? DefaultBoardFen : fen);
 		if (p2)
 		{
 			if (p1)
@@ -199,12 +199,6 @@ void ACGChessBoard::StartGame(const FString& fen, ACGChessPlayerController* p1, 
 				}
 			}
 		}
-		else
-		{
-			//solo mode
-
-		}
-		
 	}
 }
 

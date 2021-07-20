@@ -58,4 +58,8 @@ public:
 
 	UFUNCTION(BlueprintPure, meta = (WorldContext = "WorldContextObject"), Category = "Chess utils")
 	static ACGChessBoard* FindBoard(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure, Category = "Chess utils")
+	static FString GetLocalIP();
+
 };

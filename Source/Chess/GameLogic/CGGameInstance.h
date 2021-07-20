@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Chess.h"
-//#include "Templates/SharedPointer.h"
-//#include "OnlineSessionSettings.h"
 #include "CGGameInstance.generated.h"
 
 class UCGSettingsSave;
@@ -33,6 +31,8 @@ class CHESS_API UCGGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 
+	FString CurrentFen {};
+
 public:
 	UCGGameInstance(const FObjectInitializer& ObjectInitializer);
 
@@ -45,16 +45,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess settings")
 	bool LoadCfg();
 
-	const FName GetMyName() const { return TEXT("Teszt"); };
+	UFUNCTION(BlueprintCallable, Category = "Chess settings")
+	void JoinIP(const FString& Ip);
 
-	TSharedPtr<const FUniqueNetId> GetMyId();
+	const FName GetMyName() const;
+
+	TSharedPtr<const FUniqueNetId> GetMyId() const;
 
 	TSubclassOf<UOnlineSession> GetOnlineSessionClass() override;
 
 	//https://unreal.gg-labs.com/wiki-archives/networking/how-to-use-sessions-in-c++
 
 	UFUNCTION(BlueprintCallable, Category = "Chess settings")
-	bool Host();
+	bool Host(const FString& fen);
 
 	bool HostSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, bool bIsLAN, bool bIsPresence, int32 MaxNumPlayers);
 
@@ -119,6 +122,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Chess settings")
 	void Join();
+
 
 	/**
 *	Joins a session via a search result

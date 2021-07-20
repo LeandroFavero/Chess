@@ -16,7 +16,7 @@ class CHESS_API UCGSettingsSave : public USaveGame
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	FString PlayerName {""};
+	FText PlayerName {FText::FromString(TEXT(""))};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
 	int SelectedSkin{ 0 };
@@ -29,4 +29,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
 	int Player2PreferredSide{ 0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
+	FString LastIp{ TEXT("") };
 };

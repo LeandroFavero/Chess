@@ -10,6 +10,8 @@
 #include "ChessLogic/CGPiece.h"
 #include "ChessLogic/CGTile.h"
 #include "EngineUtils.h"
+#include <SocketSubsystem.h>
+#include <IPAddress.h>
 
 
 void UCGBPUtils::FillCBFromDT(UDataTable* DataTable, UComboBoxString* ComboBox)
@@ -202,5 +204,11 @@ ACGChessBoard* UCGBPUtils::FindBoard(const UObject* WorldContextObject)
 		return *it;
 	}
 	return nullptr;
+}
+FString UCGBPUtils::GetLocalIP()
+{
+	bool canBind = false;
+	TSharedRef<FInternetAddr> localIp = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->GetLocalHostAddr(*GLog, canBind);
+	return (localIp->IsValid() ? localIp->ToString(false) : "");
 }
 ;

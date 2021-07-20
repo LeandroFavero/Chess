@@ -20,6 +20,11 @@ ACGChessPlayerController::ACGChessPlayerController()
 	bEnableTouchEvents = true;
 }
 
+void ACGChessPlayerController::ServerChangeSkin_Implementation(const FName& Name)
+{
+
+}
+
 void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGTile* pTile)
 {
 	if (pPiece && pTile && pPiece->Board)
@@ -131,7 +136,6 @@ void ACGChessPlayerController::BackToMenu()
 	}
 	else
 	{
-		//UCGBPUtils::IsList
 		UCGGameInstance* insta = GetGameInstance<UCGGameInstance>();
 		insta->DestroySession();
 	}

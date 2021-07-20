@@ -31,6 +31,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=SideChanged, Category = "Chess setup")
 	bool bIsBlack{ false };
+
+	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
+	void ServerChangeSkin(const FName& Name);
+	void ServerChangeSkin_Implementation(const FName& Name);
 	
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
 	void ServerMoveToTile(ACGPiece* pPiece, ACGTile* pTile);

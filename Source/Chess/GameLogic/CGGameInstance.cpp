@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameLogic/CGOnlineSession.h"
+#include "Blueprint/CGBPUtils.h"
 
 UCGGameInstance::UCGGameInstance(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
@@ -40,14 +41,32 @@ bool UCGGameInstance::LoadCfg()
 	{
 		Settings = Cast<UCGSettingsSave>(UGameplayStatics::CreateSaveGameObject(UCGSettingsSave::StaticClass()));
 		//get user name for default name
-		Settings->PlayerName = UKismetSystemLibrary::GetPlatformUserName();
-
+		Settings->PlayerName = FText::FromString(UKismetSystemLibrary::GetPlatformUserName());
+		Settings->LastIp = UCGBPUtils::GetLocalIP();
 		return false;
 	}
 	return true;
 }
 
-TSharedPtr<const FUniqueNetId> UCGGameInstance::GetMyId()
+void UCGGameInstance::JoinIP(const FString& Ip)
+{
+	if (Settings)
+	{
+		Settings->LastIp = Ip;
+	}
+	Exec(GetWorld(), *FString::Printf(TEXT("open %s"), *Ip));
+}
+
+const FName UCGGameInstance::GetMyName() const
+{ 
+	if (Settings)
+	{
+		return FName(Settings->PlayerName.ToString());//search is not working so it doesn't matter anyway...
+	}
+	return FName(TEXT("Unnamed"));
+}
+
+TSharedPtr<const FUniqueNetId> UCGGameInstance::GetMyId() const
 {
 	return UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
 }
@@ -57,9 +76,9 @@ TSubclassOf<UOnlineSession> UCGGameInstance::GetOnlineSessionClass()
 	return UCGOnlineSession::StaticClass();
 }
 
-bool UCGGameInstance::Host()
+bool UCGGameInstance::Host(const FString& fen)
 {
-	//GetFirstLocalPlayerController()->getprefe
+	CurrentFen = fen;
 	//const TSharedPtr<const FUniqueNetId> netID = UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
 	return HostSession(GetMyId(), GetMyName(), true, true, 2);
 }
@@ -167,7 +186,7 @@ void UCGGameInstance::OnStartOnlineGameComplete(FName SessionName, bool bWasSucc
 	// If the start was successful, we can open a NewMap if we want. Make sure to use "listen" as a parameter!
 	if (bWasSuccessful)
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), "Game", true, "listen");
+		UGameplayStatics::OpenLevel(GetWorld(), "Game", true, FString::Printf(TEXT("listen?Fen=%s?"), *CurrentFen));
 	}
 }
 
