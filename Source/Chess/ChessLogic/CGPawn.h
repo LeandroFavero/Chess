@@ -25,10 +25,5 @@ public:
 
 	void MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents) override;
 
-	UFUNCTION(Client, Reliable)
-	void ClientBeginPromotion();
-	void ClientBeginPromotion_Implementation();
-	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
-	void ServerEndPromotion();
-	void ServerEndPromotion_Implementation();
+	virtual void FinishPromotion(const FString& chr, FCGUndo& undo);
 };

@@ -12,11 +12,10 @@ ACGKnight::ACGKnight()
 	AddOwnedComponent(moveComp);
 }
 
-void ACGKnight::SetColor(bool isWhite)
+void ACGKnight::RefreshMaterial()
 {
-	Super::SetColor(isWhite);
-	//TODO: rotate mesh!
-	if (isWhite)
+	Super::RefreshMaterial();
+	if (IsWhite())
 	{
 		Mesh->SetRelativeRotation(FRotator(0, WhiteMeshRotation, 0));
 	}
@@ -25,4 +24,5 @@ void ACGKnight::SetColor(bool isWhite)
 		Mesh->SetRelativeRotation(FRotator(0, BlackMeshRotation, 0));
 	}
 }
+
 

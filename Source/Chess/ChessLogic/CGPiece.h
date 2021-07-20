@@ -24,8 +24,7 @@ struct EPieceFlags
 		Captured = 1 << 2,			//bit2
 		Moved = 1 << 3,				//bit3
 		EnPassantCaptured = 1 << 4,	//bit4
-		/*OrderStart = 1 << 4,	//bit4-
-		OrderEnd = 1 << 7,		//7*/
+		DummyCaptured = 1 << 5,		//bit5
 	};
 };
 
@@ -83,6 +82,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Chess setup")
 	virtual const FString GetUnicode() const { return ""; }
 
+	UFUNCTION(BlueprintPure, Category = "Chess setup")
+	virtual const bool IsValidForPromotion() const { return false; }
+
 	virtual void RefreshMaterial();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
@@ -117,6 +119,7 @@ public:
 	virtual void FillAttackMap();
 	virtual void Capture(bool pAddToCaptured = true);
 	virtual void UnCapture();
+	virtual ACGChessPlayerController* GetCGController();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual const bool IsCaptured() const;
@@ -129,6 +132,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess events")
 	void OnPieceMoved();
+
 	UFUNCTION(Client, Reliable)
 	void ClientOnPieceMoved();
 	void ClientOnPieceMoved_Implementation();

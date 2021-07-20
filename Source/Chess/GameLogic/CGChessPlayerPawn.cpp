@@ -39,7 +39,10 @@ ACGChessPlayerPawn::ACGChessPlayerPawn() : Super()
 void ACGChessPlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	OrbitCamera(WhiteRotation, CameraArmYDefault, true);
+	if (ACGChessPlayerController* pc = GetWorld()->GetFirstPlayerController<ACGChessPlayerController>())
+	{
+		OrbitCamera(pc->bIsBlack?BlackRotation:WhiteRotation, CameraArmYDefault, true);
+	}
 }
 
 // Called every frame
@@ -190,9 +193,9 @@ void ACGChessPlayerPawn::BeginGrabPiece()
 					return;
 				}
 				//can we move it?
-				if (piece->Board && piece->Board->ReadyForNextMove() &&
+				if (piece->Board && piece->Board->IsReadyForNextMove() &&
 					(piece->IsBlack() == pc->bIsBlack || UCGBPUtils::IsHotSeatMode(this)) &&
-					(piece->Board->NextMoveIsBlack() == piece->IsBlack()))
+					(piece->Board->IsNextMoveBlack() == piece->IsBlack()))
 				{
 					GrabbedPiece = piece;
 					pc->ServerGrab(piece, true);

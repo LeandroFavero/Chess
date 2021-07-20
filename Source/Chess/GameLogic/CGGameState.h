@@ -17,7 +17,7 @@ enum EGameResult
 	BLACK_WINS		UMETA(DisplayName = "Black wins!"),
 	WHITE_WINS		UMETA(DisplayName = "White wins!"),
 	DRAW			UMETA(DisplayName = "Draw!"),
-	DISCONNECT		UMETA(DisplayName = "")
+	DISCONNECT		UMETA(DisplayName = "Disconnected.")
 };
 
 UCLASS()

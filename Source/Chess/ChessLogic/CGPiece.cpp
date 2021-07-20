@@ -116,9 +116,9 @@ void ACGPiece::ServerGrab(bool isGrabbed)
 
 void ACGPiece::SnapToPlace()
 {
-	if (Board)
+	if (Board && !IsCaptured())
 	{
-		ensure(!IsCaptured());
+		//ensure(!IsCaptured());
 		SetActorRelativeTransform(Board->CoordToTransform(Position));
 	}
 }
@@ -282,9 +282,10 @@ void ACGPiece::Capture(bool pAddToCaptured)
 		return;
 	}
 	Tile->OccupiedBy = nullptr;
-	Flags |= EPieceFlags::Captured;
+	Flags |= EPieceFlags::Captured | (pAddToCaptured ? 0 : EPieceFlags::DummyCaptured);
 	if (pAddToCaptured)
 	{
+		Position = FCGSquareCoord(0xff, 0xff);
 		if (IsBlack())
 		{
 			if (Board->CapturedBlack)
@@ -308,21 +309,44 @@ void ACGPiece::UnCapture()
 	{ 
 		return;
 	}
-	Flags &= ~EPieceFlags::Captured;
-	if (IsBlack())
+	if ((Flags & EPieceFlags::DummyCaptured) != EPieceFlags::DummyCaptured)
 	{
-		if (Board->CapturedBlack)
+		if (IsBlack())
 		{
-			Board->CapturedBlack->Remove(this);
+			if (Board->CapturedBlack)
+			{
+				Board->CapturedBlack->Remove(this);
+			}
+		}
+		else
+		{
+			if (Board->CapturedWhite)
+			{
+				Board->CapturedWhite->Remove(this);
+			}
 		}
 	}
-	else
+	Flags &= ~(EPieceFlags::Captured | EPieceFlags::DummyCaptured);
+}
+
+ACGChessPlayerController* ACGPiece::GetCGController()
+{
+	if (UCGBPUtils::IsHotSeatMode(this))
 	{
-		if (Board->CapturedWhite)
+		return GetWorld()->GetFirstPlayerController<ACGChessPlayerController>();
+	}
+
+	for (auto it = GetWorld()->GetPlayerControllerIterator(); it; ++it)
+	{
+		if (ACGChessPlayerController* pc = Cast<ACGChessPlayerController>(*it))
 		{
-			Board->CapturedWhite->Remove(this);
+			if (pc->bIsBlack == IsBlack())
+			{
+				return pc;
+			}
 		}
 	}
+	return nullptr;
 }
 
 const bool ACGPiece::IsCaptured() const

@@ -11,6 +11,7 @@
 #include "GameLogic/CGChessPlayerPawn.h"
 #include "GameLogic/CGGameMode.h"
 #include "Blueprint/CGBPUtils.h"
+#include "ChessLogic/CGPawn.h"
 
 ACGChessPlayerController::ACGChessPlayerController() 
 {
@@ -23,7 +24,10 @@ void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* pPiece,
 {
 	if (pPiece && pTile)
 	{
-		pPiece->MoveToTile(pTile);
+		if (pPiece->IsBlack() == bIsBlack || UCGBPUtils::IsHotSeatMode(this))//NO HAX PLS
+		{
+			pPiece->MoveToTile(pTile);
+		}
 	}
 }
 
@@ -91,19 +95,30 @@ void ACGChessPlayerController::ServerConcede_Implementation()
 	}
 }
 
-void ACGChessPlayerController::ServerDisconnect_Implementation()
+void ACGChessPlayerController::ServerChoosePromotion_Implementation(const FString& PieceType)
 {
-	if (UCGBPUtils::IsHotSeatMode(this))
+	if (ACGChessBoard* board = UCGBPUtils::FindBoard(this))
 	{
-		//just navigate to the main menu
-		UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Game")));
+		if (!PieceType.IsEmpty())
+		{
+			if (board->Undos.Num() > 0)
+			{
+				FCGUndo& u = board->Undos.Last();
+				if (u.Piece == u.Promotion)
+				{
+					if (ACGPawn* pawn = Cast<ACGPawn>(u.Piece))
+					{
+						pawn->FinishPromotion(PieceType, u);
+					}
+				}
+			}
+		}
 	}
-	else
-	{
-		//UCGBPUtils::IsList
-		UCGGameInstance* insta = GetGameInstance<UCGGameInstance>();
-		insta->DestroySession();
-	}
+}
+
+void ACGChessPlayerController::ClientBeginPromotion_Implementation()
+{
+	OnPromotion.Broadcast();
 }
 
 void ACGChessPlayerController::BackToMenu()
@@ -121,13 +136,6 @@ void ACGChessPlayerController::BackToMenu()
 	}
 }
 
-void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	DOREPLIFETIME(ACGChessPlayerController, SelectedSkinId)
-	DOREPLIFETIME(ACGChessPlayerController, PreferredSide)
-	DOREPLIFETIME(ACGChessPlayerController, bIsBlack)
-}
-
 void ACGChessPlayerController::SideChanged()
 {
 
@@ -140,36 +148,11 @@ void ACGChessPlayerController::BeginPlayingState()
 		gi->LoadCfg();
 
 	}
-	/*if (ACGHUD* hud = GetHUD<ACGHUD>())
-	{
-		if (ACGGameMode* mode = GetWorld()->GetAuthGameMode<ACGGameMode>())
-		{
-			if (mode->bHotSeatMode || UCGBPUtils::IsListenServer(this))
-			{
-				hud->ShowGame();
-			}
-			else
-			{
-				hud->ShowMenu();
-			}
-		}
-		else
-		{
-			hud->ShowGame();
-		}
-	}*/
 }
 
-/*
-void ACGChessPlayerController::SetPawn(APawn* InPawn)
+void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	if (ACGGameMode* mode = GetWorld()->GetAuthGameMode<ACGGameMode>())
-	{
-		if (ACGChessPlayerPawn* p = Cast<ACGChessPlayerPawn>(InPawn))
-		{
-			p->bIsHotSeat = mode->bHotSeatMode;
-		}
-	}
-	Super::SetPawn(InPawn);
+	DOREPLIFETIME(ACGChessPlayerController, SelectedSkinId)
+	DOREPLIFETIME(ACGChessPlayerController, PreferredSide)
+	DOREPLIFETIME(ACGChessPlayerController, bIsBlack)
 }
-*/

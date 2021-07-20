@@ -543,6 +543,12 @@ FCGUndo& ACGChessBoard::CreateUndo()
 void ACGChessBoard::UndoInternal(FCGUndo& pUndo)
 {
 	FCGUndo dummyUndo;
+	if (pUndo.Promotion)
+	{
+		Pieces.Remove(pUndo.Promotion);
+		pUndo.Promotion->Destroy();
+		pUndo.Piece->UnCapture();
+	}
 	if (pUndo.Piece)
 	{
 		pUndo.Piece->MoveToTileInternal(pUndo.From, dummyUndo, false);
@@ -556,10 +562,6 @@ void ACGChessBoard::UndoInternal(FCGUndo& pUndo)
 	if (pUndo.CastleRook)
 	{
 		pUndo.CastleRook->MoveToTileInternal(pUndo.CastleRookTile, dummyUndo, false);
-	}
-	if (pUndo.Promotion)
-	{
-		pUndo.Promotion->Destroy();
 	}
 }
 
@@ -634,7 +636,7 @@ void ACGChessBoard::RebuildAttackMap(bool pIsBlack)
 	}
 }
 
-bool ACGChessBoard::NextMoveIsBlack() const
+bool ACGChessBoard::IsNextMoveBlack() const
 {
 	if (Undos.Num() == 0)
 	{
@@ -646,7 +648,7 @@ bool ACGChessBoard::NextMoveIsBlack() const
 	}
 }
 
-bool ACGChessBoard::ReadyForNextMove() const
+bool ACGChessBoard::IsReadyForNextMove() const
 {
 	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
 	{

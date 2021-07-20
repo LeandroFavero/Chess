@@ -81,10 +81,10 @@ public:
 	virtual void RebuildAttackMap(bool IsBlack);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual bool NextMoveIsBlack() const;
+	virtual bool IsNextMoveBlack() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual bool ReadyForNextMove() const;
+	virtual bool IsReadyForNextMove() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual void StartGame(const FString& Fen, ACGChessPlayerController* P1, ACGChessPlayerController* P2 = nullptr);

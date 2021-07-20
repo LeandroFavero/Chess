@@ -24,6 +24,7 @@ public:
 
 	const FString GetFenChars() const override { return "Nn"; }
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265E") : TEXT("\u2658")); }
+	const bool IsValidForPromotion() const override { return true; }
 
-	void SetColor(bool isWhite) override;
+	void RefreshMaterial() override;
 };

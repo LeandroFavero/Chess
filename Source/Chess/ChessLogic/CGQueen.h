@@ -20,4 +20,5 @@ public:
 
 	const FString GetFenChars() const override { return "Qq"; }
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265B") : TEXT("\u2655")); }
+	const bool IsValidForPromotion() const override { return true; }
 };

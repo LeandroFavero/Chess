@@ -13,7 +13,7 @@ class ACGTile;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameStartDelegate, bool, bIsBlack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameOverDelegate, EGameResult, Result);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPawnPromotionDelegate);
 
 UCLASS()
 class CHESS_API ACGChessPlayerController : public APlayerController
@@ -53,8 +53,12 @@ public:
 	void ServerConcede_Implementation();
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
-	void ServerDisconnect();
-	void ServerDisconnect_Implementation();
+	void ServerChoosePromotion(const FString& PieceType);
+	void ServerChoosePromotion_Implementation(const FString& PieceType);
+
+	UFUNCTION(Client, Reliable, Category = "Chess")
+	void ClientBeginPromotion();
+	void ClientBeginPromotion_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	void BackToMenu();
@@ -76,6 +80,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Chess")
 	FOnGameOverDelegate OnGameOver;
+
+	UPROPERTY(BlueprintAssignable, Category = "Chess")
+	FOnPawnPromotionDelegate OnPromotion;
 
 	UFUNCTION()
 	void SideChanged();

@@ -39,10 +39,10 @@ public:
 	float CameraArmYMax = -10.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	float BlackRotation = 270.0f;
+	float BlackRotation = 90.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	float WhiteRotation = 90.0f;
+	float WhiteRotation = 270.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float RotationDuration = 0.5f;
