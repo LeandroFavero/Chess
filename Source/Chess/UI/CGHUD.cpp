@@ -24,10 +24,16 @@ ACGHUD::ACGHUD()
 	
 }
 
-void ACGHUD::BeginPlay()
+void ACGHUD::Init()
 {
-	MainMenu = CreateWidget<UUserWidget>(GetOwningPlayerController(), MainMenuTemplate);
-	InGame = CreateWidget<UUserWidget>(GetOwningPlayerController(), InGameTemplate);
+	if (MainMenuTemplate) 
+	{
+		MainMenu = CreateWidget<UUserWidget>(GetOwningPlayerController(), MainMenuTemplate);
+	}
+	if (InGameTemplate)
+	{
+		InGame = CreateWidget<UUserWidget>(GetOwningPlayerController(), InGameTemplate);
+	}
 	CurrentWidget = nullptr;
 }
 

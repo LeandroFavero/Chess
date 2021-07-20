@@ -8,6 +8,10 @@
 #include "UI/CGHUD.h"
 #include "Blueprint/CGBPUtils.h"
 
+ACGGameState::ACGGameState() :Super()
+{
+
+}
 
 void ACGGameState::ColorsChanged()
 {
@@ -34,35 +38,13 @@ void ACGGameState::HandleMatchHasStarted()
 				hud->ShowMenu();
 			}
 		}
-		pc->OnStart.Broadcast();
+		pc->OnStart.Broadcast(pc->bIsBlack);
 	}
 }
 
 void ACGGameState::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
-
-	if (UWorld* w = GetWorld())
-	{
-		if (ACGChessPlayerController* pc = Cast<ACGChessPlayerController>(w->GetFirstPlayerController()))
-		{
-			pc->OnGameOver.Broadcast(GameResult);
-			/*switch (GameResult)
-			{
-			case EGameResult::DRAW:
-				pc->OnDraw();
-				break;
-
-			case EGameResult::WHITE_WINS:
-				pc->bIsBlack ? pc->OnLose() : pc->OnWin();
-				break;
-
-			case EGameResult::BLACK_WINS:
-				pc->bIsBlack ? pc->OnWin() : pc->OnLose();
-				break;
-			}*/
-		}
-	}
 }
 
 void ACGGameState::HandleMatchIsWaitingToStart()
@@ -72,6 +54,7 @@ void ACGGameState::HandleMatchIsWaitingToStart()
 	{
 		if (ACGHUD* hud = pc->GetHUD<ACGHUD>())
 		{
+			hud->Init();
 			hud->ShowGame();
 		}
 	}
@@ -82,9 +65,20 @@ bool ACGGameState::IsMatchInProgress() const
 	return Super::IsMatchInProgress();
 }
 
+void ACGGameState::EndGameBecauseOfDisconnect()
+{
+	SetMatchState(TEXT("WaitingPostMatch"));
+}
+
 void ACGGameState::ResultNotify()
 {
-	
+	if (UWorld* w = GetWorld())
+	{
+		if (ACGChessPlayerController* pc = Cast<ACGChessPlayerController>(w->GetFirstPlayerController()))
+		{
+			pc->OnGameOver.Broadcast(static_cast<EGameResult>(GameResult));
+		}
+	}
 }
 
 void ACGGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -93,6 +87,7 @@ void ACGGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 	DOREPLIFETIME(ACGGameState, BlackMaterial)
 	DOREPLIFETIME(ACGGameState, WhiteMaterial)
+	DOREPLIFETIME(ACGGameState, GameResult)
 }
 
 

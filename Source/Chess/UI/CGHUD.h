@@ -24,7 +24,7 @@ public:
 	UUserWidget* InGame;
 
 	ACGHUD();
-	void BeginPlay() override;
+	virtual void Init();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UUserWidget> MainMenuTemplate;

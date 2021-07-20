@@ -25,6 +25,7 @@ class CHESS_API ACGGameState : public AGameState
 {
 	GENERATED_BODY()
 public:
+	ACGGameState();
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	UDataTable* Skins;
@@ -35,14 +36,13 @@ public:
 	UPROPERTY(ReplicatedUsing=ColorsChanged, EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
 	UMaterialInstance* WhiteMaterial;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
-	//ACGChessBoard* Board;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
 	TArray<TSubclassOf<class ACGPiece>> PieceTemplates;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, ReplicatedUsing=ResultNotify, Category = "Chess setup")
 	TEnumAsByte<EGameResult> GameResult {EGameResult::NOT_FINISHED};
+
+	void EndGameBecauseOfDisconnect();
 
 	UFUNCTION()
 	void ResultNotify();

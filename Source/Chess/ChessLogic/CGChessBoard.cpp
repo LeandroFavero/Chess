@@ -446,7 +446,6 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& fen)
 	{
 		UndoNotify();
 	}
-	GameStarted();
 	return !malformed;
 }
 
@@ -548,18 +547,15 @@ void ACGChessBoard::UndoInternal(FCGUndo& pUndo)
 	{
 		pUndo.Piece->MoveToTileInternal(pUndo.From, dummyUndo, false);
 		pUndo.Piece->Flags = pUndo.Flags;
-		pUndo.Piece->ClientSnapToPlace();
 	}
 	if (pUndo.Capture)
 	{
 		pUndo.Capture->UnCapture();
 		pUndo.Capture->MoveToTileInternal(pUndo.To, dummyUndo, false);
-		pUndo.Capture->ClientSnapToPlace();
 	}
 	if (pUndo.CastleRook)
 	{
 		pUndo.CastleRook->MoveToTileInternal(pUndo.CastleRookTile, dummyUndo, false);
-		pUndo.CastleRook->ClientSnapToPlace();
 	}
 	if (pUndo.Promotion)
 	{
@@ -567,25 +563,26 @@ void ACGChessBoard::UndoInternal(FCGUndo& pUndo)
 	}
 }
 
-void ACGChessBoard::GameStarted_Implementation()
-{
-	/*if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
-	{
-		state->GameState = EGameResult::NOT_FINISHED;
-	}*/
-	if (ACGHUD* hud = GetWorld()->GetFirstPlayerController()->GetHUD<ACGHUD>())
-	{
-		hud->ShowGame();
-	}
-}
-
 void ACGChessBoard::UndoTo(int pMoveNum)
 {
 	for (int i = Undos.Num() - 1; i >= pMoveNum;--i)
 	{
-		if (!Undos[i].Imported) 
+		FCGUndo& u = Undos[i];
+		if (!u.Imported) 
 		{
-			UndoInternal(Undos[i]);
+			UndoInternal(u);
+			if (u.Piece)
+			{
+				u.Piece->ClientSnapToPlace();
+			}
+			if (u.Capture)
+			{
+				u.Capture->ClientSnapToPlace();
+			}
+			if (u.CastleRook)
+			{
+				u.CastleRook->ClientSnapToPlace();
+			}
 			Undos.RemoveAt(i);
 		}
 	}
@@ -611,6 +608,12 @@ void ACGChessBoard::UndoNotify()
 			pc->OnMove.Broadcast();
 		}
 	}
+}
+
+void ACGChessBoard::PiecesNotify()
+{
+	//repaint them just in case TODO:optimize?
+	RefreshPieceColors();
 }
 
 void ACGChessBoard::RebuildAttackMap(bool pIsBlack)

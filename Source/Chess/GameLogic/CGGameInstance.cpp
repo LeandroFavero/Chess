@@ -5,6 +5,7 @@
 #include "GameLogic/CGSettingsSave.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GameLogic/CGOnlineSession.h"
 
 UCGGameInstance::UCGGameInstance(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
@@ -49,6 +50,11 @@ bool UCGGameInstance::LoadCfg()
 TSharedPtr<const FUniqueNetId> UCGGameInstance::GetMyId()
 {
 	return UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
+}
+
+TSubclassOf<UOnlineSession> UCGGameInstance::GetOnlineSessionClass()
+{
+	return UCGOnlineSession::StaticClass();
 }
 
 bool UCGGameInstance::Host()
@@ -261,7 +267,7 @@ void UCGGameInstance::Join()
 	FOnlineSessionSearchResult SearchResult;
 
 	// If the Array is not empty, we can go through it
-	if (SessionSearch->SearchResults.Num() > 0)
+	if (SessionSearch && SessionSearch->SearchResults.Num() > 0)
 	{
 		for (int32 i = 0; i < SessionSearch->SearchResults.Num(); i++)
 		{

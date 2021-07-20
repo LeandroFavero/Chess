@@ -68,22 +68,22 @@ void ACGChessPlayerController::ServerConcede_Implementation()
 		{
 			if (board->Undos.Num() == 0)
 			{
-				state->GameResult = EGameResult::BLACK_WINS;
 				mode->EndMatch();
+				state->GameResult = EGameResult::BLACK_WINS;
 			}
 			else
 			{
-				state->GameResult = board->Undos.Last().LastMoveIsBlack ? EGameResult::BLACK_WINS : EGameResult::WHITE_WINS;
 				mode->EndMatch();
+				state->GameResult = board->Undos.Last().LastMoveIsBlack ? EGameResult::BLACK_WINS : EGameResult::WHITE_WINS;
 			}
 			state->ResultNotify();
 		}
 		else
 		{
-			state->GameResult = bIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
 			mode->EndMatch();
+			state->GameResult = bIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
 
-			if (UCGBPUtils::IsLocalUpdateRequired(this)) 
+			if (UCGBPUtils::IsLocalUpdateRequired(this))
 			{
 				state->ResultNotify();
 			}
@@ -125,6 +125,7 @@ void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 {
 	DOREPLIFETIME(ACGChessPlayerController, SelectedSkinId)
 	DOREPLIFETIME(ACGChessPlayerController, PreferredSide)
+	DOREPLIFETIME(ACGChessPlayerController, bIsBlack)
 }
 
 void ACGChessPlayerController::SideChanged()

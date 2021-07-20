@@ -11,7 +11,7 @@ class ACGPiece;
 class ACGTile;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameStartDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameStartDelegate, bool, bIsBlack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameOverDelegate, EGameResult, Result);
 
 
@@ -81,8 +81,6 @@ public:
 	void SideChanged();
 
 	virtual void BeginPlayingState() override;
-
-	//virtual void SetPawn(APawn* InPawn) override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

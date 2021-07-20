@@ -41,7 +41,7 @@ public:
 	UPROPERTY(Replicated)
 	TArray<ACGTile*> Board;
 	
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=PiecesNotify)
 	TArray<ACGPiece*> Pieces;
 
 	UPROPERTY(Replicated)
@@ -108,13 +108,8 @@ public:
 	virtual ACGTile* GetTile(const FCGSquareCoord& Coord);
 	virtual FCGUndo& CreateUndo();
 
-	UFUNCTION(NetMulticast, Reliable)
-	virtual void GameStarted();
-	virtual void GameStarted_Implementation();
-
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void UndoTo(int MoveNum);
-
 	virtual void UndoInternal(FCGUndo& Undo);
 
 	//TODO... Let's just cut this for now....
@@ -123,6 +118,9 @@ public:
 
 	UFUNCTION()
 	virtual void UndoNotify();
+
+	UFUNCTION()
+	virtual void PiecesNotify();
 
 	static void CoordToLabel(const FCGSquareCoord Coord, TCHAR& X, TCHAR& Y);
 
