@@ -48,10 +48,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
 	bool bIsLeftClicking{ false };
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	bool bIsSpinnyMenu{ false };
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float SpinnyMenuSpeed{ -10.0f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)

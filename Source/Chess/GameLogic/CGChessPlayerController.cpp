@@ -25,10 +25,6 @@ void ACGChessPlayerController::ServerChangeSkin_Implementation(const FString& Na
 	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
 	{
 		state->UseSkin(Name, bIsBlack);
-		if (UCGBPUtils::IsHotSeatMode(this))
-		{
-			state->UseSkin(Name, !bIsBlack);
-		}
 	}
 }
 

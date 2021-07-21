@@ -103,11 +103,11 @@ void ACGGameState::UseSkin(const FString& pName, bool pIsBlack)
 			{
 				if (pName.Equals(row->Name.ToString(), ESearchCase::IgnoreCase))
 				{
-					if (pIsBlack)
+					if (pIsBlack || UCGBPUtils::IsHotSeatMode(this))
 					{
 						BlackMaterial = row->BlackMaterial;
 					}
-					else
+					if(!pIsBlack || UCGBPUtils::IsHotSeatMode(this))
 					{
 						WhiteMaterial = row->WhiteMaterial;
 					}
@@ -120,11 +120,11 @@ void ACGGameState::UseSkin(const FString& pName, bool pIsBlack)
 			}
 		}
 
-		if (pIsBlack)
+		if (pIsBlack || UCGBPUtils::IsHotSeatMode(this))
 		{
 			BlackMaterial = DefaultBlack;
 		}
-		else
+		if(!pIsBlack || UCGBPUtils::IsHotSeatMode(this))
 		{
 			WhiteMaterial = DefaultWhite;
 		}

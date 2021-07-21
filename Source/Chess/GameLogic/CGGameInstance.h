@@ -59,7 +59,7 @@ public:
 	//https://unreal.gg-labs.com/wiki-archives/networking/how-to-use-sessions-in-c++
 
 	UFUNCTION(BlueprintCallable, Category = "Chess settings")
-	bool Host(const FString& fen);
+	bool Host(const FString& fen, bool bIsLan);
 
 	bool HostSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, bool bIsLAN, bool bIsPresence, int32 MaxNumPlayers);
 

@@ -82,11 +82,11 @@ TSubclassOf<UOnlineSession> UCGGameInstance::GetOnlineSessionClass()
 	return UCGOnlineSession::StaticClass();
 }
 
-bool UCGGameInstance::Host(const FString& fen)
+bool UCGGameInstance::Host(const FString& fen, bool bIsLan)
 {
 	CurrentFen = fen;
 	//const TSharedPtr<const FUniqueNetId> netID = UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
-	return HostSession(GetMyId(), GetMyName(), true, true, 2);
+	return HostSession(GetMyId(), GetMyName(), bIsLan, true, 2);
 }
 
 bool UCGGameInstance::HostSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, bool bIsLAN, bool bIsPresence, int32 MaxNumPlayers)
