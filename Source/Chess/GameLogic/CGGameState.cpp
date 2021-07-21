@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "GameLogic/CGGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "GameLogic/CGChessPlayerController.h"
@@ -12,10 +11,8 @@
 #include "GameLogic/CGGameInstance.h"
 #include "GameLogic/CGSettingsSave.h"
 
-
-ACGGameState::ACGGameState() :Super()
+ACGGameState::ACGGameState()
 {
-
 }
 
 void ACGGameState::ColorsChanged()

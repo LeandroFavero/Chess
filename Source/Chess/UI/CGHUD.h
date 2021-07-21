@@ -17,7 +17,6 @@ class CHESS_API ACGHUD : public AHUD
 	GENERATED_BODY()
 
 	UUserWidget* CurrentWidget;
-	void InitHUD();
 
 public:
 	UUserWidget* MainMenu;

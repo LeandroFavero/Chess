@@ -7,18 +7,6 @@
 
 #define Dbg(x) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT(x));}
 
-void ACGHUD::InitHUD()
-{
-	if (MainMenuTemplate && !MainMenu)
-	{
-		
-	}
-	if (InGameTemplate && !InGame)
-	{
-		
-	}
-}
-
 ACGHUD::ACGHUD()
 {
 	
