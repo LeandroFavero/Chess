@@ -20,9 +20,16 @@ ACGChessPlayerController::ACGChessPlayerController()
 	bEnableTouchEvents = true;
 }
 
-void ACGChessPlayerController::ServerChangeSkin_Implementation(const FName& Name)
+void ACGChessPlayerController::ServerChangeSkin_Implementation(const FString& Name)
 {
-
+	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
+	{
+		state->UseSkin(Name, bIsBlack);
+		if (UCGBPUtils::IsHotSeatMode(this))
+		{
+			state->UseSkin(Name, !bIsBlack);
+		}
+	}
 }
 
 void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGTile* pTile)
@@ -157,7 +164,6 @@ void ACGChessPlayerController::BeginPlayingState()
 
 void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	DOREPLIFETIME(ACGChessPlayerController, SelectedSkinId)
 	DOREPLIFETIME(ACGChessPlayerController, PreferredSide)
 	DOREPLIFETIME(ACGChessPlayerController, bIsBlack)
 }

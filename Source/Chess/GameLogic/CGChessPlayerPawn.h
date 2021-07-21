@@ -11,14 +11,6 @@
 class ACGPiece;
 class ACGTile;
 
-UENUM(BlueprintType)
-enum class ESide: uint8
-{
-	Spectator	UMETA(DisplayName = "Spectator"),
-	Black	UMETA(DisplayName = "Black"),
-	White	UMETA(DisplayName = "White")
-};
-
 UCLASS()
 class CHESS_API ACGChessPlayerPawn : public APawn
 {
@@ -87,10 +79,6 @@ public:
 	FHitResult hitResult;
 
 	float lastMouseX, lastMouseY;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
-	ESide Side;
 
 	// Sets default values for this pawn's properties
 	ACGChessPlayerPawn();

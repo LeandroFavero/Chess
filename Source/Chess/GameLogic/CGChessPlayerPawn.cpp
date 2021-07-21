@@ -11,6 +11,7 @@
 #include "GameLogic/CGGameState.h"
 #include "GameLogic/CGGameMode.h"
 #include "Blueprint/CGBPUtils.h"
+#include "ChessLogic/CGChessBoard.h"
 //#include "Kismet/GameplayStatics.h"
 
 

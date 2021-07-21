@@ -36,6 +36,8 @@ class CHESS_API UCGGameInstance : public UGameInstance
 public:
 	UCGGameInstance(const FObjectInitializer& ObjectInitializer);
 
+	void Init() override;
+
 	UPROPERTY(BlueprintReadWrite, Category = "Chess settings")
 	UCGSettingsSave* Settings;
 

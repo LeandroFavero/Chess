@@ -7,6 +7,11 @@
 #include "ChessLogic/CGChessBoard.h"
 #include "UI/CGHUD.h"
 #include "Blueprint/CGBPUtils.h"
+#include "Engine/DataTable.h"
+#include "GameLogic/CGSkinData.h"
+#include "GameLogic/CGGameInstance.h"
+#include "GameLogic/CGSettingsSave.h"
+
 
 ACGGameState::ACGGameState() :Super()
 {
@@ -39,6 +44,13 @@ void ACGGameState::HandleMatchHasStarted()
 			}
 		}
 		pc->OnStart.Broadcast(pc->bIsBlack);
+		if (UCGGameInstance* insta = GetWorld()->GetGameInstance<UCGGameInstance>())
+		{
+			if (insta->Settings)
+			{
+				pc->ServerChangeSkin(insta->Settings->SelectedSkin);
+			}
+		}
 	}
 }
 
@@ -77,6 +89,44 @@ void ACGGameState::ResultNotify()
 		if (ACGChessPlayerController* pc = Cast<ACGChessPlayerController>(w->GetFirstPlayerController()))
 		{
 			pc->OnGameOver.Broadcast(static_cast<EGameResult>(GameResult));
+		}
+	}
+}
+
+void ACGGameState::UseSkin(const FString& pName, bool pIsBlack)
+{
+	if (Skins)
+	{
+		for (const auto& it : Skins->GetRowMap())
+		{
+			if (const FCGSkinData* row = (FCGSkinData*)(it.Value))
+			{
+				if (pName.Equals(row->Name.ToString(), ESearchCase::IgnoreCase))
+				{
+					if (pIsBlack)
+					{
+						BlackMaterial = row->BlackMaterial;
+					}
+					else
+					{
+						WhiteMaterial = row->WhiteMaterial;
+					}
+					if (UCGBPUtils::IsLocalUpdateRequired(this))
+					{
+						ColorsChanged();
+					}
+					return;
+				}
+			}
+		}
+
+		if (pIsBlack)
+		{
+			BlackMaterial = DefaultBlack;
+		}
+		else
+		{
+			WhiteMaterial = DefaultWhite;
 		}
 	}
 }

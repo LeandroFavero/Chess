@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "GameLogic/CGGameState.h"
+#include "GameLogic/CGSide.h"
 #include "CGChessPlayerController.generated.h"
 
 class ACGPiece;
 class ACGTile;
+class ACGGameState;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameStartDelegate, bool, bIsBlack);
@@ -22,19 +23,19 @@ class CHESS_API ACGChessPlayerController : public APlayerController
 public:
 	ACGChessPlayerController();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Chess setup")
-	int SelectedSkinId{ 0 };
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
+	FString SelectedSkin { "Default" };
 
 	//0white 1black 2no
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
-	int PreferredSide;
+	TEnumAsByte<ESide> PreferredSide;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=SideChanged, Category = "Chess setup")
 	bool bIsBlack{ false };
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
-	void ServerChangeSkin(const FName& Name);
-	void ServerChangeSkin_Implementation(const FName& Name);
+	void ServerChangeSkin(const FString& Name);
+	void ServerChangeSkin_Implementation(const FString& Name);
 	
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
 	void ServerMoveToTile(ACGPiece* pPiece, ACGTile* pTile);

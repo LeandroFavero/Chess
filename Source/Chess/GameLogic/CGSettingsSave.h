@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameLogic/CGSide.h"
 #include "GameFramework/SaveGame.h"
 #include "CGSettingsSave.generated.h"
 
@@ -16,19 +17,21 @@ class CHESS_API UCGSettingsSave : public USaveGame
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	FText PlayerName {FText::FromString(TEXT(""))};
+	FText PlayerName { FText::FromString(TEXT("")) };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	int SelectedSkin{ 0 };
+	FString SelectedSkin { TEXT("Default") };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	int PreferredSide{ 0 };
+	TEnumAsByte<ESide> PreferredSide{ ESide::WHITE };
 
+	/*
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
 	int Player2SelectedSkin{ 0 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
 	int Player2PreferredSide{ 0 };
+	*/
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
 	FString LastIp{ TEXT("") };

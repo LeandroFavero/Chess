@@ -4,6 +4,7 @@
 #include "GameLogic/CGGameMode.h"
 #include "GameLogic/CGChessPlayerPawn.h"
 #include "GameLogic/CGChessPlayerController.h"
+#include "ChessLogic/CGChessBoard.h"
 #include "MaterialShared.h"
 #include "UI/CGHUD.h"
 #include "ChessLogic/CGPiece.h"

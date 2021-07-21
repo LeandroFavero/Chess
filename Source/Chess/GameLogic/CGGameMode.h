@@ -2,12 +2,11 @@
 
 #pragma once
 
-#include "GameLogic/CGSkinData.h"
-#include "Engine/DataTable.h"
 #include "CoreMinimal.h"
-#include "ChessLogic/CGChessBoard.h"
+#include "GameLogic/CGSide.h"
 #include "GameFramework/GameMode.h"
 #include "CGGameMode.generated.h"
+
 
 class APlayerController;
 /**

@@ -22,6 +22,12 @@ UCGGameInstance::UCGGameInstance(const FObjectInitializer& ObjectInitializer): S
 
 }
 
+void UCGGameInstance::Init()
+{
+	Super::Init();
+	LoadCfg();
+}
+
 void UCGGameInstance::SaveCfg()
 {
 	if (Settings)

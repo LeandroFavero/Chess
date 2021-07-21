@@ -9,6 +9,7 @@
 #include "Engine/Engine.h"
 #include "ChessLogic/CGPiece.h"
 #include "ChessLogic/CGTile.h"
+#include "ChessLogic/CGChessBoard.h"
 #include "EngineUtils.h"
 #include <SocketSubsystem.h>
 #include <IPAddress.h>

@@ -5,20 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameLogic/CGUndo.h"
 #include "GameFramework/GameState.h"
+#include "GameLogic/CGSide.h"
 #include "CGGameState.generated.h"
 
 class ACGChessBoard;
 class UDataTable;
 
-UENUM(BlueprintType)
-enum EGameResult
-{
-	NOT_FINISHED	UMETA(DisplayName = ""),
-	BLACK_WINS		UMETA(DisplayName = "Black wins!"),
-	WHITE_WINS		UMETA(DisplayName = "White wins!"),
-	DRAW			UMETA(DisplayName = "Draw!"),
-	DISCONNECT		UMETA(DisplayName = "Disconnected.")
-};
 
 UCLASS()
 class CHESS_API ACGGameState : public AGameState
@@ -29,6 +21,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	UDataTable* Skins;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Chess setup")
+	UMaterialInstance* DefaultBlack;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Chess setup")
+	UMaterialInstance* DefaultWhite;
 
 	UPROPERTY(ReplicatedUsing=ColorsChanged, EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
 	UMaterialInstance* BlackMaterial;
@@ -46,6 +44,8 @@ public:
 
 	UFUNCTION()
 	void ResultNotify();
+
+	void UseSkin(const FString& Name, bool bIsBlack);
 
 	UFUNCTION()
 	void ColorsChanged();
