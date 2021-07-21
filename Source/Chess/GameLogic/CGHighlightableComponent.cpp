@@ -13,33 +13,21 @@ UCGHighlightableComponent::UCGHighlightableComponent()
 	// ...
 }
 
-
-// Called when the game starts
-void UCGHighlightableComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// ...
-	
-}
-
 void UCGHighlightableComponent::SetHighlighted(bool value)
 {
-	//TArray<UActorComponent*> meshes = ;
-	for (UActorComponent* m : GetOwner()->GetComponentsByClass(USkeletalMeshComponent::StaticClass()))
+	TArray<USkeletalMeshComponent*> skcs;
+	GetOwner()->GetComponents<USkeletalMeshComponent>(skcs);
+	for (USkeletalMeshComponent* m : skcs)
 	{
-		USkeletalMeshComponent* smc = Cast<USkeletalMeshComponent>(m);
-		if (smc)
-		{
-			smc->SetRenderCustomDepth(value);
-		}
+		m->SetRenderCustomDepth(value);
 	}
-	for (UActorComponent* m : GetOwner()->GetComponentsByClass(UStaticMeshComponent::StaticClass()))
+	TArray<UStaticMeshComponent*> sms;
+	GetOwner()->GetComponents<UStaticMeshComponent>(sms);
+	for (UStaticMeshComponent* m : sms)
 	{
-		UStaticMeshComponent* smc = Cast<UStaticMeshComponent>(m);
-		if (smc)
+		if (m)
 		{
-			smc->SetRenderCustomDepth(value);
+			m->SetRenderCustomDepth(value);
 		}
 	}
 }

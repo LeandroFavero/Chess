@@ -22,11 +22,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
 	bool bHotSeatMode;
 
-	//virtual void BeginPlay() override;
-
-	void StartMatch() override;
-	void PostLogin(APlayerController* NewPlayer) override;
+	bool ReadyToStartMatch_Implementation() override;
+	bool ReadyToEndMatch_Implementation() override;
 
 	void HandleMatchHasStarted() override;
-
 };

@@ -12,10 +12,7 @@
 #include "GameLogic/CGGameMode.h"
 #include "Blueprint/CGBPUtils.h"
 #include "ChessLogic/CGChessBoard.h"
-//#include "Kismet/GameplayStatics.h"
 
-
-// Sets default values
 ACGChessPlayerPawn::ACGChessPlayerPawn() : Super()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -56,7 +53,10 @@ void ACGChessPlayerPawn::Tick(float DeltaTime)
 		{
 			OrbitCamera(SpinnyMenuSpeed * DeltaTime, 0, false);
 		}
-		TraceCursor();
+		else
+		{
+			TraceCursor();
+		}
 	}
 }
 
@@ -196,7 +196,7 @@ void ACGChessPlayerPawn::BeginGrabPiece()
 				//can we move it?
 				if (piece->Board && piece->Board->IsReadyForNextMove() &&
 					(piece->IsBlack() == pc->bIsBlack || UCGBPUtils::IsHotSeatMode(this)) &&
-					(piece->Board->IsNextMoveBlack() == piece->IsBlack()))
+					(piece->Board->IsNextMoveBlack() == piece->IsBlack()) && !bIsSpinnyMenu)
 				{
 					GrabbedPiece = piece;
 					pc->ServerGrab(piece, true);

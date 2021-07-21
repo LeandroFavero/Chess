@@ -8,7 +8,8 @@
 #include "GameLogic/CGOnlineSession.h"
 #include "Blueprint/CGBPUtils.h"
 
-UCGGameInstance::UCGGameInstance(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
+UCGGameInstance::UCGGameInstance(const FObjectInitializer& ObjectInitializer)
+	:Super(ObjectInitializer)
 {
 	/** Bind function for CREATING a Session */
 	OnCreateSessionCompleteDelegate = FOnCreateSessionCompleteDelegate::CreateUObject(this, &UCGGameInstance::OnCreateSessionComplete);
@@ -19,7 +20,6 @@ UCGGameInstance::UCGGameInstance(const FObjectInitializer& ObjectInitializer): S
 	OnJoinSessionCompleteDelegate = FOnJoinSessionCompleteDelegate::CreateUObject(this, &UCGGameInstance::OnJoinSessionComplete);
 	/** Bind function for DESTROYING a Session */
 	OnDestroySessionCompleteDelegate = FOnDestroySessionCompleteDelegate::CreateUObject(this, &UCGGameInstance::OnDestroySessionComplete);
-
 }
 
 void UCGGameInstance::Init()
@@ -82,9 +82,9 @@ TSubclassOf<UOnlineSession> UCGGameInstance::GetOnlineSessionClass()
 	return UCGOnlineSession::StaticClass();
 }
 
-bool UCGGameInstance::Host(const FString& fen, bool bIsLan)
+bool UCGGameInstance::Host(const FString& Fen, bool bIsLan)
 {
-	CurrentFen = fen;
+	CurrentFen = Fen;
 	//const TSharedPtr<const FUniqueNetId> netID = UGameplayStatics::GetGameInstance(GetWorld())->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
 	return HostSession(GetMyId(), GetMyName(), bIsLan, true, 2);
 }

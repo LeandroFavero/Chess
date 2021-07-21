@@ -19,30 +19,26 @@ ACGGameMode::ACGGameMode()
 	HUDClass = ACGHUD::StaticClass();
 }
 
-/*void ACGGameMode::BeginPlay()
+bool ACGGameMode::ReadyToStartMatch_Implementation()
 {
-    
-}*/
-
-void ACGGameMode::StartMatch()
-{
-    //if hot seat or menu start the game
-    if (UCGBPUtils::IsHotSeatMode(this) || UCGBPUtils::IsStandalone(this))
+    if (NumPlayers == 2 || UCGBPUtils::IsHotSeatMode(this) || UCGBPUtils::IsStandalone(this))
     {
-        SetMatchState(MatchState::InProgress);
+        return true;
     }
-    //can we not call super?
+    return false;
 }
 
-void ACGGameMode::PostLogin(APlayerController* NewPlayer)
+bool ACGGameMode::ReadyToEndMatch_Implementation()
 {
-    Super::PostLogin(NewPlayer);
-    //if we have enough players start the match
-    if (NumPlayers == 2)
+    if (NumPlayers < 2 && !UCGBPUtils::IsHotSeatMode(this))
     {
-        
-        SetMatchState(MatchState::InProgress);
+        if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
+        {
+            state->GameResult = EGameResult::DISCONNECT;
+        }
+        return true;
     }
+    return false;
 }
 
 void ACGGameMode::HandleMatchHasStarted()
