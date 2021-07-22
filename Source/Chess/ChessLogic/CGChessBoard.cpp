@@ -88,54 +88,53 @@ void ACGChessBoard::OnConstruction(const FTransform& iTransform)
 		ACGTile* tile = Board[i];
 
 		int otherIdx = i + 1;
-		tile->Neighbours[static_cast<int>(EDir::NORTH)] = (otherIdx % Size.Y == 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::NORTH)] = ((otherIdx % Size.Y) == 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
 
 		otherIdx = i + 1 + Size.Y;
-		tile->Neighbours[static_cast<int>(EDir::NORTH_EAST)] = (otherIdx % Size.Y == 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::NORTH_EAST)] = ((otherIdx % Size.Y) == 0 || otherIdx >= tileCount) ? nullptr : Board[otherIdx];
 
 		otherIdx = i + Size.Y;
 		tile->Neighbours[static_cast<int>(EDir::EAST)] = (otherIdx >= tileCount) ? nullptr : Board[otherIdx];
 
 		otherIdx = i - 1 + Size.Y;
-		tile->Neighbours[static_cast<int>(EDir::SOUTH_EAST)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::SOUTH_EAST)] = (otherIdx < 0 || otherIdx >= tileCount || (otherIdx % Size.Y) == (Size.Y - 1)) ? nullptr : Board[otherIdx];
 
 		otherIdx = i - 1;
-		tile->Neighbours[static_cast<int>(EDir::SOUTH)] = (otherIdx < 0 || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::SOUTH)] = (otherIdx < 0 || (otherIdx % Size.Y) == (Size.Y - 1)) ? nullptr : Board[otherIdx];
 
 		otherIdx = i - 1 - Size.Y;
-		tile->Neighbours[static_cast<int>(EDir::SOUTH_WEST)] = (otherIdx < 0 || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::SOUTH_WEST)] = (otherIdx < 0 || (otherIdx % Size.Y) == (Size.Y - 1)) ? nullptr : Board[otherIdx];
 
 		otherIdx = i - Size.Y;
 		tile->Neighbours[static_cast<int>(EDir::WEST)] = (otherIdx < 0) ? nullptr : Board[otherIdx];
 
 		otherIdx = i + 1 - Size.Y;
-		tile->Neighbours[static_cast<int>(EDir::NORTH_WEST)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::NORTH_WEST)] = (otherIdx < 0 || otherIdx >= tileCount || (otherIdx % Size.Y) == 0) ? nullptr : Board[otherIdx];
 
 		//knight moves clockwise
 		otherIdx = i + 2 + Size.Y;
-		tile->Neighbours[static_cast<int>(EDir::KNIGHT1)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0 || otherIdx % Size.Y == 1) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT1)] = (otherIdx < 0 || otherIdx >= tileCount || (otherIdx % Size.Y) == 0 || (otherIdx % Size.Y) == 1) ? nullptr : Board[otherIdx];
 
 		otherIdx = i + 1 + (Size.Y * 2);
-		tile->Neighbours[static_cast<int>(EDir::KNIGHT2)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT2)] = (otherIdx < 0 || otherIdx >= tileCount || (otherIdx % Size.Y) == 0) ? nullptr : Board[otherIdx];
 
 		otherIdx = i - 1 + (Size.Y * 2);
-		tile->Neighbours[static_cast<int>(EDir::KNIGHT3)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT3)] = (otherIdx < 0 || otherIdx >= tileCount || (otherIdx % Size.Y) == (Size.Y - 1)) ? nullptr : Board[otherIdx];
 
 		otherIdx = i - 2 + Size.Y;
-		tile->Neighbours[static_cast<int>(EDir::KNIGHT4)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0 || otherIdx % Size.Y == Size.Y - 2 || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
-
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT4)] = (otherIdx < 0 || otherIdx >= tileCount || (otherIdx % Size.Y) == (Size.Y - 2) || (otherIdx % Size.Y) == (Size.Y - 1)) ? nullptr : Board[otherIdx];
 
 		otherIdx = i - 2 - Size.Y;
-		tile->Neighbours[static_cast<int>(EDir::KNIGHT5)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0 || otherIdx % Size.Y == Size.Y - 2 || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT5)] = (otherIdx < 0 || otherIdx >= tileCount || (otherIdx % Size.Y) == (Size.Y - 2) || (otherIdx % Size.Y) == (Size.Y - 1)) ? nullptr : Board[otherIdx];
 		
 		otherIdx = i - 1 - (Size.Y * 2);
-		tile->Neighbours[static_cast<int>(EDir::KNIGHT6)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == Size.Y - 1) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT6)] = (otherIdx < 0 || otherIdx >= tileCount || (otherIdx % Size.Y) == (Size.Y - 1)) ? nullptr : Board[otherIdx];
 
 		otherIdx = i + 1 - (Size.Y * 2);
-		tile->Neighbours[static_cast<int>(EDir::KNIGHT7)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT7)] = (otherIdx < 0 || otherIdx >= tileCount || (otherIdx % Size.Y) == 0) ? nullptr : Board[otherIdx];
 
 		otherIdx = i + 2 - Size.Y;
-		tile->Neighbours[static_cast<int>(EDir::KNIGHT8)] = (otherIdx < 0 || otherIdx >= tileCount || otherIdx % Size.Y == 0 || otherIdx % Size.Y == 1) ? nullptr : Board[otherIdx];
+		tile->Neighbours[static_cast<int>(EDir::KNIGHT8)] = (otherIdx < 0 || otherIdx >= tileCount || (otherIdx % Size.Y) == 0 || (otherIdx % Size.Y) == 1) ? nullptr : Board[otherIdx];
 
 	}
 }
