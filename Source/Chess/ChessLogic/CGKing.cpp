@@ -5,11 +5,28 @@
 #include "CGKingMovement.h"
 #include "ChessLogic/CGChessBoard.h"
 #include "ChessLogic/CGTile.h"
+#include "Blueprint/CGBPUtils.h"
 
 ACGKing::ACGKing()
 {
 	UCGKingMovement* moveComp = CreateDefaultSubobject<UCGKingMovement>(TEXT("MoveValidator"));
 	AddOwnedComponent(moveComp);
+}
+
+void ACGKing::MoveToTile(ACGTile* iTile)
+{
+	Super::MoveToTile(iTile);
+	//update rook for local player
+	if (Board)
+	{
+		if (FCGUndo* last = Board->GetLastUndo())
+		{
+			if (last->CastleRook && UCGBPUtils::IsLocalUpdateRequired(this))
+			{
+				last->CastleRook->SnapToPlace();
+			}
+		}
+	}
 }
 
 void ACGKing::MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents)
@@ -32,28 +49,13 @@ void ACGKing::MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents)
 					oUndo.CastleRookTile = t;
 					FCGUndo dummyUndo;
 					r->MoveToTileInternal(iTile->Neighbours[otherSide], dummyUndo, false);
-					r->ClientSnapToPlace();
+					//r->ClientSnapToPlace();
 					break;
 				}
 			}
 		}
 	}
 	Super::MoveToTileInternal(iTile, oUndo, iEvents);
-}
-
-TSet<ACGTile*> ACGKing::GetAvailableMoves()
-{
-	TSet<ACGTile*> ret;
-	CastleTiles.Empty();
-	Board->RebuildAttackMap(IsWhite());
-	TArray<UCGPieceMovementBase*> validators;
-	GetComponents<UCGPieceMovementBase>(validators);
-	for (UCGPieceMovementBase* v : validators)
-	{
-		ensure(v);
-		v->GetAvailableMoves(ret);
-	}
-	return ret;
 }
 
 bool ACGKing::IsInCheck()

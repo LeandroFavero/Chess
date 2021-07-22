@@ -476,41 +476,52 @@ FCGSquareCoord ACGChessBoard::LocationToCoord(const FVector& iLocation)
 	return FCGSquareCoord(Size.X - boardLoc.X / TileSize.X, boardLoc.Y / TileSize.Y);
 }
 
-bool ACGChessBoard::HasValidMove(bool iIsBlack)
-{
-	ACGPiece** found = Pieces.FindByPredicate([iIsBlack](ACGPiece* p) {
-		return p && !p->IsCaptured() && p->IsBlack() == iIsBlack && p->HasAvailableMoves(); 
-	});
-	return found != nullptr;
-}
-
 bool ACGChessBoard::GameOverCheck()
 {
 	bool isBlack = IsNextMoveBlack();
-	if (!HasValidMove(isBlack))
+	if (BlackKing && WhiteKing)
 	{
 		if (UWorld* w = GetWorld())
 		{
 			ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>();
 			ACGGameState* state = w->GetGameState<ACGGameState>();
-			if(mode && state && BlackKing && WhiteKing)
+			if (mode && state)
 			{
-				//checkmate?
-				if ((isBlack ? BlackKing : WhiteKing)->IsInCheck())
+				ACGKing* k = isBlack ? BlackKing : WhiteKing;
+				if (k->IsCaptured())//Should not be possible, but end the game if the king is somehow captured
 				{
 					mode->EndMatch();
 					state->GameResult = isBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
+					if (UCGBPUtils::IsLocalUpdateRequired(this))
+					{
+						state->ResultNotify();
+					}
+					return true;
 				}
-				else
+				//find a piece with valid move
+				ACGPiece** found = Pieces.FindByPredicate([isBlack](ACGPiece* p) {
+					return p && !p->IsCaptured() && p->IsBlack() == isBlack && p->HasAvailableMoves();
+				});
+
+				if (found == nullptr)//no valid move, it's game over!
 				{
-					mode->EndMatch();
-					state->GameResult = EGameResult::DRAW;
+					//checkmate?
+					if (k->IsInCheck())
+					{
+						mode->EndMatch();
+						state->GameResult = isBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
+					}
+					else
+					{
+						mode->EndMatch();
+						state->GameResult = EGameResult::DRAW;
+					}
+					if (UCGBPUtils::IsLocalUpdateRequired(this))
+					{
+						state->ResultNotify();
+					}
+					return true;
 				}
-				if (UCGBPUtils::IsLocalUpdateRequired(this))
-				{
-					state->ResultNotify();
-				}
-				return true;
 			}
 		}
 	}
@@ -545,6 +556,15 @@ FCGUndo& ACGChessBoard::CreateUndo()
 {
 	Undos.Emplace(Undos.Num());
 	return Undos.Last();
+}
+
+FCGUndo* ACGChessBoard::GetLastUndo()
+{
+	if (Undos.Num() == 0)
+	{
+		return nullptr;
+	}
+	return &Undos.Last();
 }
 
 void ACGChessBoard::UndoInternal(FCGUndo& oUndo)

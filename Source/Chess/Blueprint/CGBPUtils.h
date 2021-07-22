@@ -57,4 +57,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Chess utils")
 	static FString GetLocalIP();
+
+	UFUNCTION(BlueprintPure, Category = "Chess utils")
+	static bool IsEditorPresent();
 };

@@ -9,9 +9,8 @@
 #include "GameLogic/CGUndo.h"
 #include "CGChessBoard.h"
 
-//TODO: promotion !!!
 
-void UCGPawnMovement::GetAvailableMoves(TSet<ACGTile*>& set)
+void UCGPawnMovement::GetAvailableMoves(TSet<ACGTile*>& oSet)
 {
 	ACGPawn* pawn = GetOwner<ACGPawn>();
 	if (pawn && pawn->Tile && pawn->Board)
@@ -19,14 +18,14 @@ void UCGPawnMovement::GetAvailableMoves(TSet<ACGTile*>& set)
 		ACGTile* t = pawn->Tile->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
 		if (t && t->OccupiedBy == nullptr)
 		{
-			set.Add(t);
+			oSet.Add(t);
 			//can double open?
 			if ((pawn->IsBlack() && pawn->Position.Y == pawn->Board->Size.Y - 2) || (pawn->IsWhite() && pawn->Position.Y == 1))
 			{
 				t = t->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
 				if (t && t->OccupiedBy == nullptr)
 				{
-					set.Add(t);
+					oSet.Add(t);
 				}
 			}
 		}
@@ -36,7 +35,7 @@ void UCGPawnMovement::GetAvailableMoves(TSet<ACGTile*>& set)
 		{
 			if (t->OccupiedBy->IsBlack() != pawn->IsBlack())
 			{
-				set.Add(t);
+				oSet.Add(t);
 			}
 		}
 		t = pawn->Tile->Neighbours[pawn->IsBlack() ? EDir::SOUTH_WEST : EDir::NORTH_WEST];
@@ -44,7 +43,7 @@ void UCGPawnMovement::GetAvailableMoves(TSet<ACGTile*>& set)
 		{
 			if (t->OccupiedBy->IsBlack() != pawn->IsBlack())
 			{
-				set.Add(t);
+				oSet.Add(t);
 			}
 		}
 		//en passant
@@ -61,7 +60,7 @@ void UCGPawnMovement::GetAvailableMoves(TSet<ACGTile*>& set)
 						if (undo.From && undo.To && (abs(undo.From->Position.Y - undo.To->Position.Y) == 2))//was the last move double open?
 						{
 							pawn->EnPassantTile = t->Neighbours[pawn->IsBlack() ? EDir::SOUTH : EDir::NORTH];
-							set.Add(pawn->EnPassantTile);
+							oSet.Add(pawn->EnPassantTile);
 							break;
 						}
 					}
@@ -71,7 +70,7 @@ void UCGPawnMovement::GetAvailableMoves(TSet<ACGTile*>& set)
 	}
 }
 
-void UCGPawnMovement::GetAttackedTiles(TSet<ACGTile*>& set)
+void UCGPawnMovement::GetAttackedTiles(TSet<ACGTile*>& oSet)
 {
 	ACGPawn* owner = GetOwner<ACGPawn>();
 	if (owner)
@@ -80,12 +79,12 @@ void UCGPawnMovement::GetAttackedTiles(TSet<ACGTile*>& set)
 		t = owner->Tile->Neighbours[owner->IsBlack() ? EDir::SOUTH_WEST : EDir::NORTH_WEST];
 		if (t)
 		{
-			set.Add(t);
+			oSet.Add(t);
 		}
 		t = owner->Tile->Neighbours[owner->IsBlack() ? EDir::SOUTH_EAST : EDir::NORTH_EAST];
 		if (t)
 		{
-			set.Add(t);
+			oSet.Add(t);
 		}
 	}
 	//en passant can't attack kings so it should not matter.

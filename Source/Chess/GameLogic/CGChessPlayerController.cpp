@@ -118,6 +118,7 @@ void ACGChessPlayerController::ServerChoosePromotion_Implementation(const FStrin
 					if (ACGPawn* pawn = Cast<ACGPawn>(u.Piece))
 					{
 						pawn->FinishPromotion(iPieceType, u);
+						board->GameOverCheck();
 					}
 				}
 			}

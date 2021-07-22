@@ -3,19 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ChessLogic/CGPieceMovementBase.h"
+#include "ChessLogic/CGLinearMovement.h"
 #include "CGKingMovement.generated.h"
 
 /**
  * 
  */
 UCLASS(Blueprintable, ClassGroup = (Chess), meta = (BlueprintSpawnableComponent))
-class CHESS_API UCGKingMovement : public UCGPieceMovementBase
+class CHESS_API UCGKingMovement : public UCGLinearMovement
 {
 	GENERATED_BODY()
 
 public:
+	UCGKingMovement();
+
 	void GetAvailableMoves(TSet<ACGTile*>& set) override;
 
-	void GetAttackedTiles(TSet<ACGTile*>& set) override;
+	//void GetAttackedTiles(TSet<ACGTile*>& set) override;
 };

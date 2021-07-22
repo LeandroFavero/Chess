@@ -93,14 +93,12 @@ public:
 	virtual FCGSquareCoord LocationToCoord(const FVector& Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual bool HasValidMove(bool bIsBlack);
-
-	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual bool GameOverCheck();
 
 	virtual void RefreshPieceColors();
 	virtual ACGTile* GetTile(const FCGSquareCoord& iCoord);
 	virtual FCGUndo& CreateUndo();
+	virtual FCGUndo* GetLastUndo();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void UndoTo(const int MoveNum);

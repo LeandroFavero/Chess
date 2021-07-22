@@ -6,37 +6,27 @@
 #include "ChessLogic/CGRook.h"
 #include "ChessLogic/CGChessBoard.h"
 
-//IMPORTANT! Attack map has to be built before calling this
-void UCGKingMovement::GetAvailableMoves(TSet<ACGTile*>& set)
+UCGKingMovement::UCGKingMovement()
 {
+	Directions = { EDir::NORTH, EDir::NORTH_EAST, EDir::EAST, EDir::SOUTH_EAST, EDir::SOUTH, EDir::SOUTH_WEST, EDir::WEST, EDir::NORTH_WEST };
+	Range = 1;
+}
+
+void UCGKingMovement::GetAvailableMoves(TSet<ACGTile*>& oSet)
+{
+	Super::GetAvailableMoves(oSet);
 	ACGKing* piece = GetOwner<ACGKing>();
 	if (piece && piece->Tile && piece->Board)
 	{
-		for (int i = EDir::NORTH; i <= EDir::NORTH_WEST; ++i)
-		{
-			ACGTile* t = piece->Tile->Neighbours[i];
-			if (t)
-			{
-				if (ACGPiece* other = Cast<ACGPiece>(t->OccupiedBy))
-				{
-					if (piece->IsBlack() == other->IsBlack())
-					{
-						continue;
-					}
-				}
-				if (t->AttackedBy.Num() == 0)//the king can only move to not attacked tiles
-				{
-					set.Add(t);
-				}
-			}
-		}
+		piece->CastleTiles.Empty();
 		//can castle?
 		if (!piece->IsMoved())
 		{
+			piece->Board->RebuildAttackMap(piece->IsWhite());
 			for (EDir dir : {EDir::EAST, EDir::WEST})
 			{
-				int distance {0};
-				ACGTile* tileAtTwoDistance{ nullptr };
+				int distance { 0 };
+				ACGTile* tileAtTwoDistance { nullptr };
 				for (ACGTile* t = piece->Tile->Neighbours[dir]; t; t = t->Neighbours[dir])
 				{
 					if (t)
@@ -56,7 +46,7 @@ void UCGKingMovement::GetAvailableMoves(TSet<ACGTile*>& set)
 							{
 								//can castle this way
 								piece->CastleTiles.Add(tileAtTwoDistance);
-								set.Add(tileAtTwoDistance);
+								oSet.Add(tileAtTwoDistance);
 							}
 							else
 							{
@@ -67,21 +57,6 @@ void UCGKingMovement::GetAvailableMoves(TSet<ACGTile*>& set)
 					}
 					distance += 1;
 				}
-			}
-		}
-	}
-}
-
-void UCGKingMovement::GetAttackedTiles(TSet<ACGTile*>& set)
-{
-	ACGKing* piece = GetOwner<ACGKing>();
-	if (piece && piece->Tile && piece->Board)
-	{
-		for (int i = EDir::NORTH; i <= EDir::NORTH_WEST; ++i)
-		{
-			if (ACGTile* t = piece->Tile->Neighbours[i])
-			{
-				set.Add(t);
 			}
 		}
 	}

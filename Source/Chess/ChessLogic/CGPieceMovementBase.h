@@ -15,8 +15,8 @@ class CHESS_API UCGPieceMovementBase : public UActorComponent
 	GENERATED_BODY()
 public:	
 	UFUNCTION(BlueprintCallable, Category = "Chess logic")
-	virtual void GetAvailableMoves(TSet<ACGTile*>& set) {};
+	virtual void GetAvailableMoves(TSet<ACGTile*>& oSet) {};
 
 	UFUNCTION(BlueprintCallable, Category = "Chess logic")
-	virtual void GetAttackedTiles(TSet<ACGTile*>& set) {};
+	virtual void GetAttackedTiles(TSet<ACGTile*>& oSet) {};
 };

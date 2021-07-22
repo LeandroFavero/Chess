@@ -1,0 +1,11 @@
+Castling:
+r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1
+
+Castling disabled from fen:
+r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w - - 0 1
+
+Pawn promotion:
+8/PPPPPPPP/k7/8/8/K7/pppppppp/8 w - - 0 1
+
+White checkmate in 2:
+4r1rk/5K1b/7R/R7/8/8/8/8 w - - 0 1

@@ -21,10 +21,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess logic")
 	TSet<TEnumAsByte<EDir>> Directions;
 
-	void GetAvailableMoves(TSet<ACGTile*>& set) override;
+	void GetAvailableMoves(TSet<ACGTile*>& oSet) override;
 
-	void GetAttackedTiles(TSet<ACGTile*>& set) override;
+	void GetAttackedTiles(TSet<ACGTile*>& oSet) override;
 
 private:
-	void Generate(TSet<ACGTile*>& set, bool pIsAttack);
+	void Generate(TSet<ACGTile*>& oSet, bool iIsAttack);
 };

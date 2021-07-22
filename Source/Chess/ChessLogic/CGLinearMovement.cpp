@@ -3,19 +3,20 @@
 
 #include "ChessLogic/CGLinearMovement.h"
 #include "ChessLogic/CGPiece.h"
+#include "ChessLogic/CGKing.h"
 
 
-void UCGLinearMovement::GetAvailableMoves(TSet<ACGTile*>& set)
+void UCGLinearMovement::GetAvailableMoves(TSet<ACGTile*>& oSet)
 {
-	Generate(set, false);
+	Generate(oSet, false);
 }
 
-void UCGLinearMovement::GetAttackedTiles(TSet<ACGTile*>& set)
+void UCGLinearMovement::GetAttackedTiles(TSet<ACGTile*>& oSet)
 {
-	Generate(set, true);
+	Generate(oSet, true);
 }
 
-void UCGLinearMovement::Generate(TSet<ACGTile*>& set, bool pIsAttack)
+void UCGLinearMovement::Generate(TSet<ACGTile*>& oSet, bool pIsAttack)
 {
 	ACGPiece* piece = GetOwner<ACGPiece>();
 	if (piece)
@@ -32,19 +33,19 @@ void UCGLinearMovement::Generate(TSet<ACGTile*>& set, bool pIsAttack)
 					{
 						if (piece->IsBlack() != t->OccupiedBy->IsBlack())
 						{
-							set.Add(t);
+							oSet.Add(t);
 							break;
 						}
 						else
 						{
 							if (pIsAttack)
 							{
-								set.Add(t);
+								oSet.Add(t);
 							}
 							break;
 						}
 					}
-					set.Add(t);
+					oSet.Add(t);
 				}
 			}
 		}

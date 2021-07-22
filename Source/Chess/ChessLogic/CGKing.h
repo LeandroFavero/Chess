@@ -23,9 +23,9 @@ public:
 
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265A") : TEXT("\u2654")); }
 
-	void MoveToTileInternal(ACGTile* iTile, FCGUndo& undo, bool pEvents) override;
+	void MoveToTile(ACGTile* iTile) override;
 
-	TSet<ACGTile*> GetAvailableMoves() override;
+	void MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents) override;
 
 	UFUNCTION()
 	virtual bool IsInCheck();

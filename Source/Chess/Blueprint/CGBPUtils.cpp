@@ -151,7 +151,7 @@ FString UCGBPUtils::UndoToNotationString(const FCGUndo& undo)
 	//castling
 	if (undo.CastleRookTile)
 	{
-		return FString::Printf(TEXT("%d. %s"), undo.MoveNumber + 1, undo.CastleRookTile->Position.X < undo.Piece->Position.X ? "0-0" : "0-0-0");
+		return FString::Printf(TEXT("%d. %s"), undo.MoveNumber + 1, undo.CastleRookTile->Position.X > undo.Piece->Position.X ? TEXT("0-0") : TEXT("0-0-0"));
 	}
 	//{number}. {piece}{fromX if not simple}{fromY if not simple}{'x' if capture '-' if simple otherwise nothing}{toX}{toY}{piece chosen from promotion (if promotion)}{+ if check # if checkmate}
 	FString ret;
@@ -198,5 +198,14 @@ FString UCGBPUtils::GetLocalIP()
 	bool canBind = false;
 	TSharedRef<FInternetAddr> localIp = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->GetLocalHostAddr(*GLog, canBind);
 	return (localIp->IsValid() ? localIp->ToString(false) : "");
+}
+
+bool UCGBPUtils::IsEditorPresent()
+{
+#if WITH_EDITOR
+	return true;
+#else
+	return false;
+#endif
 }
 ;
