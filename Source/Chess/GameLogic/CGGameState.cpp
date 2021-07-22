@@ -90,7 +90,7 @@ void ACGGameState::ResultNotify()
 	}
 }
 
-void ACGGameState::UseSkin(const FString& pName, bool pIsBlack)
+void ACGGameState::UseSkin(const FString& iName, bool iIsBlack)
 {
 	if (Skins)
 	{
@@ -98,13 +98,13 @@ void ACGGameState::UseSkin(const FString& pName, bool pIsBlack)
 		{
 			if (const FCGSkinData* row = (FCGSkinData*)(it.Value))
 			{
-				if (pName.Equals(row->Name.ToString(), ESearchCase::IgnoreCase))
+				if (iName.Equals(row->Name.ToString(), ESearchCase::IgnoreCase))
 				{
-					if (pIsBlack || UCGBPUtils::IsHotSeatMode(this))
+					if (iIsBlack || UCGBPUtils::IsHotSeatMode(this))
 					{
 						BlackMaterial = row->BlackMaterial;
 					}
-					if(!pIsBlack || UCGBPUtils::IsHotSeatMode(this))
+					if(!iIsBlack || UCGBPUtils::IsHotSeatMode(this))
 					{
 						WhiteMaterial = row->WhiteMaterial;
 					}
@@ -117,11 +117,11 @@ void ACGGameState::UseSkin(const FString& pName, bool pIsBlack)
 			}
 		}
 
-		if (pIsBlack || UCGBPUtils::IsHotSeatMode(this))
+		if (iIsBlack || UCGBPUtils::IsHotSeatMode(this))
 		{
 			BlackMaterial = DefaultBlack;
 		}
-		if(!pIsBlack || UCGBPUtils::IsHotSeatMode(this))
+		if(!iIsBlack || UCGBPUtils::IsHotSeatMode(this))
 		{
 			WhiteMaterial = DefaultWhite;
 		}

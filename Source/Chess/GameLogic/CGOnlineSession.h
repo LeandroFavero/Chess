@@ -13,7 +13,7 @@ UCLASS()
 class CHESS_API UCGOnlineSession : public UOnlineSession
 {
 	GENERATED_BODY()
-	
 
+public:
 	void HandleDisconnect(UWorld* World, class UNetDriver* NetDriver) override;
 };

@@ -13,44 +13,44 @@ struct CHESS_API FCGUndo
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Chess")
-	int MoveNumber {0};
+	int MoveNumber { 0 };
 
 	UPROPERTY(VisibleAnywhere)
-	ACGPiece* Piece {nullptr};
+	ACGPiece* Piece { nullptr };
 
 	UPROPERTY(VisibleAnywhere)
-	ACGPiece* Promotion {nullptr};
+	ACGPiece* Promotion { nullptr };
 
 	UPROPERTY(VisibleAnywhere)
-	ACGPiece* Capture {nullptr};
+	ACGPiece* Capture { nullptr };
 
 	UPROPERTY(VisibleAnywhere)
-	ACGPiece* CastleRook {nullptr};
+	ACGPiece* CastleRook { nullptr };
 
 	UPROPERTY(VisibleAnywhere)
-	ACGTile* CastleRookTile {nullptr};
+	ACGTile* CastleRookTile { nullptr };
 
 	UPROPERTY(VisibleAnywhere)
-	ACGTile* From {nullptr};
+	ACGTile* From { nullptr };
 
 	UPROPERTY(VisibleAnywhere)
-	ACGTile* To {nullptr};
+	ACGTile* To { nullptr };
 
 	UPROPERTY(VisibleAnywhere)
-	uint8 Flags {0};
+	uint8 Flags { 0 };
 
 	UPROPERTY(VisibleAnywhere)
-	bool SimpleNotation{ true };
+	bool SimpleNotation { true };
 
 	UPROPERTY(VisibleAnywhere)
-	bool Check{ false };
+	bool Check { false };
 
 	UPROPERTY(VisibleAnywhere)
-	bool LastMoveIsBlack{ false };
+	bool LastMoveIsBlack { false };
 
 	UPROPERTY(VisibleAnywhere)
-	bool Imported{ false };
+	bool Imported { false };
 	
-	FCGUndo(int pMoveNumber):MoveNumber(pMoveNumber) {}
+	FCGUndo(const int iMoveNumber):MoveNumber(iMoveNumber) {}
 	FCGUndo() {}
 };

@@ -11,7 +11,7 @@
 
 //TODO: promotion !!!
 
-void UCGPawnMovement::AvailableMoves(TSet<ACGTile*>& set)
+void UCGPawnMovement::GetAvailableMoves(TSet<ACGTile*>& set)
 {
 	ACGPawn* pawn = GetOwner<ACGPawn>();
 	if (pawn && pawn->Tile && pawn->Board)
@@ -71,7 +71,7 @@ void UCGPawnMovement::AvailableMoves(TSet<ACGTile*>& set)
 	}
 }
 
-void UCGPawnMovement::AttackedTiles(TSet<ACGTile*>& set)
+void UCGPawnMovement::GetAttackedTiles(TSet<ACGTile*>& set)
 {
 	ACGPawn* owner = GetOwner<ACGPawn>();
 	if (owner)

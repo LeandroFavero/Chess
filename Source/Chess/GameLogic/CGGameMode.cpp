@@ -35,6 +35,10 @@ bool ACGGameMode::ReadyToEndMatch_Implementation()
         if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
         {
             state->GameResult = EGameResult::DISCONNECT;
+            if (UCGBPUtils::IsLocalUpdateRequired(this))
+            {
+                state->ResultNotify();
+            }
         }
         return true;
     }

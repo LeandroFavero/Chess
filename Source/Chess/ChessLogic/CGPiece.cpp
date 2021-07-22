@@ -17,10 +17,8 @@
 
 #define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
 
-// Sets default values
 ACGPiece::ACGPiece()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -47,16 +45,17 @@ ACGPiece::ACGPiece()
 	bOnlyRelevantToOwner = false;
 }
 
-ACGPiece::ACGPiece(ACGChessBoard* pBoard, uint8 pFlags):ACGPiece()
+ACGPiece::ACGPiece(ACGChessBoard* iBoard, uint8 iFlags)
+	:ACGPiece()
 {
-	Board = pBoard;
-	Flags = pFlags;
+	Board = iBoard;
+	Flags = iFlags;
 }
 
-void ACGPiece::SetColor(bool isWhite)
+void ACGPiece::SetColor(bool iIsWhite)
 {
 	Flags &= ~EPieceFlags::IsBlack;//Clear
-	if (!isWhite) 
+	if (!iIsWhite) 
 	{
 		Flags |= EPieceFlags::IsBlack;//Set
 	}
@@ -70,12 +69,6 @@ void ACGPiece::PostInitializeComponents()
 	{
 		Mesh->SetAnimInstanceClass(AnimTemplate);
 	}
-}
-
-// Called when the game starts or when spawned
-void ACGPiece::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 void ACGPiece::Destroyed()
@@ -97,18 +90,17 @@ void ACGPiece::RefreshMaterial()
 }
 
 
-void ACGPiece::ServerGrab(bool isGrabbed)
+void ACGPiece::Grab(bool iIsGrabbed)
 {
-	SetReplicateMovement(isGrabbed);
-	//OnPieceGrabbed(isGrabbed);
+	SetReplicateMovement(iIsGrabbed);
 	if (Mesh)
 	{
 		if (UCGAnimInstance* animBp = Cast<UCGAnimInstance>(Mesh->GetAnimInstance()))
 		{
-			animBp->bIsGrabbed = isGrabbed;
+			animBp->bIsGrabbed = iIsGrabbed;
 		}
 	}
-	if (!isGrabbed)
+	if (!iIsGrabbed)
 	{
 		ClientSnapToPlace();
 	}
@@ -118,7 +110,6 @@ void ACGPiece::SnapToPlace()
 {
 	if (Board && !IsCaptured())
 	{
-		//ensure(!IsCaptured());
 		SetActorRelativeTransform(Board->CoordToTransform(Position));
 	}
 }
@@ -128,9 +119,9 @@ void ACGPiece::ClientSnapToPlace_Implementation()
 	SnapToPlace();
 }
 
-void ACGPiece::MoveToTile(ACGTile* pTile)
+void ACGPiece::MoveToTile(ACGTile* iTile)
 {
-	if (!Board || !pTile)
+	if (!Board || !iTile)
 	{
 		return;
 	}
@@ -150,10 +141,9 @@ void ACGPiece::MoveToTile(ACGTile* pTile)
 		}
 	}
 
-	TSet<ACGTile*> moves = AvailableMoves();
-	if (!moves.Contains(pTile))
+	TSet<ACGTile*> moves = GetAvailableMoves();
+	if (!moves.Contains(iTile))
 	{
-		//OnInvalidMove();
 		return;
 	}
 
@@ -161,13 +151,13 @@ void ACGPiece::MoveToTile(ACGTile* pTile)
 
 	//can other similar piece move to the same tile? if yes we can't use simple notation
 	if (ACGPiece** other = Board->Pieces.FindByPredicate([&](ACGPiece* p) {
-		return p && !p->IsCaptured() && p->GetClass() == GetClass() && p != this && p->IsBlack() == IsBlack() && p->AvailableMoves().Contains(pTile);
+		return p && !p->IsCaptured() && p->GetClass() == GetClass() && p != this && p->IsBlack() == IsBlack() && p->GetAvailableMoves().Contains(iTile);
 	}))
 	{
 		undo.SimpleNotation = false;
 	}
 
-	MoveToTileInternal(pTile, undo, true);
+	MoveToTileInternal(iTile, undo, true);
 	SnapToPlace();
 	Flags |= EPieceFlags::Moved;
 	
@@ -183,67 +173,68 @@ void ACGPiece::MoveToTile(ACGTile* pTile)
 	if (UCGBPUtils::IsLocalUpdateRequired(this))
 	{
 		Board->UndoNotify();
-		//OnPieceMoved();
 	}
-	/*else
-	{
-		ClientOnPieceMoved();
-	}*/
 }
 
-void ACGPiece::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
+void ACGPiece::MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents)
 {
-	if (!Board || !pTile)
+	if (!Board || !iTile)
 	{
 		return;
 	}
-	undo.From = Tile;
-	undo.Piece = this;
+	oUndo.From = Tile;
+	oUndo.Piece = this;
 	if(Tile)
 	{
 		Tile->OccupiedBy = nullptr;
 	}
-	Position = pTile->Position;
-	Tile = pTile;
-	undo.To = Tile;
-	undo.Flags = Flags;
+	Position = iTile->Position;
+	Tile = iTile;
+	oUndo.To = Tile;
+	oUndo.Flags = Flags;
 	if (Tile && Tile->OccupiedBy)
 	{
 		//Capture
 		ACGPiece* p = Tile->OccupiedBy;
 		if (p && (p->IsBlack() != IsBlack()))
 		{
-			undo.Capture = p;
-			p->Capture(pEvents);
+			oUndo.Capture = p;
+			p->Capture(iEvents);
 		}
 	}
 	Tile->OccupiedBy = this;
 }
 
-TSet<ACGTile*> ACGPiece::AvailableMoves()
+TSet<ACGTile*> ACGPiece::GetAvailableMoves()
 {
 	TSet<ACGTile*> ret;
+	if (IsCaptured())
+	{
+		return ret;
+	}
 	TArray<UCGPieceMovementBase*> validators;
 	GetComponents<UCGPieceMovementBase>(validators);
 	for (UCGPieceMovementBase* v : validators)
 	{
 		ensure(v);
-		v->AvailableMoves(ret);
+		v->GetAvailableMoves(ret);
 	}
-
 	//check check
-	for (auto it = ret.CreateIterator(); it; ++it)
+	if (Board && Board->BlackKing && Board->WhiteKing)
 	{
-		FCGUndo undo;
-		ACGTile* t = *it;
-		MoveToTileInternal(t, undo, false);
-		//check check
-		Board->RebuildAttackMap(IsWhite());
-		if (IsBlack() ? Board->BlackKing->IsInCheck() : Board->WhiteKing->IsInCheck())
+		for (auto it = ret.CreateIterator(); it; ++it)
 		{
-			it.RemoveCurrent();
+			FCGUndo undo;
+			ACGTile* t = *it;
+			MoveToTileInternal(t, undo, false);
+			//check check
+			Board->RebuildAttackMap(IsWhite());
+			if (IsBlack() ? Board->BlackKing->IsInCheck() : Board->WhiteKing->IsInCheck())
+			{
+				it.RemoveCurrent();
+			}
+			Board->UndoInternal(undo);
 		}
-		Board->UndoInternal(undo);
 	}
 	return ret;
 }
@@ -251,7 +242,7 @@ TSet<ACGTile*> ACGPiece::AvailableMoves()
 bool ACGPiece::HasAvailableMoves()
 {
 	//TODO: optimize
-	return AvailableMoves().Num() > 0;
+	return GetAvailableMoves().Num() > 0;
 }
 
 void ACGPiece::FillAttackMap()
@@ -266,7 +257,7 @@ void ACGPiece::FillAttackMap()
 	for (UCGPieceMovementBase* v : validators)
 	{
 		ensure(v);
-		v->AttackedTiles(tiles);
+		v->GetAttackedTiles(tiles);
 	}
 	for (ACGTile* t : tiles)
 	{
@@ -275,15 +266,15 @@ void ACGPiece::FillAttackMap()
 	}
 }
 
-void ACGPiece::Capture(bool pAddToCaptured)
+void ACGPiece::Capture(bool iAddToCaptured)
 {
 	if (!Board && !Tile)
 	{
 		return;
 	}
 	Tile->OccupiedBy = nullptr;
-	Flags |= EPieceFlags::Captured | (pAddToCaptured ? 0 : EPieceFlags::DummyCaptured);
-	if (pAddToCaptured)
+	Flags |= EPieceFlags::Captured | (iAddToCaptured ? 0 : EPieceFlags::DummyCaptured);
+	if (iAddToCaptured)
 	{
 		Position = FCGSquareCoord(0xff, 0xff);
 		if (IsBlack())
@@ -354,12 +345,7 @@ const bool ACGPiece::IsCaptured() const
 	return (Flags & EPieceFlags::Captured) == EPieceFlags::Captured;
 }
 
-/*void ACGPiece::ClientOnPieceMoved_Implementation()
-{
-	OnPieceMoved();
-}*/
-
-void ACGPiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ACGPiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const//Parameter cannot be renamed!
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 

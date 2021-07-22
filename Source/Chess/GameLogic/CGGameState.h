@@ -17,7 +17,6 @@ class CHESS_API ACGGameState : public AGameState
 {
 	GENERATED_BODY()
 public:
-	ACGGameState();
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	UDataTable* Skins;
@@ -38,24 +37,28 @@ public:
 	TArray<TSubclassOf<class ACGPiece>> PieceTemplates;
 
 	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, ReplicatedUsing=ResultNotify, Category = "Chess setup")
-	TEnumAsByte<EGameResult> GameResult {EGameResult::NOT_FINISHED};
+	TEnumAsByte<EGameResult> GameResult { EGameResult::NOT_FINISHED };
+
+	ACGGameState();
 
 	void EndGameBecauseOfDisconnect();
 
 	UFUNCTION()
 	void ResultNotify();
 
-	void UseSkin(const FString& Name, bool bIsBlack);
+	void UseSkin(const FString& iName, bool iIsBlack);
 
 	UFUNCTION()
 	void ColorsChanged();
 
 	void HandleMatchHasStarted() override;
+
 	void HandleMatchHasEnded() override;
+
 	void HandleMatchIsWaitingToStart() override;
+
 	UFUNCTION(BlueprintCallable, Category= "Chess")
 	bool IsMatchInProgress() const override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 };

@@ -2,7 +2,6 @@
 
 #include "ChessLogic/CGQueen.h"
 #include "CGLinearMovement.h"
-#include "ChessLogic/CGTile.h"
 
 ACGQueen::ACGQueen()
 {

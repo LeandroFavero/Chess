@@ -12,36 +12,36 @@ ACGKing::ACGKing()
 	AddOwnedComponent(moveComp);
 }
 
-void ACGKing::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
+void ACGKing::MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents)
 {
-	if (!pTile)
+	if (!iTile)
 	{
 		return;
 	}
-	if (CastleTiles.Contains(pTile))
+	if (CastleTiles.Contains(iTile))
 	{
-		EDir side = Position.X > pTile->Position.X ? EDir::WEST : EDir::EAST;
-		EDir otherSide = Position.X > pTile->Position.X ? EDir::EAST : EDir::WEST;
-		for (ACGTile* t = pTile->Neighbours[side]; t; t = t->Neighbours[side])
+		EDir side = Position.X > iTile->Position.X ? EDir::WEST : EDir::EAST;
+		EDir otherSide = Position.X > iTile->Position.X ? EDir::EAST : EDir::WEST;
+		for (ACGTile* t = iTile->Neighbours[side]; t; t = t->Neighbours[side])
 		{
 			if (t && t->OccupiedBy)
 			{
 				if (ACGRook* r = Cast<ACGRook>(t->OccupiedBy))
 				{
-					undo.CastleRook = r;
-					undo.CastleRookTile = t;
+					oUndo.CastleRook = r;
+					oUndo.CastleRookTile = t;
 					FCGUndo dummyUndo;
-					r->MoveToTileInternal(pTile->Neighbours[otherSide], dummyUndo, false);
+					r->MoveToTileInternal(iTile->Neighbours[otherSide], dummyUndo, false);
 					r->ClientSnapToPlace();
 					break;
 				}
 			}
 		}
 	}
-	Super::MoveToTileInternal(pTile, undo, pEvents);
+	Super::MoveToTileInternal(iTile, oUndo, iEvents);
 }
 
-TSet<ACGTile*> ACGKing::AvailableMoves()
+TSet<ACGTile*> ACGKing::GetAvailableMoves()
 {
 	TSet<ACGTile*> ret;
 	CastleTiles.Empty();
@@ -51,7 +51,7 @@ TSet<ACGTile*> ACGKing::AvailableMoves()
 	for (UCGPieceMovementBase* v : validators)
 	{
 		ensure(v);
-		v->AvailableMoves(ret);
+		v->GetAvailableMoves(ret);
 	}
 	return ret;
 }

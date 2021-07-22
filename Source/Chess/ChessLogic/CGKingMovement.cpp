@@ -7,7 +7,7 @@
 #include "ChessLogic/CGChessBoard.h"
 
 //IMPORTANT! Attack map has to be built before calling this
-void UCGKingMovement::AvailableMoves(TSet<ACGTile*>& set)
+void UCGKingMovement::GetAvailableMoves(TSet<ACGTile*>& set)
 {
 	ACGKing* piece = GetOwner<ACGKing>();
 	if (piece && piece->Tile && piece->Board)
@@ -72,7 +72,7 @@ void UCGKingMovement::AvailableMoves(TSet<ACGTile*>& set)
 	}
 }
 
-void UCGKingMovement::AttackedTiles(TSet<ACGTile*>& set)
+void UCGKingMovement::GetAttackedTiles(TSet<ACGTile*>& set)
 {
 	ACGKing* piece = GetOwner<ACGKing>();
 	if (piece && piece->Tile && piece->Board)

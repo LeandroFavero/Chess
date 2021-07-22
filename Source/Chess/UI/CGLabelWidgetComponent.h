@@ -16,7 +16,6 @@ class CHESS_API UCGLabelWidgetComponent : public UWidgetComponent
 	
 public:
 
-	//WidgetCl
 	UFUNCTION(BlueprintCallable, Category="Chess setup")
-	void SetLabel(int packed);
+	void SetLabel(int Packed);
 };

@@ -16,7 +16,10 @@ class CHESS_API ACGBishop : public ACGPiece
 
 public:
 	ACGBishop();
+
 	const FString GetFenChars() const override { return "Bb"; }
+
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265D") : TEXT("\u2657")); }
+
 	const bool IsValidForPromotion() const override { return true; }
 };

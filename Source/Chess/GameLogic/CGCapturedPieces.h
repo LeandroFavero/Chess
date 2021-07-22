@@ -15,10 +15,10 @@ class UCGCapturedPieces :public USceneComponent
 	TArray<ACGPiece*> Pieces;
 
 public:
-	UCGCapturedPieces();
-
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FVector Offset {0, 100, 0};
+	FVector Offset { 0, 100, 0 };
+
+	UCGCapturedPieces();
 
 	UFUNCTION(BlueprintCallable)
 	void RefreshPositions();
@@ -26,9 +26,9 @@ public:
 	UFUNCTION()
 	void CapturedNotify();
 
-	void Add(ACGPiece* p);
+	void Add(ACGPiece* iPiece);
 
-	void Remove(ACGPiece* p);
+	void Remove(ACGPiece* iPiece);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

@@ -13,14 +13,10 @@ class CHESS_API UCGHighlightableComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UCGHighlightableComponent();
 
-public:	
-	// Called every frame
-	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	bool IsSkeletal;
+	//UPROPERTY(EditAnywhere, Category = "Chess setup")
+	//bool bIsSkeletal;
 
 	UFUNCTION(BlueprintCallable, Category="Chess setup")
 	virtual void SetHighlighted(bool value);

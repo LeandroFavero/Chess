@@ -40,22 +40,18 @@ class CHESS_API ACGTile : public AActor
 {
 	GENERATED_BODY()
 
+	UPROPERTY()
+	bool bIsBlack { false };
 public:
 
 	UPROPERTY()
 	TArray<ACGPiece*> AttackedBy;
 
 	UPROPERTY(Replicated)
-		//TArray<ACGPiece*> OccupiedBy;
-	ACGPiece* OccupiedBy {nullptr};
-
-	UPROPERTY()
-	bool mIsBlack{ false };
+	ACGPiece* OccupiedBy { nullptr };
 
 	UPROPERTY()
 	TArray<ACGTile*> Neighbours;
-
-public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess setup")
 	UMaterialInstance* Black;
@@ -76,29 +72,23 @@ public:
 	TSubclassOf<class UCGLabelWidgetComponent> WidgetTemplate;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FRotator WidgetRotation {0.0f, 0.0f, 90.0f};
+	FRotator WidgetRotation { 0.0f, 0.0f, 90.0f };
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FVector WidgetOffset {0, 165, 1};
-
-	// Sets default values for this actor's properties
-	ACGTile();
+	FVector WidgetOffset { 0, 165, 1 };
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	virtual void OnConstruction(const FTransform& Transform) override;
+public:
+	ACGTile();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual void SetCoord(const FCGSquareCoord coord);
+	virtual void SetCoord(const FCGSquareCoord Coord);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual void SetBlack(bool value);
+	virtual void SetBlack(bool bNewIsBlack);
 
 	UFUNCTION(BlueprintPure, Category = "Chess setup")
 	virtual bool IsBlack();

@@ -20,43 +20,43 @@ ACGChessPlayerController::ACGChessPlayerController()
 	bEnableTouchEvents = true;
 }
 
-void ACGChessPlayerController::ServerChangeSkin_Implementation(const FString& Name)
+void ACGChessPlayerController::ServerChangeSkin_Implementation(const FString& iName)
 {
 	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
 	{
-		state->UseSkin(Name, bIsBlack);
+		state->UseSkin(iName, bIsBlack);
 	}
 }
 
-void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGTile* pTile)
+void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* iPiece, ACGTile* iTile)
 {
-	if (pPiece && pTile && pPiece->Board)
+	if (iPiece && iTile && iPiece->Board)
 	{
-		if (pPiece->IsBlack() == bIsBlack || UCGBPUtils::IsHotSeatMode(this))//NO HAX PLS
+		if (iPiece->IsBlack() == bIsBlack || UCGBPUtils::IsHotSeatMode(this))//NO HAX PLS
 		{
-			pPiece->MoveToTile(pTile);
-			pPiece->Board->GameOverCheck();
+			iPiece->MoveToTile(iTile);
+			iPiece->Board->GameOverCheck();
 		}
 	}
 }
 
-void ACGChessPlayerController::ServerUpdateGrab_Implementation(ACGPiece* pPiece, FVector_NetQuantize pLocation)
+void ACGChessPlayerController::ServerUpdateGrab_Implementation(ACGPiece* iPiece, FVector_NetQuantize pLocation)
 {
-	if (pPiece)
+	if (iPiece)
 	{
-		pPiece->SetActorLocation(FVector(pLocation.X, pLocation.Y, 0), true);
+		iPiece->SetActorLocation(FVector(pLocation.X, pLocation.Y, 0), true);
 	}
 }
 
-void ACGChessPlayerController::ServerGrab_Implementation(ACGPiece* pPiece, bool pGrab)
+void ACGChessPlayerController::ServerGrab_Implementation(ACGPiece* iPiece, bool iIsGrab)
 {
-	if (pPiece)
+	if (iPiece)
 	{
-		pPiece->ServerGrab(pGrab);
+		iPiece->Grab(iIsGrab);
 	}
 }
 
-void ACGChessPlayerController::ServerUndoTo_Implementation(int pMoveNum)
+void ACGChessPlayerController::ServerUndoTo_Implementation(int iMoveNum)
 {
 	if (ACGGameState* state = GetWorld()->GetGameState<ACGGameState>())
 	{
@@ -64,7 +64,7 @@ void ACGChessPlayerController::ServerUndoTo_Implementation(int pMoveNum)
 		{
 			if (ACGChessBoard* board = UCGBPUtils::FindBoard(this))
 			{
-				board->UndoTo(pMoveNum);
+				board->UndoTo(iMoveNum);
 			}
 		}
 	}
@@ -104,11 +104,11 @@ void ACGChessPlayerController::ServerConcede_Implementation()
 	}
 }
 
-void ACGChessPlayerController::ServerChoosePromotion_Implementation(const FString& PieceType)
+void ACGChessPlayerController::ServerChoosePromotion_Implementation(const FString& iPieceType)
 {
 	if (ACGChessBoard* board = UCGBPUtils::FindBoard(this))
 	{
-		if (!PieceType.IsEmpty())
+		if (!iPieceType.IsEmpty())
 		{
 			if (board->Undos.Num() > 0)
 			{
@@ -117,7 +117,7 @@ void ACGChessPlayerController::ServerChoosePromotion_Implementation(const FStrin
 				{
 					if (ACGPawn* pawn = Cast<ACGPawn>(u.Piece))
 					{
-						pawn->FinishPromotion(PieceType, u);
+						pawn->FinishPromotion(iPieceType, u);
 					}
 				}
 			}

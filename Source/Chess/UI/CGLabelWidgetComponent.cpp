@@ -4,10 +4,10 @@
 #include "UI/CGLabelWidgetComponent.h"
 #include "UI/CGLabelWidget.h"
 
-void UCGLabelWidgetComponent::SetLabel(int packed)
+void UCGLabelWidgetComponent::SetLabel(int iPacked)
 {
 	if (UCGLabelWidget* label = Cast<UCGLabelWidget>(GetWidget()))
 	{
-		label->SetBoardLabel(packed);
+		label->SetBoardLabel(iPacked);
 	}
 }

@@ -7,11 +7,6 @@
 
 #define Dbg(x) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT(x));}
 
-ACGHUD::ACGHUD()
-{
-	
-}
-
 void ACGHUD::Init()
 {
 	if (MainMenuTemplate) 

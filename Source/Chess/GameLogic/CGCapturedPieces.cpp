@@ -27,9 +27,9 @@ void UCGCapturedPieces::CapturedNotify()
 	RefreshPositions();
 }
 
-void UCGCapturedPieces::Add(ACGPiece* p)
+void UCGCapturedPieces::Add(ACGPiece* iPiece)
 {
-	Pieces.Add(p);
+	Pieces.Add(iPiece);
 	//update positions if listen server, otherwise it updates from the notify
 	if (UCGBPUtils::IsLocalUpdateRequired(this))
 	{
@@ -37,9 +37,9 @@ void UCGCapturedPieces::Add(ACGPiece* p)
 	}
 }
 
-void UCGCapturedPieces::Remove(ACGPiece* p)
+void UCGCapturedPieces::Remove(ACGPiece* iPiece)
 {
-	Pieces.Remove(p);
+	Pieces.Remove(iPiece);
 	//update positions if listen server, otherwise it updates from the notify
 	if (UCGBPUtils::IsLocalUpdateRequired(this))
 	{

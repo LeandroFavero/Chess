@@ -9,10 +9,8 @@
 
 #define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT(x), __VA_ARGS__));}
 
-// Sets default values
 ACGTile::ACGTile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetCollisionProfileName(FName("BoardCollision"), false);
@@ -21,42 +19,32 @@ ACGTile::ACGTile()
 	UCGHighlightableComponent* highlight = CreateDefaultSubobject<UCGHighlightableComponent>(TEXT("Highlight"));
 	AddOwnedComponent(highlight);
 
-	//Neighbours.Reserve(16);
 	Neighbours.SetNumZeroed(static_cast<int>(EDir::Size));
 
 	bReplicates = true;
 	bOnlyRelevantToOwner = false;
 }
 
-// Called when the game starts or when spawned
 void ACGTile::BeginPlay()
 {
 	Super::BeginPlay();
 	SetCoord(Position);
 }
 
-// Called every frame
-void ACGTile::Tick(float DeltaTime)
+void ACGTile::SetCoord(const FCGSquareCoord iCoord)
 {
-	Super::Tick(DeltaTime);
-}
-
-void ACGTile::OnConstruction(const FTransform& Transform)
-{
-	Super::OnConstruction(Transform);
-}
-
-void ACGTile::SetCoord(const FCGSquareCoord coord)
-{
-	Position = coord;
-	SetBlack(coord.X % 2 == coord.Y % 2);
+	Position = iCoord;
+	SetBlack(iCoord.X % 2 == iCoord.Y % 2);
 	if (!Board || !WidgetTemplate || !GetWorld())
 	{
 		return;
 	}
-	FString newName = FString::Printf(TEXT("Tile_%dx%d_"), coord.X, coord.Y);
+
+#if WITH_EDITOR
+	FString newName = FString::Printf(TEXT("Tile_%dx%d_"), iCoord.X, iCoord.Y);
 	SetActorLabel(*newName);
-	
+#endif
+
 	bool horizontal = Position.X == 0 || Position.X == (Board->Size.X - 1);
 	bool vertical = Position.Y == 0 || Position.Y == (Board->Size.Y - 1);
 	TArray<UCGLabelWidgetComponent*> comps;
@@ -131,15 +119,15 @@ void ACGTile::SetCoord(const FCGSquareCoord coord)
 	}
 }
 
-void ACGTile::SetBlack(bool value)
+void ACGTile::SetBlack(bool iIsBlack)
 {
-	mIsBlack = value;
-	Mesh->SetMaterial(0, mIsBlack? Black : White);
+	bIsBlack = iIsBlack;
+	Mesh->SetMaterial(0, bIsBlack? Black : White);
 }
 
 bool ACGTile::IsBlack()
 {
-	return mIsBlack;
+	return bIsBlack;
 }
 
 void ACGTile::ClearAttackers()
@@ -152,5 +140,4 @@ void ACGTile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ACGTile, OccupiedBy)
-		
 }

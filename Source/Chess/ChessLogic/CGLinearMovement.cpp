@@ -5,12 +5,12 @@
 #include "ChessLogic/CGPiece.h"
 
 
-void UCGLinearMovement::AvailableMoves(TSet<ACGTile*>& set)
+void UCGLinearMovement::GetAvailableMoves(TSet<ACGTile*>& set)
 {
 	Generate(set, false);
 }
 
-void UCGLinearMovement::AttackedTiles(TSet<ACGTile*>& set)
+void UCGLinearMovement::GetAttackedTiles(TSet<ACGTile*>& set)
 {
 	Generate(set, true);
 }

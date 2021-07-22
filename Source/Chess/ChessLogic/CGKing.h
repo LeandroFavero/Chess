@@ -14,15 +14,18 @@ class CHESS_API ACGKing : public ACGPiece
 {
 	GENERATED_BODY()
 public:
-	ACGKing();
-	const FString GetFenChars() const override { return "Kk"; }
-	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265A") : TEXT("\u2654")); }
 
 	TSet<ACGTile*> CastleTiles;
 
-	void MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents) override;
+	ACGKing();
 
-	TSet<ACGTile*> AvailableMoves() override;
+	const FString GetFenChars() const override { return "Kk"; }
+
+	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265A") : TEXT("\u2654")); }
+
+	void MoveToTileInternal(ACGTile* iTile, FCGUndo& undo, bool pEvents) override;
+
+	TSet<ACGTile*> GetAvailableMoves() override;
 
 	UFUNCTION()
 	virtual bool IsInCheck();

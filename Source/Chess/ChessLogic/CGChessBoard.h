@@ -9,7 +9,6 @@
 #include "GameLogic/CGUndo.h"
 #include "CGChessBoard.generated.h"
 
-
 class ACGChessPlayerController;
 class UCGCapturedPieces;
 class ACGTile;
@@ -22,21 +21,20 @@ class CHESS_API ACGChessBoard : public AActor
 	GENERATED_BODY()
 	
 public:
-	
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	TSubclassOf<class ACGTile> TileTemplate;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FCGSquareCoord Size {8, 8};
+	FCGSquareCoord Size { 8, 8 };
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FVector2D TileSize {200, 200};
+	FVector2D TileSize { 200, 200 };
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FString DefaultBoardFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	FString DefaultBoardFen = TEXT("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	bool EnforceMoveOrder{ true };
+	bool EnforceMoveOrder { true };
 
 	UPROPERTY(Replicated)
 	TArray<ACGTile*> Board;
@@ -55,8 +53,6 @@ public:
 	UPROPERTY()
 	USceneComponent* Root;
 
-	ACGChessBoard();
-
 	UPROPERTY(ReplicatedUsing = UndoNotify, BlueprintReadOnly, Category = "Chess")
 	TArray<FCGUndo> Undos;
 
@@ -66,6 +62,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	UCGCapturedPieces* CapturedBlack;
 
+	ACGChessBoard();
+
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 	void Destroyed() override;
@@ -74,9 +72,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual bool FenStringToChessPieces(const FString& Fen);
 
-	//virtual bool CheckTest() { return false; };
-
-	virtual void RebuildAttackMap(bool IsBlack);
+	virtual void RebuildAttackMap(bool iIsBlack);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual bool IsNextMoveBlack() const;
@@ -97,18 +93,18 @@ public:
 	virtual FCGSquareCoord LocationToCoord(const FVector& Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual bool HasValidMove(bool IsBlack);
+	virtual bool HasValidMove(bool bIsBlack);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual bool GameOverCheck();
 
 	virtual void RefreshPieceColors();
-	virtual ACGTile* GetTile(const FCGSquareCoord& Coord);
+	virtual ACGTile* GetTile(const FCGSquareCoord& iCoord);
 	virtual FCGUndo& CreateUndo();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void UndoTo(int MoveNum);
-	virtual void UndoInternal(FCGUndo& Undo);
+	virtual void UndoTo(const int MoveNum);
+	virtual void UndoInternal(FCGUndo& oUndo);
 
 	//TODO... Let's just cut this for now....
 	UFUNCTION(BlueprintCallable, Category = "Chess")
@@ -120,7 +116,7 @@ public:
 	UFUNCTION()
 	virtual void PiecesNotify();
 
-	static void CoordToLabel(const FCGSquareCoord Coord, TCHAR& X, TCHAR& Y);
+	static void CoordToLabel(const FCGSquareCoord& iCoord, TCHAR& oX, TCHAR& oY);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:

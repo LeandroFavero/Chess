@@ -23,16 +23,11 @@ public:
 	FString SelectedSkin { TEXT("Default") };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	TEnumAsByte<ESide> PreferredSide{ ESide::WHITE };
-
-	/*
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	int Player2SelectedSkin{ 0 };
+	TEnumAsByte<ESide> PreferredSide { ESide::WHITE };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	int Player2PreferredSide{ 0 };
-	*/
+	FString LastIp { TEXT("") };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	FString LastIp{ TEXT("") };
+	bool bIsLan;
 };

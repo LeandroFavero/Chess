@@ -19,6 +19,8 @@ public:
 	ACGRook();
 
 	const FString GetFenChars() const override { return "Rr"; }
+
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265C") : TEXT("\u2656")); }
+
 	const bool IsValidForPromotion() const override { return true; }
 };

@@ -33,10 +33,6 @@ public:
 	
 	UFUNCTION(BlueprintPure, meta = (WorldContext = "WorldContextObject"), Category = "Chess utils")
 	static bool IsWaitingForPlayers(const UObject* WorldContextObject);
-	/*
-	UFUNCTION(BlueprintPure, meta = (WorldContext = "WorldContextObject"), Category = "Chess utils")
-	static bool IsGameConcluded(const UObject* WorldContextObject);
-	*/
 
 	UFUNCTION(BlueprintPure, meta = (WorldContext = "WorldContextObject"), Category = "Chess utils")
 	static bool IsClient(const UObject* WorldContextObject);
@@ -61,5 +57,4 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Chess utils")
 	static FString GetLocalIP();
-
 };

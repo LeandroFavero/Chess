@@ -14,34 +14,34 @@ ACGPawn::ACGPawn()
 	AddOwnedComponent(moveComp);
 }
 
-void ACGPawn::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
+void ACGPawn::MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents)
 {
 	//en passant capture
-	if (EnPassantTile && EnPassantTile == pTile)
+	if (EnPassantTile && EnPassantTile == iTile)
 	{
 		ACGTile* otherPawnTile = EnPassantTile->Neighbours[(IsBlack() ? EDir::NORTH : EDir::SOUTH)];
 		if (ACGPawn* otherPawn = Cast<ACGPawn>(otherPawnTile->OccupiedBy))
 		{
 			otherPawn->Flags |= EPieceFlags::EnPassantCaptured;
-			undo.Capture = otherPawn;
-			otherPawn->Capture(pEvents);
+			oUndo.Capture = otherPawn;
+			otherPawn->Capture(iEvents);
 		}
 	}
 	//en passant restore
 	if ((Flags & EPieceFlags::EnPassantCaptured) == EPieceFlags::EnPassantCaptured)
 	{
 		//fix the position of this pawn
-		Super::MoveToTileInternal(pTile->Neighbours[IsBlack() ? EDir::SOUTH : EDir::NORTH], undo, pEvents);
+		Super::MoveToTileInternal(iTile->Neighbours[IsBlack() ? EDir::SOUTH : EDir::NORTH], oUndo, iEvents);
 		Flags = Flags & ~EPieceFlags::EnPassantCaptured;
 	}
 	else
 	{
-		Super::MoveToTileInternal(pTile, undo, pEvents);
+		Super::MoveToTileInternal(iTile, oUndo, iEvents);
 	}
 	//promotion
-	if (pTile->Position.Y == (IsBlack() ? 0 : Board->Size.Y - 1) && pEvents)
+	if (iTile->Position.Y == (IsBlack() ? 0 : Board->Size.Y - 1) && iEvents)
 	{
-		undo.Promotion = this;
+		oUndo.Promotion = this;
 		//Flags |= EPieceFlags::PromotionInProgress;
 		//notify controller
 		if (ACGChessPlayerController* pc = GetCGController())
@@ -51,15 +51,15 @@ void ACGPawn::MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents)
 	}
 }
 
-void ACGPawn::FinishPromotion(const FString& chr, FCGUndo& undo)
+void ACGPawn::FinishPromotion(const FString& iChr, FCGUndo& oUndo)
 {
 	if (ACGGameState* gameState = GetWorld()->GetGameState<ACGGameState>())
 	{
-		FCGUndo dummyUndo;//we don't want to undo the initial piece spawns!
+		FCGUndo dummyUndo;//we don't want to oUndo the initial piece spawns!
 		TSubclassOf<class ACGPiece>* temp = gameState->PieceTemplates.FindByPredicate([&](const TSubclassOf<class ACGPiece>& t) {
 			if (const ACGPiece* p = t.Get()->GetDefaultObject<ACGPiece>())
 			{
-				return (p->GetFenChars().Contains(chr) && p->IsValidForPromotion());
+				return (p->GetFenChars().Contains(iChr) && p->IsValidForPromotion());
 			}
 			return false;
 		});
@@ -71,11 +71,11 @@ void ACGPawn::FinishPromotion(const FString& chr, FCGUndo& undo)
 			params.Owner = this;
 			ACGPiece* newPiece = GetWorld()->SpawnActor<ACGPiece>(*temp, params);
 			//newPiece->SetMaterial(isWhite ? gameState->WhiteMaterial : gameState->BlackMaterial);
-			newPiece->SetColor(undo.Piece->IsWhite());
+			newPiece->SetColor(oUndo.Piece->IsWhite());
 			newPiece->Board = Board;
-			newPiece->MoveToTileInternal(undo.To, dummyUndo, false);
+			newPiece->MoveToTileInternal(oUndo.To, dummyUndo, false);
 
-			undo.Promotion = newPiece;
+			oUndo.Promotion = newPiece;
 			newPiece->ClientSnapToPlace();
 
 			Board->Pieces.Add(newPiece);

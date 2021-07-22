@@ -19,11 +19,12 @@ public:
 	ACGPawn();
 
 	const FString GetFenChars() const override { return "Pp"; }
+
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265F") : TEXT("\u2659")); }
 
-	ACGTile* EnPassantTile = nullptr;
+	ACGTile* EnPassantTile { nullptr };
 
-	void MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents) override;
+	void MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents) override;
 
-	virtual void FinishPromotion(const FString& chr, FCGUndo& undo);
+	virtual void FinishPromotion(const FString& iChr, FCGUndo& oUndo);
 };

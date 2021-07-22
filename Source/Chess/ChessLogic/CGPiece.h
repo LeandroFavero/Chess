@@ -20,7 +20,6 @@ struct EPieceFlags
 	enum EPieceFlagsValues
 	{
 		IsBlack = 1 << 0,			//bit0
-		CanCastle = 1 << 1,			//bit1
 		Captured = 1 << 2,			//bit2
 		Moved = 1 << 3,				//bit3
 		EnPassantCaptured = 1 << 4,	//bit4
@@ -35,9 +34,6 @@ class CHESS_API ACGPiece : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
-	ACGPiece();
-	ACGPiece(ACGChessBoard* pBoard, uint8 pFlags = 0);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Chess setup")
 	USkeletalMeshComponent* Mesh;
@@ -61,19 +57,20 @@ public:
 	ACGTile* Tile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
-	uint8 Flags {0};
+	uint8 Flags { 0 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
 	int Value;
 
 protected:
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	void PostInitializeComponents() override;
 
 public:	
+
+	ACGPiece();
+
+	ACGPiece(ACGChessBoard* iBoard, uint8 iFlags = 0);
 
 	virtual void Destroyed() override;
 
@@ -89,10 +86,10 @@ public:
 	virtual void RefreshMaterial();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual void SetColor(bool isWhite);
+	virtual void SetColor(bool IsWhite);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void ServerGrab(bool isGrabbed);
+	virtual void Grab(bool IsGrabbed);
 
 	UFUNCTION()
 	virtual void SnapToPlace();
@@ -102,49 +99,32 @@ public:
 	virtual void ClientSnapToPlace_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
-	virtual void MoveToTile(ACGTile* pTile);
-
-	virtual void MoveToTileInternal(ACGTile* pTile, FCGUndo& undo, bool pEvents = true);
-
-	UFUNCTION(BlueprintPure, Category = "Chess")
-	virtual bool IsBlack() const { return (Flags & EPieceFlags::IsBlack) == EPieceFlags::IsBlack; }
+	virtual void MoveToTile(ACGTile* TargetTile);
+	virtual void MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents = true);
 
 	UFUNCTION(BlueprintPure, Category = "Chess")
-	virtual bool IsWhite() const { return (Flags & EPieceFlags::IsBlack) != EPieceFlags::IsBlack; }
+	virtual const bool IsBlack() const { return (Flags & EPieceFlags::IsBlack) == EPieceFlags::IsBlack; }
 
 	UFUNCTION(BlueprintPure, Category = "Chess")
-	virtual bool IsMoved() const { return (Flags & EPieceFlags::Moved) == EPieceFlags::Moved; }
+	virtual const bool IsWhite() const { return (Flags & EPieceFlags::IsBlack) != EPieceFlags::IsBlack; }
 
-	virtual TSet<ACGTile*> AvailableMoves();
-	virtual bool HasAvailableMoves();
-	virtual void FillAttackMap();
-	virtual void Capture(bool pAddToCaptured = true);
-	virtual void UnCapture();
-	virtual ACGChessPlayerController* GetCGController();
+	UFUNCTION(BlueprintPure, Category = "Chess")
+	virtual const bool IsMoved() const { return (Flags & EPieceFlags::Moved) == EPieceFlags::Moved; }
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual const bool IsCaptured() const;
 
-	/*
-	UFUNCTION(BlueprintImplementableEvent, Category = "Chess setup")
-	void OnPieceGrabbed(bool isGrabbed);
+	virtual TSet<ACGTile*> GetAvailableMoves();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Chess events")
-	void OnPieceCaptured();
+	virtual bool HasAvailableMoves();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Chess events")
-	void OnPieceMoved();
+	virtual void FillAttackMap();
 
-	UFUNCTION(Client, Reliable)
-	void ClientOnPieceMoved();
-	void ClientOnPieceMoved_Implementation();
+	virtual void Capture(bool iAddToCaptured = true);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Chess events")
-	void OnPieceSpawned();
+	virtual void UnCapture();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Chess events")
-	void OnInvalidMove();
-	*/
+	virtual ACGChessPlayerController* GetCGController();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

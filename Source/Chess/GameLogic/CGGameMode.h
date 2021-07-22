@@ -16,6 +16,7 @@ UCLASS(Blueprintable)
 class CHESS_API ACGGameMode : public AGameMode
 {
 	GENERATED_BODY()
+
 public:
 	ACGGameMode();
 
@@ -23,6 +24,7 @@ public:
 	bool bHotSeatMode;
 
 	bool ReadyToStartMatch_Implementation() override;
+
 	bool ReadyToEndMatch_Implementation() override;
 
 	void HandleMatchHasStarted() override;

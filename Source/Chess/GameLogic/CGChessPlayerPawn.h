@@ -80,7 +80,6 @@ public:
 
 	float lastMouseX, lastMouseY;
 
-	// Sets default values for this pawn's properties
 	ACGChessPlayerPawn();
 
 private:

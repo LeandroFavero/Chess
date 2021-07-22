@@ -19,19 +19,20 @@ class CHESS_API ACGHUD : public AHUD
 	UUserWidget* CurrentWidget;
 
 public:
-	UUserWidget* MainMenu;
-	UUserWidget* InGame;
-
-	ACGHUD();
-	virtual void Init();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UUserWidget> MainMenuTemplate;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<class UUserWidget> InGameTemplate;
 
+	UUserWidget* MainMenu;
+	UUserWidget* InGame;
+
+	virtual void Init();
+
 	virtual void ShowMenu();
+
 	virtual void ShowGame();
 };
 

@@ -15,7 +15,7 @@ class CHESS_API UCGPawnMovement : public UCGPieceMovementBase
 {
 	GENERATED_BODY()
 public:
-	void AvailableMoves(TSet<ACGTile*>& set) override;
+	void GetAvailableMoves(TSet<ACGTile*>& set) override;
 
-	void AttackedTiles(TSet<ACGTile*>& set) override;
+	void GetAttackedTiles(TSet<ACGTile*>& set) override;
 };

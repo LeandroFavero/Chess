@@ -20,38 +20,38 @@ UCLASS()
 class CHESS_API ACGChessPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-public:
-	ACGChessPlayerController();
 
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
 	FString SelectedSkin { "Default" };
 
-	//0white 1black 2no
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	TEnumAsByte<ESide> PreferredSide;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=SideChanged, Category = "Chess setup")
 	bool bIsBlack{ false };
 
+	ACGChessPlayerController();
+
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
 	void ServerChangeSkin(const FString& Name);
 	void ServerChangeSkin_Implementation(const FString& Name);
 	
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
-	void ServerMoveToTile(ACGPiece* pPiece, ACGTile* pTile);
-	void ServerMoveToTile_Implementation(ACGPiece* pPiece, ACGTile* pTile);
+	void ServerMoveToTile(ACGPiece* Piece, ACGTile* Tile);
+	void ServerMoveToTile_Implementation(ACGPiece* Piece, ACGTile* Tile);
 
 	UFUNCTION(BlueprintCallable, Server, Unreliable, Category = "Chess")
-	void ServerUpdateGrab(ACGPiece* pPiece, FVector_NetQuantize Location);
-	void ServerUpdateGrab_Implementation(ACGPiece* pPiece, FVector_NetQuantize pLocation);
+	void ServerUpdateGrab(ACGPiece* Piece, FVector_NetQuantize Location);
+	void ServerUpdateGrab_Implementation(ACGPiece* Piece, FVector_NetQuantize Location);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
-	void ServerGrab(ACGPiece* pPiece, bool pGrab);
-	void ServerGrab_Implementation(ACGPiece* pPiece, bool pGrab);
+	void ServerGrab(ACGPiece* Piece, bool IsGrab);
+	void ServerGrab_Implementation(ACGPiece* Piece, bool IsGrab);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
-	void ServerUndoTo(int pMoveNum);
-	void ServerUndoTo_Implementation(int pMoveNum);
+	void ServerUndoTo(int MoveNum);
+	void ServerUndoTo_Implementation(int MoveNum);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "Chess")
 	void ServerConcede();

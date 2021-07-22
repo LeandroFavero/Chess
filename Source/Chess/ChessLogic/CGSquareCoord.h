@@ -40,7 +40,4 @@ struct FCGSquareCoord
 		ret += Coord.Y;
 		return ret;
 	}
-
-	//constexpr static FCGSquareCoord UNDO_CAPTURE{ 0xff, 0xff };
-	//constexpr static FCGSquareCoord UNDO_SPAWN(0xff, 0xfe);
 };

@@ -201,7 +201,7 @@ void ACGChessPlayerPawn::BeginGrabPiece()
 					GrabbedPiece = piece;
 					pc->ServerGrab(piece, true);
 
-					HighlightedTiles = piece->AvailableMoves();
+					HighlightedTiles = piece->GetAvailableMoves();
 					HighlightTiles(true);
 				}
 			}

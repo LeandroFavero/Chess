@@ -15,13 +15,13 @@
 
 #define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
 
-// Sets default values
 ACGChessBoard::ACGChessBoard()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+#if WITH_EDITOR
 	bRunConstructionScriptOnDrag = false;
+#endif
 
+	PrimaryActorTick.bCanEverTick = false;
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SetRootComponent(Root);
 
@@ -29,9 +29,9 @@ ACGChessBoard::ACGChessBoard()
 	bOnlyRelevantToOwner = false;
 }
 
-void ACGChessBoard::OnConstruction(const FTransform& transform)
+void ACGChessBoard::OnConstruction(const FTransform& iTransform)
 {
-	Super::OnConstruction(transform);
+	Super::OnConstruction(iTransform);
 
 	for (AActor* a : Board)
 	{
@@ -162,39 +162,39 @@ void ACGChessBoard::Destroyed()
 	Super::Destroyed();
 }
 
-void ACGChessBoard::StartGame(const FString& fen, ACGChessPlayerController* p1, ACGChessPlayerController* p2)
+void ACGChessBoard::StartGame(const FString& iFen, ACGChessPlayerController* iP1, ACGChessPlayerController* iP2)
 {
 	if (HasAuthority())
 	{
-		FenStringToChessPieces(fen.IsEmpty() ? DefaultBoardFen : fen);
-		if (p2)
+		FenStringToChessPieces(iFen.IsEmpty() ? DefaultBoardFen : iFen);
+		if (iP2)
 		{
-			if (p1)
+			if (iP1)
 			{
 				//randomize
-				if (p1->PreferredSide == p2->PreferredSide && (p1->PreferredSide == 0 || p1->PreferredSide == 1))
+				if (iP1->PreferredSide == iP2->PreferredSide && (iP1->PreferredSide == 0 || iP1->PreferredSide == 1))
 				{
-					p1->bIsBlack = static_cast<bool>(FMath::RandRange(0, 1));
-					p2->bIsBlack = !p1->bIsBlack;
+					iP1->bIsBlack = static_cast<bool>(FMath::RandRange(0, 1));
+					iP2->bIsBlack = !iP1->bIsBlack;
 				}
 				else
 				{
 					//give them what they want
-					if (p1->PreferredSide == 2)
+					if (iP1->PreferredSide == 2)
 					{
-						p1->bIsBlack = p2->PreferredSide == 0;
+						iP1->bIsBlack = iP2->PreferredSide == 0;
 					}
 					else
 					{
-						p1->bIsBlack = p1->PreferredSide == 1;
+						iP1->bIsBlack = iP1->PreferredSide == 1;
 					}
-					if (p2->PreferredSide == 2)
+					if (iP2->PreferredSide == 2)
 					{
-						p2->bIsBlack = p1->PreferredSide == 0;
+						iP2->bIsBlack = iP1->PreferredSide == 0;
 					}
 					else
 					{
-						p2->bIsBlack = p2->PreferredSide == 1;
+						iP2->bIsBlack = iP2->PreferredSide == 1;
 					}
 				}
 			}
@@ -203,10 +203,10 @@ void ACGChessBoard::StartGame(const FString& fen, ACGChessPlayerController* p1, 
 }
 
 /*
-	default fen:
+	default Fen:
 	rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 */
-bool ACGChessBoard::FenStringToChessPieces(const FString& fen)
+bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 {
 	//clear the pieces from the board
 	for (ACGPiece* p : Pieces)
@@ -229,7 +229,7 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& fen)
 	}
 
 	int field = 0;
-	auto it = fen.CreateConstIterator();
+	auto it = iFen.CreateConstIterator();
 	for ( ;field == FenField::PIECE_PLACEMENT && it && *it != ' '; ++it)
 	{
 		const TCHAR& chr = *it;
@@ -339,25 +339,28 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& fen)
 		{
 			//we're done!
 			field += 1;
-			//flag the remaining pieces moved, so they can't castle
-			for (const TCHAR& chr2 : tmp)
+			if (BlackKing && WhiteKing) 
 			{
-				if (chr2 == 'K' || chr2 == 'Q' || chr2 == 'k' || chr2 == 'q')
+				//flag the remaining pieces moved, so they can't castle
+				for (const TCHAR& chr2 : tmp)
 				{
-					for (ACGTile* t = (TChar<TCHAR>::IsLower(chr2) ? BlackKing : WhiteKing)->Tile; t; t = t->Neighbours[(chr2 == 'K' || chr2 == 'k') ? EDir::WEST : EDir::EAST])
+					if (chr2 == 'K' || chr2 == 'Q' || chr2 == 'k' || chr2 == 'q')
 					{
-						if (t->OccupiedBy && t->OccupiedBy->IsA(ACGRook::StaticClass()))
+						for (ACGTile* t = (TChar<TCHAR>::IsLower(chr2) ? BlackKing : WhiteKing)->Tile; t; t = t->Neighbours[(chr2 == 'K' || chr2 == 'k') ? EDir::WEST : EDir::EAST])
 						{
-							t->OccupiedBy->Flags |= EPieceFlags::Moved;
-							goto continueNextChar;
+							if (t->OccupiedBy && t->OccupiedBy->IsA(ACGRook::StaticClass()))
+							{
+								t->OccupiedBy->Flags |= EPieceFlags::Moved;
+								goto continueNextChar;
+							}
 						}
 					}
+					else
+					{
+						malformed = true;
+					}
+				continueNextChar:;
 				}
-				else
-				{
-					malformed = true;
-				}
-			continueNextChar:;
 			}
 		}
 		else
@@ -434,7 +437,7 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& fen)
 	{
 		p->ClientSnapToPlace();
 	}
-
+	//TODO: missing king check! 
 	//update moves on listen server
 	if (Undos.Num() > 0 && UCGBPUtils::IsLocalUpdateRequired(this))
 	{
@@ -443,7 +446,7 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& fen)
 	return !malformed;
 }
 
-FTransform ACGChessBoard::CoordToTransform(const FCGSquareCoord& coord) const
+FTransform ACGChessBoard::CoordToTransform(const FCGSquareCoord& iCoord) const
 {
 	float boardHalfSizeX = TileSize.X * .5f * (Size.X - 1);
 	float boardHalfSizeY = TileSize.Y * .5f * (Size.Y - 1);
@@ -451,18 +454,18 @@ FTransform ACGChessBoard::CoordToTransform(const FCGSquareCoord& coord) const
 	FTransform tileTransform = GetTransform();
 	FVector tileLocation = tileTransform.GetLocation();
 
-	tileLocation.X += coord.X * TileSize.X - boardHalfSizeX;
-	tileLocation.Y += (Size.Y-1-coord.Y) * TileSize.Y - boardHalfSizeY;
+	tileLocation.X += iCoord.X * TileSize.X - boardHalfSizeX;
+	tileLocation.Y += (Size.Y-1-iCoord.Y) * TileSize.Y - boardHalfSizeY;
 	tileTransform.SetLocation(tileLocation);
 	return tileTransform;
 }
 
-FCGSquareCoord ACGChessBoard::TransformToCoord(const FTransform& transform)
+FCGSquareCoord ACGChessBoard::TransformToCoord(const FTransform& iTransform)
 {
-	return LocationToCoord(transform.GetLocation());
+	return LocationToCoord(iTransform.GetLocation());
 }
 
-FCGSquareCoord ACGChessBoard::LocationToCoord(const FVector& location)
+FCGSquareCoord ACGChessBoard::LocationToCoord(const FVector& iLocation)
 {
 	float boardHalfSizeX = TileSize.X * .5f * Size.X;// -1);
 	float boardHalfSizeY = TileSize.Y * .5f * Size.Y;// -1);
@@ -470,13 +473,15 @@ FCGSquareCoord ACGChessBoard::LocationToCoord(const FVector& location)
 	FVector boardLoc = GetTransform().GetLocation();
 	boardLoc.X += boardHalfSizeX;
 	boardLoc.Y += boardHalfSizeY;
-	boardLoc -= location;
+	boardLoc -= iLocation;
 	return FCGSquareCoord(Size.X - boardLoc.X / TileSize.X, boardLoc.Y / TileSize.Y);
 }
 
-bool ACGChessBoard::HasValidMove(bool pIsBlack)
+bool ACGChessBoard::HasValidMove(bool iIsBlack)
 {
-	ACGPiece** found = Pieces.FindByPredicate([pIsBlack](ACGPiece* p) { return p->IsBlack() == pIsBlack && p->HasAvailableMoves(); });
+	ACGPiece** found = Pieces.FindByPredicate([iIsBlack](ACGPiece* p) {
+		return p && !p->IsCaptured() && p->IsBlack() == iIsBlack && p->HasAvailableMoves(); 
+	});
 	return found != nullptr;
 }
 
@@ -489,7 +494,7 @@ bool ACGChessBoard::GameOverCheck()
 		{
 			ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>();
 			ACGGameState* state = w->GetGameState<ACGGameState>();
-			if(mode && state)
+			if(mode && state && BlackKing && WhiteKing)
 			{
 				//checkmate?
 				if ((isBlack ? BlackKing : WhiteKing)->IsInCheck())
@@ -524,17 +529,17 @@ void ACGChessBoard::RefreshPieceColors()
 	}
 }
 
-ACGTile* ACGChessBoard::GetTile(const FCGSquareCoord& coord)
+ACGTile* ACGChessBoard::GetTile(const FCGSquareCoord& iCoord)
 {
-	ACGTile* ret = Board[coord.X * Size.X + coord.Y];
-	ensure(coord == ret->Position);
+	ACGTile* ret = Board[iCoord.X * Size.X + iCoord.Y];
+	ensure(iCoord == ret->Position);
 	return ret;
 }
 
-void ACGChessBoard::CoordToLabel(const FCGSquareCoord coord, TCHAR& X, TCHAR& Y)
+void ACGChessBoard::CoordToLabel(const FCGSquareCoord& iCoord, TCHAR& oX, TCHAR& oY)
 {
-	X = 'A'+coord.X;
-	Y = coord.Y + 1;
+	oX = 'A'+iCoord.X;
+	oY = iCoord.Y + 1;
 }
 
 FCGUndo& ACGChessBoard::CreateUndo()
@@ -543,34 +548,34 @@ FCGUndo& ACGChessBoard::CreateUndo()
 	return Undos.Last();
 }
 
-void ACGChessBoard::UndoInternal(FCGUndo& pUndo)
+void ACGChessBoard::UndoInternal(FCGUndo& oUndo)
 {
 	FCGUndo dummyUndo;
-	if (pUndo.Promotion)
+	if (oUndo.Promotion)
 	{
-		Pieces.Remove(pUndo.Promotion);
-		pUndo.Promotion->Destroy();
-		pUndo.Piece->UnCapture();
+		Pieces.Remove(oUndo.Promotion);
+		oUndo.Promotion->Destroy();
+		oUndo.Piece->UnCapture();
 	}
-	if (pUndo.Piece)
+	if (oUndo.Piece)
 	{
-		pUndo.Piece->MoveToTileInternal(pUndo.From, dummyUndo, false);
-		pUndo.Piece->Flags = pUndo.Flags;
+		oUndo.Piece->MoveToTileInternal(oUndo.From, dummyUndo, false);
+		oUndo.Piece->Flags = oUndo.Flags;
 	}
-	if (pUndo.Capture)
+	if (oUndo.Capture)
 	{
-		pUndo.Capture->UnCapture();
-		pUndo.Capture->MoveToTileInternal(pUndo.To, dummyUndo, false);
+		oUndo.Capture->UnCapture();
+		oUndo.Capture->MoveToTileInternal(oUndo.To, dummyUndo, false);
 	}
-	if (pUndo.CastleRook)
+	if (oUndo.CastleRook)
 	{
-		pUndo.CastleRook->MoveToTileInternal(pUndo.CastleRookTile, dummyUndo, false);
+		oUndo.CastleRook->MoveToTileInternal(oUndo.CastleRookTile, dummyUndo, false);
 	}
 }
 
-void ACGChessBoard::UndoTo(int pMoveNum)
+void ACGChessBoard::UndoTo(const int iMoveNum)
 {
-	for (int i = Undos.Num() - 1; i >= pMoveNum;--i)
+	for (int i = Undos.Num() - 1; i >= iMoveNum;--i)
 	{
 		FCGUndo& u = Undos[i];
 		if (!u.Imported) 
@@ -598,7 +603,7 @@ void ACGChessBoard::UndoTo(int pMoveNum)
 	}
 }
 
-void ACGChessBoard::RequestUndoTo(int pMoveNum)
+void ACGChessBoard::RequestUndoTo(int iMoveNum)
 {
 
 }
@@ -621,7 +626,7 @@ void ACGChessBoard::PiecesNotify()
 	RefreshPieceColors();
 }
 
-void ACGChessBoard::RebuildAttackMap(bool pIsBlack)
+void ACGChessBoard::RebuildAttackMap(bool iIsBlack)
 {
 	for (ACGTile* t : Board)
 	{
@@ -632,7 +637,7 @@ void ACGChessBoard::RebuildAttackMap(bool pIsBlack)
 	}
 	for (ACGPiece* p : Pieces)
 	{
-		if (p && p->IsBlack() == pIsBlack)
+		if (p && p->IsBlack() == iIsBlack)
 		{
 			p->FillAttackMap();
 		}

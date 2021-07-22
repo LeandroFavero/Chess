@@ -74,12 +74,7 @@ bool UCGBPUtils::IsWaitingForPlayers(const UObject* WorldContextObject)
 	}
 	return false;
 }
-/*
-bool UCGBPUtils::IsGameConcluded(const UObject* WorldContextObject)
-{
-	return false;
-}
-*/
+
 bool UCGBPUtils::IsClient(const UObject* WorldContextObject)
 {
 	if (UWorld* w = GEngine->GetWorldFromContextObjectChecked(WorldContextObject))
@@ -184,18 +179,9 @@ FString UCGBPUtils::UndoToNotationString(const FCGUndo& undo)
 	if (undo.Check)
 	{
 		ret.AppendChar('+');
-		//TODO: # if checkhogymate
+		//TODO: # if checkmate
 	}
 	return ret;
-	/*return FString::Printf(
-			TEXT("%d. %s%s%s%s%c%c"),
-			undo.MoveNumber + 1,
-			*undo.Piece->GetUnicode(),
-			'A' + (undo.Piece->Board->Size.X - undo.From->Position.X),
-			'1' + undo.From->Position.Y,
-			undo.Capture ? 'x' : '-',
-			'A' + (undo.Piece->Board->Size.X - undo.To->Position.X),
-			'1' + undo.To->Position.Y);*/
 }
 
 ACGChessBoard* UCGBPUtils::FindBoard(const UObject* WorldContextObject)
@@ -206,6 +192,7 @@ ACGChessBoard* UCGBPUtils::FindBoard(const UObject* WorldContextObject)
 	}
 	return nullptr;
 }
+
 FString UCGBPUtils::GetLocalIP()
 {
 	bool canBind = false;
