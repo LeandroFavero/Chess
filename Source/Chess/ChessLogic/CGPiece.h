@@ -13,8 +13,6 @@ class ACGChessPlayerController;
 class ACGChessBoard;
 class ACGTile;
 
-
-//UENUM()
 struct EPieceFlags
 {
 	enum EPieceFlagsValues
@@ -63,7 +61,6 @@ public:
 	int Value;
 
 protected:
-
 	void PostInitializeComponents() override;
 
 public:	
@@ -74,11 +71,13 @@ public:
 
 	virtual void Destroyed() override;
 
-	UFUNCTION(BlueprintPure, Category = "Chess setup")
-	virtual const FString GetFenChars() const { return ""; }
-
-	UFUNCTION(BlueprintPure, Category = "Chess setup")
+	UFUNCTION(BlueprintPure, Category = "Chess FEN")
 	virtual const FString GetUnicode() const { return ""; }
+
+	virtual const bool IsFenMatches(const TCHAR& iChr) const { return false; }
+
+	UFUNCTION(BlueprintPure, Category = "Chess FEN")
+	virtual const FString GetFenChar() const { return ""; }
 
 	UFUNCTION(BlueprintPure, Category = "Chess setup")
 	virtual const bool IsValidForPromotion() const { return false; }

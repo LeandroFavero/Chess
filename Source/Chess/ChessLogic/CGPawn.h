@@ -15,12 +15,16 @@ UCLASS()
 class CHESS_API ACGPawn : public ACGPiece
 {
 	GENERATED_BODY()
+
+	const static FString PawnFen;
 public:
 	ACGPawn();
 
-	const FString GetFenChars() const override { return "Pp"; }
-
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265F") : TEXT("\u2659")); }
+
+	const bool IsFenMatches(const TCHAR& iChr) const override;
+
+	const FString GetFenChar() const override;
 
 	ACGTile* EnPassantTile { nullptr };
 

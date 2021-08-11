@@ -7,10 +7,23 @@
 #include "ChessLogic/CGTile.h"
 #include "Blueprint/CGBPUtils.h"
 
+const FString ACGKing::KingFen = { TEXT("Kk") };
+
 ACGKing::ACGKing()
 {
 	UCGKingMovement* moveComp = CreateDefaultSubobject<UCGKingMovement>(TEXT("MoveValidator"));
 	AddOwnedComponent(moveComp);
+}
+
+const bool ACGKing::IsFenMatches(const TCHAR& iChr) const
+{
+	int idx;
+	return KingFen.FindChar(iChr, idx);
+}
+
+const FString ACGKing::GetFenChar() const
+{
+	return IsWhite() ? TEXT("K") : TEXT("k");
 }
 
 void ACGKing::MoveToTile(ACGTile* iTile)
@@ -19,7 +32,7 @@ void ACGKing::MoveToTile(ACGTile* iTile)
 	//update rook for local player
 	if (Board)
 	{
-		if (FCGUndo* last = Board->GetLastUndo())
+		if (const FCGUndo* last = Board->GetLastUndo())
 		{
 			if (last->CastleRook && UCGBPUtils::IsLocalUpdateRequired(this))
 			{

@@ -30,7 +30,6 @@ public:
 	UFUNCTION(BlueprintPure, meta = (WorldContext = "WorldContextObject"), Category = "Chess utils")
 	static const FString FenFromMapParameter(const UObject* WorldContextObject);
 
-	
 	UFUNCTION(BlueprintPure, meta = (WorldContext = "WorldContextObject"), Category = "Chess utils")
 	static bool IsWaitingForPlayers(const UObject* WorldContextObject);
 

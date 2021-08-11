@@ -47,7 +47,7 @@ void UCGPawnMovement::GetAvailableMoves(TSet<ACGTile*>& oSet)
 			}
 		}
 		//en passant
-		if (pawn->Board->Undos.Num() > 0 && (pawn->IsBlack() ? pawn->Position.Y == 3 : pawn->Board->Size.Y - 4))//is in the good rank
+		if (pawn->Board->Undos.Num() > 0 && (pawn->IsBlack() ? pawn->Position.Y == 3 : pawn->Board->Size.Y - 4 == pawn->Position.Y))//is in the good rank
 		{
 			for (EDir dir : {EDir::EAST, EDir::WEST})
 			{

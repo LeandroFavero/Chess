@@ -3,6 +3,8 @@
 #include "ChessLogic/CGQueen.h"
 #include "CGLinearMovement.h"
 
+const FString ACGQueen::QueenFen = { TEXT("Qq") };
+
 ACGQueen::ACGQueen()
 {
 	UCGLinearMovement* moveComp = CreateDefaultSubobject<UCGLinearMovement>(TEXT("MoveValidator"));
@@ -10,3 +12,13 @@ ACGQueen::ACGQueen()
 	AddOwnedComponent(moveComp);
 }
 
+const bool ACGQueen::IsFenMatches(const TCHAR& iChr) const
+{
+	int idx;
+	return QueenFen.FindChar(iChr, idx);
+}
+
+const FString ACGQueen::GetFenChar() const
+{
+	return IsWhite() ? TEXT("Q") : TEXT("q");
+}

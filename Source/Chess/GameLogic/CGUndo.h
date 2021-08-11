@@ -15,6 +15,12 @@ struct CHESS_API FCGUndo
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Chess")
 	int MoveNumber { 0 };
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Chess")
+	int HalfMovesSinceLastPawnMove { 0 };
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Chess")
+	int FenMoveNumber { 0 };
+
 	UPROPERTY(VisibleAnywhere)
 	ACGPiece* Piece { nullptr };
 
@@ -51,6 +57,9 @@ struct CHESS_API FCGUndo
 	UPROPERTY(VisibleAnywhere)
 	bool Imported { false };
 	
-	FCGUndo(const int iMoveNumber):MoveNumber(iMoveNumber) {}
+	FCGUndo(const int iMoveNumber, const int iHalfMovesSincePawnMove, const int iFenMoveNumber)
+		:MoveNumber(iMoveNumber),
+		HalfMovesSinceLastPawnMove(iHalfMovesSincePawnMove),
+		FenMoveNumber(iFenMoveNumber) {}
 	FCGUndo() {}
 };

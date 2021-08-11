@@ -151,11 +151,11 @@ FString UCGBPUtils::UndoToNotationString(const FCGUndo& undo)
 	//castling
 	if (undo.CastleRookTile)
 	{
-		return FString::Printf(TEXT("%d. %s"), undo.MoveNumber + 1, undo.CastleRookTile->Position.X > undo.Piece->Position.X ? TEXT("0-0") : TEXT("0-0-0"));
+		return FString::Printf(TEXT("%d. %s"), undo.FenMoveNumber, undo.CastleRookTile->Position.X > undo.Piece->Position.X ? TEXT("0-0") : TEXT("0-0-0"));
 	}
 	//{number}. {piece}{fromX if not simple}{fromY if not simple}{'x' if capture '-' if simple otherwise nothing}{toX}{toY}{piece chosen from promotion (if promotion)}{+ if check # if checkmate}
 	FString ret;
-	ret.AppendInt(undo.MoveNumber + 1);
+	ret.AppendInt(undo.FenMoveNumber);
 	ret.Append(". ");
 	ret.Append(*undo.Piece->GetUnicode());
 	if (!undo.SimpleNotation)
@@ -171,10 +171,7 @@ FString UCGBPUtils::UndoToNotationString(const FCGUndo& undo)
 	ret.AppendChar('1' + undo.To->Position.Y);
 	if (undo.Promotion)
 	{
-		if (undo.Promotion->GetFenChars().Len() > 0)
-		{
-			ret.AppendChar(undo.Promotion->GetFenChars().ToUpper()[0]);
-		}
+		ret.Append(undo.Promotion->GetFenChar());
 	}
 	if (undo.Check)
 	{

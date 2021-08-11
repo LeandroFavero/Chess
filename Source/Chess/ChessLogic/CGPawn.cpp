@@ -8,10 +8,23 @@
 #include "GameLogic/CGChessPlayerController.h"
 #include "GameLogic/CGGameState.h"
 
+const FString ACGPawn::PawnFen = { TEXT("Pp") };
+
 ACGPawn::ACGPawn()
 {
 	UCGPieceMovementBase* moveComp = CreateDefaultSubobject<UCGPawnMovement>(TEXT("MoveValidator"));
 	AddOwnedComponent(moveComp);
+}
+
+const bool ACGPawn::IsFenMatches(const TCHAR& iChr) const
+{ 
+	int idx;
+	return PawnFen.FindChar(iChr, idx);
+}
+
+const FString ACGPawn::GetFenChar() const
+{
+	return IsWhite() ? TEXT("P") : TEXT("p");
 }
 
 void ACGPawn::MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents)
@@ -42,13 +55,13 @@ void ACGPawn::MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents)
 	if (iTile->Position.Y == (IsBlack() ? 0 : Board->Size.Y - 1) && iEvents)
 	{
 		oUndo.Promotion = this;
-		//Flags |= EPieceFlags::PromotionInProgress;
 		//notify controller
 		if (ACGChessPlayerController* pc = GetCGController())
 		{
 			pc->ClientBeginPromotion();
 		}
 	}
+	oUndo.HalfMovesSinceLastPawnMove = 0;
 }
 
 void ACGPawn::FinishPromotion(const FString& iChr, FCGUndo& oUndo)
@@ -59,7 +72,7 @@ void ACGPawn::FinishPromotion(const FString& iChr, FCGUndo& oUndo)
 		TSubclassOf<class ACGPiece>* temp = gameState->PieceTemplates.FindByPredicate([&](const TSubclassOf<class ACGPiece>& t) {
 			if (const ACGPiece* p = t.Get()->GetDefaultObject<ACGPiece>())
 			{
-				return (p->GetFenChars().Contains(iChr) && p->IsValidForPromotion());
+				return (p->IsFenMatches(iChr[0]) && p->IsValidForPromotion());
 			}
 			return false;
 		});
@@ -70,7 +83,6 @@ void ACGPawn::FinishPromotion(const FString& iChr, FCGUndo& oUndo)
 			FActorSpawnParameters params;
 			params.Owner = this;
 			ACGPiece* newPiece = GetWorld()->SpawnActor<ACGPiece>(*temp, params);
-			//newPiece->SetMaterial(isWhite ? gameState->WhiteMaterial : gameState->BlackMaterial);
 			newPiece->SetColor(oUndo.Piece->IsWhite());
 			newPiece->Board = Board;
 			newPiece->MoveToTileInternal(oUndo.To, dummyUndo, false);

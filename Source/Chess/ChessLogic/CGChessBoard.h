@@ -70,7 +70,10 @@ public:
 
 	//https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual bool FenStringToChessPieces(const FString& Fen);
+	bool FenStringToChessPieces(const FString& Fen);
+
+	UFUNCTION(BlueprintCallable, Category = "Chess setup")
+	FString PiecesToFen(bool iIsForUndo = false) const;
 
 	virtual void RebuildAttackMap(bool iIsBlack);
 
@@ -96,13 +99,13 @@ public:
 	virtual bool GameOverCheck();
 
 	virtual void RefreshPieceColors();
-	virtual ACGTile* GetTile(const FCGSquareCoord& iCoord);
+	virtual ACGTile* GetTile(const FCGSquareCoord& iCoord) const;
 	virtual FCGUndo& CreateUndo();
-	virtual FCGUndo* GetLastUndo();
+	virtual const FCGUndo* GetLastUndo() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void UndoTo(const int MoveNum);
-	virtual void UndoInternal(FCGUndo& oUndo);
+	virtual void UndoInternal(const FCGUndo& oUndo);
 
 	//TODO... Let's just cut this for now....
 	UFUNCTION(BlueprintCallable, Category = "Chess")
@@ -114,7 +117,7 @@ public:
 	UFUNCTION()
 	virtual void PiecesNotify();
 
-	static void CoordToLabel(const FCGSquareCoord& iCoord, TCHAR& oX, TCHAR& oY);
+	//static void CoordToLabel(const FCGSquareCoord& iCoord, TCHAR& oX, TCHAR& oY);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:

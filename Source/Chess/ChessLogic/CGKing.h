@@ -13,13 +13,17 @@ UCLASS()
 class CHESS_API ACGKing : public ACGPiece
 {
 	GENERATED_BODY()
+
+	const static FString KingFen;
 public:
 
 	TSet<ACGTile*> CastleTiles;
 
 	ACGKing();
 
-	const FString GetFenChars() const override { return "Kk"; }
+	const bool IsFenMatches(const TCHAR& iChr) const override;
+
+	const FString GetFenChar() const override;
 
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265A") : TEXT("\u2654")); }
 

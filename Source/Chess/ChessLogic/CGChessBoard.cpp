@@ -3,6 +3,7 @@
 #include "CGChessBoard.h"
 #include "GameLogic/CGGameState.h"
 #include "GameLogic/CGGameMode.h"
+#include "CGPawn.h"
 #include "CGRook.h"
 #include "CGKing.h"
 #include "ChessLogic/CGTile.h"
@@ -245,9 +246,9 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 			continue;
 		}
 		//is numeric
-		if (chr >= 48 && chr <= 57)
+		if (chr >= '0' && chr <= '9')
 		{
-			int8 skip = chr - 48;
+			int8 skip = chr - '0';
 			x += skip;
 			continue;
 		}
@@ -256,46 +257,38 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 			if (ACGGameState* gameState = world->GetGameState<ACGGameState>())
 			{
 				FCGUndo dummyUndo;//we don't want to undo the initial piece spawns!
-				for (TSubclassOf<class ACGPiece> temp : gameState->PieceTemplates)
+				for (TSubclassOf<class ACGPiece>& temp : gameState->PieceTemplates)
 				{
 					if (temp)
 					{
-						ACGPiece* def = Cast<ACGPiece>(temp.Get()->GetDefaultObject());
-						if (def)
+						if (ACGPiece* def = Cast<ACGPiece>(temp.Get()->GetDefaultObject()))
 						{
-							for (const TCHAR pieceChr : def->GetFenChars())
+							if (def->IsFenMatches(chr))
 							{
-								if (pieceChr == chr)
+								//spawn piece
+								FActorSpawnParameters params;
+								bool isWhite = TChar<TCHAR>::IsUpper(chr);
+								params.Owner = this;
+								ACGPiece* newPiece = world->SpawnActor<ACGPiece>(temp, params);
+								newPiece->SetColor(isWhite);
+								newPiece->Board = this;
+								newPiece->MoveToTileInternal(GetTile({ x,y }), dummyUndo, false);
+								Pieces.Add(newPiece);
+
+								//ptr to the kings
+								if (newPiece->IsA(ACGKing::StaticClass()))
 								{
-									//spawn piece
-									FActorSpawnParameters params;
-									bool isWhite = TChar<TCHAR>::IsUpper(pieceChr);
-									params.Owner = this;
-									ACGPiece* newPiece = world->SpawnActor<ACGPiece>(temp, params);
-									//newPiece->SetMaterial(isWhite ? gameState->WhiteMaterial : gameState->BlackMaterial);
-									newPiece->SetColor(isWhite);
-									newPiece->Board = this;
-									newPiece->MoveToTileInternal(GetTile({ x,y }), dummyUndo, false);
-									Pieces.Add(newPiece);
-
-									//ptr to the kings
-									if (newPiece->IsA(ACGKing::StaticClass()))
+									if (newPiece->IsBlack())
 									{
-										if (newPiece->IsBlack())
-										{
-											BlackKing = Cast<ACGKing>(newPiece);
-										}
-										else
-										{
-											WhiteKing = Cast<ACGKing>(newPiece);
-										}
+										BlackKing = Cast<ACGKing>(newPiece);
 									}
-
-									//charHandled = true;
-									x += 1;
-
-									goto continueNextPiece;
+									else
+									{
+										WhiteKing = Cast<ACGKing>(newPiece);
+									}
 								}
+								x += 1;
+								goto continueNextPiece;
 							}
 						}
 					}
@@ -445,6 +438,131 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 	return !malformed;
 }
 
+FString ACGChessBoard::PiecesToFen(bool iIsForUndo) const
+{
+	ACGPiece* whiteKSRook = nullptr, * whiteQSRook = nullptr,
+		* blackKSRook = nullptr, *blackQSRook = nullptr;
+
+	FString ret;
+	for (int y = Size.Y - 1; y >= 0; --y)
+	{
+		int empties = 0;
+		for (int x = 0; x < Size.X; ++x)
+		{
+			FCGSquareCoord c(x, y);
+			if (ACGTile* tile = GetTile(c))
+			{
+				ACGPiece* p = tile->OccupiedBy;
+				if (p)
+				{
+					if (empties > 0)
+					{
+						ret.AppendInt(empties);
+					}
+					ret.Append(p->GetFenChar());
+					//store reference if it's a casting capable rook
+					if (p->IsA(ACGRook::StaticClass()) && !p->IsMoved())
+					{
+						if (p->IsWhite())
+						{
+							if (p->Position.X < WhiteKing->Position.X)
+							{
+								whiteQSRook = p;
+							}
+							else
+							{
+								whiteKSRook = p;
+							}
+						}
+						else
+						{
+							if (p->Position.X < BlackKing->Position.X)
+							{
+								blackQSRook = p;
+							}
+							else
+							{
+								blackKSRook = p;
+							}
+						}
+					}
+				}
+				else
+				{
+					empties += 1;
+				}
+			}
+		}
+		if (empties > 0)
+		{
+			ret.AppendInt(empties);
+		}
+		ret.AppendChar('/');
+	}
+	if (IsNextMoveBlack())
+	{
+		ret.Append(" b ");
+	}
+	else
+	{
+		ret.Append(" w ");
+	}
+	//available castlings
+	FString castlings;
+	if (!WhiteKing->IsMoved())
+	{
+		if (whiteKSRook)
+		{
+			castlings.AppendChar('K');
+		}
+		if (whiteQSRook)
+		{
+			castlings.AppendChar('Q');
+		}
+	}
+	if (!BlackKing->IsMoved())
+	{
+		if (blackKSRook)
+		{
+			castlings.AppendChar('k');
+		}
+		if (blackQSRook)
+		{
+			castlings.AppendChar('q');
+		}
+	}
+	ret.Append(castlings.IsEmpty() ? "-" : castlings);
+	//en passant tile
+	ret.AppendChar(' ');
+	const FCGUndo* last = GetLastUndo();
+	if (last && last->Piece && last->Piece->IsA(ACGPawn::StaticClass()) && 
+		last->From && last->To && FMath::Abs(last->From->Position.Y - last->To->Position.Y) == 2)
+	{
+		ret.AppendChar('a' + last->From->Position.X);
+		if (last->From->Neighbours[NORTH] == last->To->Neighbours[SOUTH])
+		{
+			
+			ret.AppendChar('1' + last->From->Neighbours[NORTH]->Position.Y);
+		}
+		else if (last->From->Neighbours[SOUTH] == last->To->Neighbours[NORTH])
+		{
+			ret.AppendChar('1' + last->From->Neighbours[SOUTH]->Position.Y);
+		}
+	}
+	else
+	{
+		ret.Append(" - ");
+	}
+	if (!iIsForUndo)
+	{
+		ret.AppendChar(' ');
+		ret.AppendInt(last ? last->HalfMovesSinceLastPawnMove : 0);
+		ret.AppendChar(' ');
+		ret.AppendInt(last ? last->FenMoveNumber : 1);
+	}
+	return ret;
+}
+
 FTransform ACGChessBoard::CoordToTransform(const FCGSquareCoord& iCoord) const
 {
 	float boardHalfSizeX = TileSize.X * .5f * (Size.X - 1);
@@ -539,26 +657,27 @@ void ACGChessBoard::RefreshPieceColors()
 	}
 }
 
-ACGTile* ACGChessBoard::GetTile(const FCGSquareCoord& iCoord)
+ACGTile* ACGChessBoard::GetTile(const FCGSquareCoord& iCoord) const
 {
 	ACGTile* ret = Board[iCoord.X * Size.X + iCoord.Y];
 	ensure(iCoord == ret->Position);
 	return ret;
 }
 
-void ACGChessBoard::CoordToLabel(const FCGSquareCoord& iCoord, TCHAR& oX, TCHAR& oY)
-{
-	oX = 'A'+iCoord.X;
-	oY = iCoord.Y + 1;
-}
-
 FCGUndo& ACGChessBoard::CreateUndo()
 {
-	Undos.Emplace(Undos.Num());
+	if (const FCGUndo* last = GetLastUndo())
+	{
+		Undos.Emplace(last->MoveNumber + 1, last->HalfMovesSinceLastPawnMove + 1, IsNextMoveBlack() ? last->FenMoveNumber : last->FenMoveNumber + 1);
+	}
+	else
+	{
+		Undos.Emplace(0, 0, 1);
+	}
 	return Undos.Last();
 }
 
-FCGUndo* ACGChessBoard::GetLastUndo()
+const FCGUndo* ACGChessBoard::GetLastUndo() const
 {
 	if (Undos.Num() == 0)
 	{
@@ -567,7 +686,7 @@ FCGUndo* ACGChessBoard::GetLastUndo()
 	return &Undos.Last();
 }
 
-void ACGChessBoard::UndoInternal(FCGUndo& oUndo)
+void ACGChessBoard::UndoInternal(const FCGUndo& oUndo)
 {
 	FCGUndo dummyUndo;
 	if (oUndo.Promotion)
@@ -594,10 +713,14 @@ void ACGChessBoard::UndoInternal(FCGUndo& oUndo)
 
 void ACGChessBoard::UndoTo(const int iMoveNum)
 {
-	for (int i = Undos.Num() - 1; i >= iMoveNum;--i)
+	for (int i = Undos.Num() - 1; i >= 0; --i)
 	{
-		FCGUndo& u = Undos[i];
-		if (!u.Imported) 
+		const FCGUndo& u = Undos[i];
+		if (u.MoveNumber < iMoveNum)
+		{
+			break;
+		}
+		else if (!u.Imported) 
 		{
 			UndoInternal(u);
 			if (u.Piece)

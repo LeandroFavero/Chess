@@ -14,10 +14,14 @@ class CHESS_API ACGBishop : public ACGPiece
 {
 	GENERATED_BODY()
 
+	const static FString BishopFen;
+
 public:
 	ACGBishop();
 
-	const FString GetFenChars() const override { return "Bb"; }
+	const bool IsFenMatches(const TCHAR& iChr) const override;
+
+	const FString GetFenChar() const override;
 
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265D") : TEXT("\u2657")); }
 

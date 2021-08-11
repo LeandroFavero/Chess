@@ -13,12 +13,15 @@ UCLASS()
 class CHESS_API ACGRook : public ACGPiece
 {
 	GENERATED_BODY()
-	
+
+	const static FString RookFen;
 public:
 
 	ACGRook();
 
-	const FString GetFenChars() const override { return "Rr"; }
+	const bool IsFenMatches(const TCHAR& iChr) const override;
+
+	const FString GetFenChar() const override;
 
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265C") : TEXT("\u2656")); }
 

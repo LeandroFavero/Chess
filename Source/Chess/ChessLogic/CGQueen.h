@@ -14,11 +14,14 @@ class CHESS_API ACGQueen : public ACGPiece
 {
 	GENERATED_BODY()
 
+	const static FString QueenFen; 
 public:
 
 	ACGQueen();
 
-	const FString GetFenChars() const override { return "Qq"; }
+	const bool IsFenMatches(const TCHAR& iChr) const override;
+
+	const FString GetFenChar() const override;
 
 	const FString GetUnicode() const override { return (IsBlack() ? TEXT("\u265B") : TEXT("\u2655")); }
 

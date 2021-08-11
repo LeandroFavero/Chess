@@ -89,7 +89,6 @@ void ACGPiece::RefreshMaterial()
 	}
 }
 
-
 void ACGPiece::Grab(bool iIsGrabbed)
 {
 	SetReplicateMovement(iIsGrabbed);
