@@ -16,7 +16,7 @@ struct CHESS_API FCGUndo
 	int MoveNumber { 0 };
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Chess")
-	int HalfMovesSinceLastPawnMove { 0 };
+	int FiftyMoveCounter { 0 };
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Chess")
 	int FenMoveNumber { 0 };
@@ -52,14 +52,17 @@ struct CHESS_API FCGUndo
 	bool Check { false };
 
 	UPROPERTY(VisibleAnywhere)
-	bool LastMoveIsBlack { false };
+	bool LastMoveIsBlack { true };
 
 	UPROPERTY(VisibleAnywhere)
 	bool Imported { false };
+
+	UPROPERTY(VisibleAnywhere)
+	FString Fen;
 	
 	FCGUndo(const int iMoveNumber, const int iHalfMovesSincePawnMove, const int iFenMoveNumber)
 		:MoveNumber(iMoveNumber),
-		HalfMovesSinceLastPawnMove(iHalfMovesSincePawnMove),
+		FiftyMoveCounter(iHalfMovesSincePawnMove),
 		FenMoveNumber(iFenMoveNumber) {}
 	FCGUndo() {}
 };

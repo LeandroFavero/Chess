@@ -126,6 +126,17 @@ void ACGChessPlayerController::ServerChoosePromotion_Implementation(const FStrin
 	}
 }
 
+void ACGChessPlayerController::ServerClaimDraw_Implementation()
+{
+	if (bIsDrawClaimable)
+	{
+		if (ACGChessBoard* board = UCGBPUtils::FindBoard(this))
+		{
+			board->GameOverCheck(true);
+		}
+	}
+}
+
 void ACGChessPlayerController::ClientBeginPromotion_Implementation()
 {
 	OnPromotion.Broadcast();
@@ -150,6 +161,11 @@ void ACGChessPlayerController::SideChanged()
 
 }
 
+void ACGChessPlayerController::DrawClaimableChanged()
+{
+	OnDrawClaimable.Broadcast(bIsDrawClaimable);
+}
+
 void ACGChessPlayerController::BeginPlayingState()
 {
 	if (UCGGameInstance* gi = GetGameInstance<UCGGameInstance>())
@@ -163,4 +179,5 @@ void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 {
 	DOREPLIFETIME(ACGChessPlayerController, PreferredSide)
 	DOREPLIFETIME(ACGChessPlayerController, bIsBlack)
+	DOREPLIFETIME(ACGChessPlayerController, bIsDrawClaimable)
 }

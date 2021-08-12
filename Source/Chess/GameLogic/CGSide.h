@@ -18,5 +18,8 @@ enum EGameResult
 	BLACK_WINS		UMETA(DisplayName = "Black wins!"),
 	WHITE_WINS		UMETA(DisplayName = "White wins!"),
 	DRAW			UMETA(DisplayName = "Draw!"),
-	DISCONNECT		UMETA(DisplayName = "Disconnected.")
+	DRAW_50_MOVE	UMETA(DisplayName = "Draw by 50 move rule!"),
+	DRAW_3_REP		UMETA(DisplayName = "Draw by threefold repetition!"),
+	DRAW_5_REP		UMETA(DisplayName = "Draw by fivefold repetition!"),
+	DISCONNECT		UMETA(DisplayName = "Disconnected."),
 };

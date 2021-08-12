@@ -227,7 +227,7 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 	{
 		return false;
 	}
-
+	FCGUndo* undo = nullptr;
 	int field = 0;
 	auto it = iFen.CreateConstIterator();
 	for ( ;field == FenField::PIECE_PLACEMENT && it && *it != ' '; ++it)
@@ -301,7 +301,10 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 	}
 
 	field += 1;
-	++it;
+	if (it)
+	{
+		++it;
+	}
 	for (; field == FenField::NEXT_MOVE && it && *it != ' '; ++it)
 	{
 		const TCHAR& chr = *it;
@@ -312,9 +315,13 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 		else if (chr == 'b' || chr == 'B')
 		{
 			//add dummy undo token with a white move
-			FCGUndo& u = CreateUndo();
-			u.Imported = true;
-			u.LastMoveIsBlack = false;
+			if (!undo)
+			{
+				undo = &CreateUndo();
+			}
+			undo->Imported = true;
+			undo->LastMoveIsBlack = false;
+
 		}
 		else
 		{
@@ -322,7 +329,10 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 		}
 	}
 	field += 1;
-	++it;
+	if (it)
+	{
+		++it;
+	}
 	FString tmp("KQkq",0);
 	for (; field == FenField::CASTLING_AVAILABILITY && it; ++it)
 	{
@@ -392,10 +402,13 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 				ACGTile* t = GetTile({ tileX, tileY });
 				if (t && t->OccupiedBy)
 				{
-					FCGUndo& u = Undos.Num() > 0 ? Undos.Last() : CreateUndo();
-					u.Imported = true;
-					u.Piece = t->OccupiedBy;
-					u.To = t;
+					if (!undo)
+					{
+						undo = &CreateUndo();
+					}
+					undo->Imported = true;
+					undo->Piece = t->OccupiedBy;
+					undo->To = t;
 					for (int distance = 0; distance < 2; ++distance)
 					{
 						if (t)
@@ -403,7 +416,7 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 							t = t->Neighbours[isBlack ? EDir::NORTH : EDir::SOUTH];
 						}
 					}
-					u.From = t;
+					undo->From = t;
 				}
 			}
 			else
@@ -413,23 +426,49 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 			field += 1;
 		}
 	}
-
+	tmp.Empty(4);
 	for (; field == FenField::HALFMOVE_CLOCK && it && *it != ' '; ++it)
 	{
-		//fifty-move rule is not supported yet :( 
+		tmp.AppendChar(*it);
+	}
+	int moveNum = FCString::Atoi(*tmp);
+	if (moveNum != DEFAULT_FEN_HALF_MOVE)
+	{
+		if (!undo)
+		{
+			undo = &CreateUndo();
+		}
+		undo->Imported = true;
+		undo->FiftyMoveCounter = moveNum;
 	}
 	field += 1;
-	++it;
+	if (it)
+	{
+		++it;
+	}
+	tmp.Empty(4);
 	for (; field == FenField::FULLMOVE_NUMBER && it && *it != ' '; ++it)
 	{
-		//at the moment we're using the undo count to determine the current move number
+		tmp.AppendChar(*it);
 	}
-
+	moveNum = FCString::Atoi(*tmp);
+	if (moveNum != DEFAULT_FEN_MOVE_NUMBER)
+	{
+		if (!undo)
+		{
+			undo = &CreateUndo();
+		}
+		undo->Imported = true;
+		undo->FenMoveNumber = moveNum;
+	}
 	for (ACGPiece* p : Pieces)
 	{
 		p->ClientSnapToPlace();
 	}
-	//TODO: missing king check! 
+	if (!WhiteKing || !BlackKing)
+	{
+		malformed = true;
+	}
 	//update moves on listen server
 	if (Undos.Num() > 0 && UCGBPUtils::IsLocalUpdateRequired(this))
 	{
@@ -438,10 +477,10 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 	return !malformed;
 }
 
-FString ACGChessBoard::PiecesToFen(bool iIsForUndo) const
+FString ACGChessBoard::PiecesToFen(bool iIsForUndo)
 {
 	ACGPiece* whiteKSRook = nullptr, * whiteQSRook = nullptr,
-		* blackKSRook = nullptr, *blackQSRook = nullptr;
+		* blackKSRook = nullptr, * blackQSRook = nullptr;
 
 	FString ret;
 	for (int y = Size.Y - 1; y >= 0; --y)
@@ -541,7 +580,6 @@ FString ACGChessBoard::PiecesToFen(bool iIsForUndo) const
 		ret.AppendChar('a' + last->From->Position.X);
 		if (last->From->Neighbours[NORTH] == last->To->Neighbours[SOUTH])
 		{
-			
 			ret.AppendChar('1' + last->From->Neighbours[NORTH]->Position.Y);
 		}
 		else if (last->From->Neighbours[SOUTH] == last->To->Neighbours[NORTH])
@@ -556,7 +594,7 @@ FString ACGChessBoard::PiecesToFen(bool iIsForUndo) const
 	if (!iIsForUndo)
 	{
 		ret.AppendChar(' ');
-		ret.AppendInt(last ? last->HalfMovesSinceLastPawnMove : 0);
+		ret.AppendInt(last ? last->FiftyMoveCounter : 0);
 		ret.AppendChar(' ');
 		ret.AppendInt(last ? last->FenMoveNumber : 1);
 	}
@@ -594,56 +632,131 @@ FCGSquareCoord ACGChessBoard::LocationToCoord(const FVector& iLocation)
 	return FCGSquareCoord(Size.X - boardLoc.X / TileSize.X, boardLoc.Y / TileSize.Y);
 }
 
-bool ACGChessBoard::GameOverCheck()
+bool ACGChessBoard::GameOverCheck(bool iClaimDraw)
 {
 	bool isBlack = IsNextMoveBlack();
 	if (BlackKing && WhiteKing)
 	{
-		if (UWorld* w = GetWorld())
+		//50move and threefold repetition tests
+		//refresh fen on the last undo
+		if (FCGUndo* undo = GetLastUndo())
 		{
-			ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>();
-			ACGGameState* state = w->GetGameState<ACGGameState>();
-			if (mode && state)
+			UpdateAllPcDrawAvailable(false);
+			undo->Fen = PiecesToFen(true);
+			EGameResult res = DrawTests(*undo);
+			if (res != NOT_FINISHED)
 			{
-				ACGKing* k = isBlack ? BlackKing : WhiteKing;
-				if (k->IsCaptured())//Should not be possible, but end the game if the king is somehow captured
+				if (res == DRAW_5_REP || iClaimDraw)
 				{
-					mode->EndMatch();
-					state->GameResult = isBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
-					if (UCGBPUtils::IsLocalUpdateRequired(this))
-					{
-						state->ResultNotify();
-					}
-					return true;
+					EndGame(res);
 				}
-				//find a piece with valid move
-				ACGPiece** found = Pieces.FindByPredicate([isBlack](ACGPiece* p) {
-					return p && !p->IsCaptured() && p->IsBlack() == isBlack && p->HasAvailableMoves();
-				});
-
-				if (found == nullptr)//no valid move, it's game over!
+				else
 				{
-					//checkmate?
-					if (k->IsInCheck())
-					{
-						mode->EndMatch();
-						state->GameResult = isBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
-					}
-					else
-					{
-						mode->EndMatch();
-						state->GameResult = EGameResult::DRAW;
-					}
-					if (UCGBPUtils::IsLocalUpdateRequired(this))
-					{
-						state->ResultNotify();
-					}
-					return true;
+					UpdateAllPcDrawAvailable(true);
+				}
+			}
+		}
+		if (iClaimDraw)
+		{
+			if (Undos.Num() > 1)
+			{
+				EGameResult res = DrawTests(Undos.Last(1));
+				if (res != NOT_FINISHED)
+				{
+					EndGame(res);
+				}
+			}
+		}
+		//check for checkmate
+		ACGKing* k = isBlack ? BlackKing : WhiteKing;
+		if (k->IsCaptured())//Should not be possible, but end the game if the king is somehow captured
+		{
+			EndGame(isBlack ? WHITE_WINS : BLACK_WINS);
+			return true;
+		}
+		//find a piece with valid move
+		ACGPiece** found = Pieces.FindByPredicate([isBlack](ACGPiece* p) {
+			return p && !p->IsCaptured() && p->IsBlack() == isBlack && p->HasAvailableMoves();
+		});
+
+		if (found == nullptr)//no valid move, it's game over!
+		{
+			//checkmate?
+			if (k->IsInCheck())
+			{
+				EndGame(isBlack ? WHITE_WINS : BLACK_WINS);
+			}
+			else
+			{
+				EndGame(DRAW);
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+void ACGChessBoard::EndGame(const EGameResult iResult)
+{
+	if (UWorld* w = GetWorld())
+	{
+		ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>();
+		ACGGameState* state = w->GetGameState<ACGGameState>();
+		if (mode && state)
+		{
+			mode->EndMatch();
+			state->GameResult = iResult;
+			if (UCGBPUtils::IsLocalUpdateRequired(this))
+			{
+				state->ResultNotify();
+			}
+		}
+	}
+}
+
+EGameResult ACGChessBoard::DrawTests(const FCGUndo& iUndo) const
+{
+	//https://en.wikipedia.org/wiki/Fifty-move_rule
+	if (iUndo.FiftyMoveCounter >= 100)
+	{
+		return DRAW_50_MOVE;
+	}
+	//https://en.wikipedia.org/wiki/Threefold_repetition
+	int repeatCount = 0;
+	for (const FCGUndo& u : Undos)
+	{
+		if (u.Fen.Equals(iUndo.Fen))
+		{
+			repeatCount += 1;
+		}
+	}
+	if (repeatCount >= 5)
+	{
+		return DRAW_5_REP;
+	}
+	else if (repeatCount >= 3)
+	{
+		return DRAW_3_REP;
+	}
+	return NOT_FINISHED;
+}
+
+void ACGChessBoard::UpdateAllPcDrawAvailable(const bool iIsAvailable)
+{
+	for (auto it = GetWorld()->GetPlayerControllerIterator(); it; ++it)
+	{
+		if (ACGChessPlayerController* pc = Cast<ACGChessPlayerController>(*it))
+		{
+			if (pc->bIsDrawClaimable != iIsAvailable)
+			{
+				pc->bIsDrawClaimable = iIsAvailable;
+				if (pc->IsLocalPlayerController() && UCGBPUtils::IsLocalUpdateRequired(this))
+				{
+					pc->DrawClaimableChanged();
 				}
 			}
 		}
 	}
-	return false;
 }
 
 void ACGChessBoard::RefreshPieceColors()
@@ -668,16 +781,16 @@ FCGUndo& ACGChessBoard::CreateUndo()
 {
 	if (const FCGUndo* last = GetLastUndo())
 	{
-		Undos.Emplace(last->MoveNumber + 1, last->HalfMovesSinceLastPawnMove + 1, IsNextMoveBlack() ? last->FenMoveNumber : last->FenMoveNumber + 1);
+		Undos.Emplace(last->MoveNumber + 1, last->FiftyMoveCounter + 1, IsNextMoveBlack() ? last->FenMoveNumber : last->FenMoveNumber + 1);
 	}
 	else
 	{
-		Undos.Emplace(0, 0, 1);
+		Undos.Emplace(0, DEFAULT_FEN_HALF_MOVE, DEFAULT_FEN_MOVE_NUMBER);
 	}
 	return Undos.Last();
 }
 
-const FCGUndo* ACGChessBoard::GetLastUndo() const
+FCGUndo* ACGChessBoard::GetLastUndo()
 {
 	if (Undos.Num() == 0)
 	{
@@ -804,7 +917,7 @@ bool ACGChessBoard::IsReadyForNextMove() const
 	{
 		if (state->IsMatchInProgress())
 		{
-			if (Undos.Num() == 0)
+			if (Undos.Num() == 0 || Undos.Last().Imported)
 			{
 				return true;
 			}

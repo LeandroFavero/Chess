@@ -198,6 +198,7 @@ void ACGPiece::MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents)
 		if (p && (p->IsBlack() != IsBlack()))
 		{
 			oUndo.Capture = p;
+			oUndo.FiftyMoveCounter = 0;
 			p->Capture(iEvents);
 		}
 	}

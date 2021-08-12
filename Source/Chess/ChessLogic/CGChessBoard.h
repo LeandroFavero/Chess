@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "Math/IntPoint.h"
@@ -7,6 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "ChessLogic/CGSquareCoord.h"
 #include "GameLogic/CGUndo.h"
+#include "GameLogic/CGSide.h"
 #include "CGChessBoard.generated.h"
 
 class ACGChessPlayerController;
@@ -19,7 +18,7 @@ UCLASS(Blueprintable)
 class CHESS_API ACGChessBoard : public AActor
 {
 	GENERATED_BODY()
-	
+
 public:
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	TSubclassOf<class ACGTile> TileTemplate;
@@ -73,7 +72,7 @@ public:
 	bool FenStringToChessPieces(const FString& Fen);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	FString PiecesToFen(bool iIsForUndo = false) const;
+	FString PiecesToFen(bool iIsForUndo = false);
 
 	virtual void RebuildAttackMap(bool iIsBlack);
 
@@ -96,12 +95,20 @@ public:
 	virtual FCGSquareCoord LocationToCoord(const FVector& Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual bool GameOverCheck();
+	virtual bool GameOverCheck(bool bClaimDraw = false);
 
+	UFUNCTION(BlueprintCallable, Category = "Chess")
+	virtual void EndGame(const EGameResult iResult);
+
+protected:
+	EGameResult DrawTests(const FCGUndo& iUndo) const;
+	virtual void UpdateAllPcDrawAvailable(const bool iIsAvailable);
+
+public:
 	virtual void RefreshPieceColors();
 	virtual ACGTile* GetTile(const FCGSquareCoord& iCoord) const;
 	virtual FCGUndo& CreateUndo();
-	virtual const FCGUndo* GetLastUndo() const;
+	virtual FCGUndo* GetLastUndo();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void UndoTo(const int MoveNum);
@@ -111,16 +118,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chess")
 	virtual void RequestUndoTo(int MoveNum);
 
+	
+
 	UFUNCTION()
 	virtual void UndoNotify();
 
 	UFUNCTION()
 	virtual void PiecesNotify();
 
-	//static void CoordToLabel(const FCGSquareCoord& iCoord, TCHAR& oX, TCHAR& oY);
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-private:
+
+
+	constexpr static int DEFAULT_FEN_MOVE_NUMBER { 1 };
+	constexpr static int DEFAULT_FEN_HALF_MOVE { 0 };
 };
 
 enum FenField

@@ -61,7 +61,7 @@ void ACGPawn::MoveToTileInternal(ACGTile* iTile, FCGUndo& oUndo, bool iEvents)
 			pc->ClientBeginPromotion();
 		}
 	}
-	oUndo.HalfMovesSinceLastPawnMove = 0;
+	oUndo.FiftyMoveCounter = 0;
 }
 
 void ACGPawn::FinishPromotion(const FString& iChr, FCGUndo& oUndo)
