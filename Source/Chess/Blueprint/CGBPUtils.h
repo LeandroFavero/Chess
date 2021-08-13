@@ -59,4 +59,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Chess utils")
 	static bool IsEditorPresent();
+
+	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "Chess utils")
+	static void BoardFenToClipboard(const UObject* WorldContextObject);
 };

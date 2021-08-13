@@ -10,6 +10,7 @@
 
 class ACGPiece;
 class ACGTile;
+class ACGChessPlayerController;
 
 UCLASS()
 class CHESS_API ACGChessPlayerPawn : public APawn
@@ -67,16 +68,13 @@ public:
 	bool bDrawDebugHelpers;
 
 	UPROPERTY(BlueprintReadOnly)
-	TWeakObjectPtr<class ACGPiece> GrabbedPiece{};
+	TWeakObjectPtr<class ACGPiece> GrabbedPiece;
 
 	UPROPERTY(BlueprintReadOnly)
-	TWeakObjectPtr<class AActor> MouseoveredActor{};
+	TWeakObjectPtr<class AActor> MouseoveredActor;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	float DragTreshold = 3;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Debug")//TODO: remove?
-	FHitResult hitResult;
 
 	float lastMouseX, lastMouseY;
 
@@ -86,31 +84,33 @@ private:
 	void LeftPressed();
 	void LeftReleased();
 	void BeginGrabPiece();
-	void EndGrabPiece(bool moveTo = false);
+	void EndGrabPiece(bool iIsMoveTo = false);
 	bool IsDragged();
 	void BeginTurnCamera();
 	void EndTurnCamera();
-	void MouseMoveX(float Val);
-	void MouseMoveY(float Val);
-	void Zoom(float Val);
+	void MouseMoveX(float iVal);
+	void MouseMoveY(float iVal);
+	void Zoom(float iVal);
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	void OrbitCamera(float X, float Y, bool absolute = false);
-	void HighlightTiles(bool val);
-	//bool IsHotSeat();
+	void OrbitCamera(float iX, float iY, bool iIsAbsolute = false);
+	void HighlightTiles(bool iIsHighlighted);
+	void SetMouseovered(const TWeakObjectPtr<class AActor>& iActor);
 
 	UPROPERTY()
-	TSet<ACGTile* > HighlightedTiles;
+	TSet<ACGTile*> HighlightedTiles;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
+	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void TraceCursor();
+
+	UFUNCTION()
+	void OnMove();
+	bool IsPieceInteractable(const ACGPiece* iPiece, const ACGChessPlayerController* iPc);
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	

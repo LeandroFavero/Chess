@@ -40,7 +40,17 @@ void ACGChessPlayerPawn::BeginPlay()
 	if (ACGChessPlayerController* pc = GetWorld()->GetFirstPlayerController<ACGChessPlayerController>())
 	{
 		OrbitCamera(pc->bIsBlack?BlackRotation:WhiteRotation, CameraArmYDefault, true);
+		pc->OnMove.AddDynamic(this, &ACGChessPlayerPawn::OnMove);
 	}
+}
+
+void ACGChessPlayerPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (ACGChessPlayerController* pc = GetWorld()->GetFirstPlayerController<ACGChessPlayerController>())
+	{
+		pc->OnMove.RemoveDynamic(this, &ACGChessPlayerPawn::OnMove);
+	}
+	Super::EndPlay(EndPlayReason);
 }
 
 // Called every frame
@@ -84,25 +94,33 @@ void ACGChessPlayerPawn::TraceCursor()
 			EndGrabPiece();
 			return;
 		}
-
 		//collision disabled for pieces if one is lifted
+		FHitResult hitResult;
 		pc->GetHitResultUnderCursor(GrabbedPiece.IsValid() ? ECC_GameTraceChannel1 : ECC_Visibility, false, hitResult);
-
 		if (bDrawDebugHelpers)
 		{
-			//DrawDebugLine(GetWorld(), start, hitResult.Location, FColor::Red);
 			DrawDebugSolidBox(GetWorld(), hitResult.Location, FVector(20.0f), FColor::Red);
 		}
-		if (hitResult.Actor != MouseoveredActor)
-		{
-			MouseoveredActor = hitResult.Actor;
-		}
-
+		SetMouseovered(hitResult.Actor);
 		if (GrabbedPiece.IsValid())
 		{
 			pc->ServerUpdateGrab(GrabbedPiece.Get(), hitResult.Location);
 		}
 	}
+}
+
+void ACGChessPlayerPawn::OnMove()
+{
+	SetMouseovered(nullptr);
+	//HighlightTiles(false);
+	//if(MouseoveredActor)
+}
+
+bool ACGChessPlayerPawn::IsPieceInteractable(const ACGPiece* iPiece, const ACGChessPlayerController* iPc)
+{
+	return (iPc && iPiece->Board && iPiece->Board->IsReadyForNextMove() &&
+		(iPiece->IsBlack() == iPc->bIsBlack || UCGBPUtils::IsHotSeatMode(this)) &&
+		(iPiece->Board->IsNextMoveBlack() == iPiece->IsBlack()) && !bIsSpinnyMenu);
 }
 
 void ACGChessPlayerPawn::BeginTurnCamera()
@@ -121,9 +139,7 @@ void ACGChessPlayerPawn::EndTurnCamera()
 {
 	if (APlayerController* pc = Cast<APlayerController>(GetController()))
 	{
-		
 		pc->GetLocalPlayer()->ViewportClient->Viewport->SetMouse(lastMouseX, lastMouseY);
-		//pc->SetInputMode(FInputModeGameOnly());
 		pc->bShowMouseCursor = true;
 		pc->bEnableClickEvents = true;
 		pc->bEnableTouchEvents = true;
@@ -194,9 +210,7 @@ void ACGChessPlayerPawn::BeginGrabPiece()
 					return;
 				}
 				//can we move it?
-				if (piece->Board && piece->Board->IsReadyForNextMove() &&
-					(piece->IsBlack() == pc->bIsBlack || UCGBPUtils::IsHotSeatMode(this)) &&
-					(piece->Board->IsNextMoveBlack() == piece->IsBlack()) && !bIsSpinnyMenu)
+				if (IsPieceInteractable(piece, pc))
 				{
 					GrabbedPiece = piece;
 					pc->ServerGrab(piece, true);
@@ -212,7 +226,6 @@ void ACGChessPlayerPawn::BeginGrabPiece()
 void ACGChessPlayerPawn::EndGrabPiece(bool moveTo)
 {
 	HighlightTiles(false);
-	HighlightedTiles.Empty();
 	if (ACGChessPlayerController* pc = GetController<ACGChessPlayerController>())
 	{
 		if (moveTo)
@@ -229,12 +242,11 @@ void ACGChessPlayerPawn::EndGrabPiece(bool moveTo)
 
 void ACGChessPlayerPawn::HighlightTiles(bool val)
 {
-	for (ACGTile* t : HighlightedTiles)
+	for (AActor* t : HighlightedTiles)
 	{
 		if (t)
 		{
-			UCGHighlightableComponent* highlight = t->FindComponentByClass<UCGHighlightableComponent>();
-			if (highlight)
+			if (UCGHighlightableComponent* highlight = t->FindComponentByClass<UCGHighlightableComponent>())
 			{
 				highlight->SetHighlighted(val);
 			}
@@ -242,15 +254,35 @@ void ACGChessPlayerPawn::HighlightTiles(bool val)
 	}
 }
 
-/*bool ACGChessPlayerPawn::IsHotSeat()
+void ACGChessPlayerPawn::SetMouseovered(const TWeakObjectPtr<class AActor>& iActor)
 {
-	ACGGameMode* mode = GetWorld()->GetAuthGameMode<ACGGameMode>();
-	if (mode && mode->bHotSeatMode)
+	if (iActor != MouseoveredActor)
 	{
-		return true;
+		//remove highlight if it's a piece
+		if (ACGPiece* p = Cast<ACGPiece>(MouseoveredActor))
+		{
+			if (UCGHighlightableComponent* highlight = p->FindComponentByClass<UCGHighlightableComponent>())
+			{
+				highlight->SetHighlighted(false);
+			}
+		}
+		MouseoveredActor = iActor;
+		//highlight piece if it has valid moves
+		if (ACGPiece* p = Cast<ACGPiece>(MouseoveredActor))
+		{
+			if (ACGChessPlayerController* pc = GetController<ACGChessPlayerController>())
+			{
+				if (IsPieceInteractable(p, pc) && p->HasAvailableMoves())
+				{
+					if (UCGHighlightableComponent* highlight = p->FindComponentByClass<UCGHighlightableComponent>())
+					{
+						highlight->SetHighlighted(true);
+					}
+				}
+			}
+		}
 	}
-	return false;
-}*/
+}
 
 void ACGChessPlayerPawn::Zoom(float val)
 {

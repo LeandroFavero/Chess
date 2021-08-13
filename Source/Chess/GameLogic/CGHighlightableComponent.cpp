@@ -14,7 +14,10 @@ void UCGHighlightableComponent::SetHighlighted(bool value)
 	GetOwner()->GetComponents<USkeletalMeshComponent>(skcs);
 	for (USkeletalMeshComponent* m : skcs)
 	{
-		m->SetRenderCustomDepth(value);
+		if (m)
+		{
+			m->SetRenderCustomDepth(value);
+		}
 	}
 	TArray<UStaticMeshComponent*> sms;
 	GetOwner()->GetComponents<UStaticMeshComponent>(sms);

@@ -205,4 +205,11 @@ bool UCGBPUtils::IsEditorPresent()
 	return false;
 #endif
 }
-;
+
+void UCGBPUtils::BoardFenToClipboard(const UObject* WorldContextObject)
+{
+	if (ACGChessBoard* board = FindBoard(WorldContextObject))
+	{
+		FPlatformMisc::ClipboardCopy(*(board->PiecesToFen()));
+	}
+}

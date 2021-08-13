@@ -221,7 +221,7 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 
 	int8 x = 0;
 	int8 y = Size.Y - 1;
-	bool malformed{ false };
+	bool malformed { false };
 	UWorld* world = GetWorld();
 	if (!world)
 	{
@@ -238,6 +238,11 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 		{
 			x = 0;
 			y -= 1;
+			if (y < 0)
+			{
+				malformed = true;
+				break;
+			}
 		}
 
 		//is new line
@@ -423,10 +428,14 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 			{
 				malformed = true;
 			}
-			field += 1;
 		}
+		field += 1;
 	}
 	tmp.Empty(4);
+	if (it)
+	{
+		++it;
+	}
 	for (; field == FenField::HALFMOVE_CLOCK && it && *it != ' '; ++it)
 	{
 		tmp.AppendChar(*it);
@@ -488,7 +497,7 @@ FString ACGChessBoard::PiecesToFen(bool iIsForUndo)
 		int empties = 0;
 		for (int x = 0; x < Size.X; ++x)
 		{
-			FCGSquareCoord c(x, y);
+			const FCGSquareCoord c(x, y);
 			if (ACGTile* tile = GetTile(c))
 			{
 				ACGPiece* p = tile->OccupiedBy;
@@ -497,6 +506,7 @@ FString ACGChessBoard::PiecesToFen(bool iIsForUndo)
 					if (empties > 0)
 					{
 						ret.AppendInt(empties);
+						empties = 0;
 					}
 					ret.Append(p->GetFenChar());
 					//store reference if it's a casting capable rook
@@ -536,7 +546,10 @@ FString ACGChessBoard::PiecesToFen(bool iIsForUndo)
 		{
 			ret.AppendInt(empties);
 		}
-		ret.AppendChar('/');
+		if (y != 0)
+		{
+			ret.AppendChar('/');
+		}
 	}
 	if (IsNextMoveBlack())
 	{
@@ -589,7 +602,7 @@ FString ACGChessBoard::PiecesToFen(bool iIsForUndo)
 	}
 	else
 	{
-		ret.Append(" - ");
+		ret.Append("-");
 	}
 	if (!iIsForUndo)
 	{
