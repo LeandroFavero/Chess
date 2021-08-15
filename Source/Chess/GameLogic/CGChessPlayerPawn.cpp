@@ -112,8 +112,6 @@ void ACGChessPlayerPawn::TraceCursor()
 void ACGChessPlayerPawn::OnMove()
 {
 	SetMouseovered(nullptr);
-	//HighlightTiles(false);
-	//if(MouseoveredActor)
 }
 
 bool ACGChessPlayerPawn::IsPieceInteractable(const ACGPiece* iPiece, const ACGChessPlayerController* iPc)

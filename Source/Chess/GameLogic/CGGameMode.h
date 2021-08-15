@@ -9,6 +9,7 @@
 
 
 class APlayerController;
+class UUCIEngineHandler;
 /**
  * 
  */
@@ -16,8 +17,10 @@ UCLASS(Blueprintable)
 class CHESS_API ACGGameMode : public AGameMode
 {
 	GENERATED_BODY()
-
 public:
+	UPROPERTY(BlueprintReadOnly, Category = "UCI")
+	UUCIEngineHandler* EngineHandler { nullptr };
+
 	ACGGameMode();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
@@ -28,4 +31,8 @@ public:
 	bool ReadyToEndMatch_Implementation() override;
 
 	void HandleMatchHasStarted() override;
+
+private:
+	UFUNCTION()
+	void CheckIfEngineShouldStartThinking();
 };

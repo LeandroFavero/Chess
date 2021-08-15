@@ -97,4 +97,6 @@ public:
 	virtual void ClearAttackers();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual void AppendCoordToString(FString& oStr, bool iIsCaps = true) const;
 };

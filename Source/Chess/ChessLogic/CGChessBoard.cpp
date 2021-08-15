@@ -167,6 +167,7 @@ void ACGChessBoard::StartGame(const FString& iFen, ACGChessPlayerController* iP1
 	if (HasAuthority())
 	{
 		FenStringToChessPieces(iFen.IsEmpty() ? DefaultBoardFen : iFen);
+		//TODO: prefered side vs chess engine!
 		if (iP2)
 		{
 			if (iP1)
@@ -248,6 +249,10 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 		//is new line
 		if (chr == '\\' || chr == '/')
 		{
+			if (x != 0)
+			{
+				malformed = true;
+			}
 			continue;
 		}
 		//is numeric
@@ -477,6 +482,14 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 	if (!WhiteKing || !BlackKing)
 	{
 		malformed = true;
+	}
+	if (malformed)
+	{
+		StartingFen = PiecesToFen();
+	}
+	else
+	{
+		StartingFen = iFen;
 	}
 	//update moves on listen server
 	if (Undos.Num() > 0 && UCGBPUtils::IsLocalUpdateRequired(this))
@@ -878,7 +891,6 @@ void ACGChessBoard::RequestUndoTo(int iMoveNum)
 
 void ACGChessBoard::UndoNotify()
 {
-	//GetLoc
 	if (UWorld* w = GetWorld())
 	{
 		if (ACGChessPlayerController* pc = w->GetFirstPlayerController<ACGChessPlayerController>())

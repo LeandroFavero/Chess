@@ -31,7 +31,7 @@ void ACGGameState::HandleMatchHasStarted()
 	{
 		if (ACGHUD* hud = pc->GetHUD<ACGHUD>())
 		{
-			if (UCGBPUtils::IsHotSeatMode(this) || UCGBPUtils::IsListenServer(this) || UCGBPUtils::IsClient(this))
+			if (UCGBPUtils::IsHotSeatMode(this) || UCGBPUtils::IsListenServer(this) || UCGBPUtils::IsClient(this) || UCGBPUtils::IsChessEngineMode(this))
 			{
 				hud->ShowGame();
 			}
@@ -100,11 +100,11 @@ void ACGGameState::UseSkin(const FString& iName, bool iIsBlack)
 			{
 				if (iName.Equals(row->Name.ToString(), ESearchCase::IgnoreCase))
 				{
-					if (iIsBlack || UCGBPUtils::IsHotSeatMode(this))
+					if (iIsBlack || UCGBPUtils::IsStandalone(this))
 					{
 						BlackMaterial = row->BlackMaterial;
 					}
-					if(!iIsBlack || UCGBPUtils::IsHotSeatMode(this))
+					if(!iIsBlack || UCGBPUtils::IsStandalone(this))
 					{
 						WhiteMaterial = row->WhiteMaterial;
 					}
@@ -117,11 +117,11 @@ void ACGGameState::UseSkin(const FString& iName, bool iIsBlack)
 			}
 		}
 
-		if (iIsBlack || UCGBPUtils::IsHotSeatMode(this))
+		if (iIsBlack || UCGBPUtils::IsStandalone(this))
 		{
 			BlackMaterial = DefaultBlack;
 		}
-		if(!iIsBlack || UCGBPUtils::IsHotSeatMode(this))
+		if(!iIsBlack || UCGBPUtils::IsStandalone(this))
 		{
 			WhiteMaterial = DefaultWhite;
 		}

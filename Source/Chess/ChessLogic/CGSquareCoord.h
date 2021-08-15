@@ -19,25 +19,11 @@ struct FCGSquareCoord
 	FCGSquareCoord(float x, float y) : X(x), Y(y) {};
 	FCGSquareCoord(const FCGSquareCoord& Other) : FCGSquareCoord(Other.X, Other.Y) {};
 
-	bool operator==(const FCGSquareCoord& Other) const
-	{
-		return Equals(Other);
-	}
+	bool operator==(const FCGSquareCoord& iOther) const;
 
-	bool operator!=(const FCGSquareCoord& Other) const
-	{
-		return !Equals(Other);
-	}
+	bool operator!=(const FCGSquareCoord& iOther) const;
 
-	bool Equals(const FCGSquareCoord& Other) const
-	{
-		return X == Other.X && Y == Other.Y;
-	}
+	bool Equals(const FCGSquareCoord& iOther) const;
 
-	FORCEINLINE friend uint32 GetTypeHash(const FCGSquareCoord& Coord)
-	{
-		uint32 ret = Coord.X << 8;
-		ret += Coord.Y;
-		return ret;
-	}
+	//FORCEINLINE friend uint32 GetTypeHash(const FCGSquareCoord& Coord);
 };

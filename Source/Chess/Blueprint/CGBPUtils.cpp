@@ -50,6 +50,22 @@ bool UCGBPUtils::IsHotSeatMode(const UObject* WorldContextObject)
 	return false;
 }
 
+bool UCGBPUtils::IsChessEngineMode(const UObject* WorldContextObject)
+{
+	if (UWorld* w = GEngine->GetWorldFromContextObjectChecked(WorldContextObject))
+	{
+		if (ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>())
+		{
+			FString m = UGameplayStatics::ParseOption(mode->OptionsString, "Mode");
+			if (m.Equals("UCI", ESearchCase::IgnoreCase))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 const FString UCGBPUtils::FenFromMapParameter(const UObject* WorldContextObject)
 {
 	if (UWorld* w = GEngine->GetWorldFromContextObjectChecked(WorldContextObject))
@@ -64,7 +80,7 @@ const FString UCGBPUtils::FenFromMapParameter(const UObject* WorldContextObject)
 
 bool UCGBPUtils::IsWaitingForPlayers(const UObject* WorldContextObject)
 {
-	if (IsHotSeatMode(WorldContextObject))
+	if (IsHotSeatMode(WorldContextObject) || IsChessEngineMode(WorldContextObject))
 	{
 		return false;
 	}
@@ -158,17 +174,18 @@ FString UCGBPUtils::UndoToNotationString(const FCGUndo& undo)
 	ret.AppendInt(undo.FenMoveNumber);
 	ret.Append(". ");
 	ret.Append(*undo.Piece->GetUnicode());
-	if (!undo.SimpleNotation)
+	if (!undo.SimpleNotation && undo.From)
 	{
-		ret.AppendChar('A' + undo.From->Position.X);
-		ret.AppendChar('1' + undo.From->Position.Y);
+		undo.From->AppendCoordToString(ret);
 	}
 	if (undo.Capture || !undo.SimpleNotation)
 	{
 		ret.AppendChar(undo.Capture ? 'x' : '-');
 	}
-	ret.AppendChar('A' + undo.To->Position.X);
-	ret.AppendChar('1' + undo.To->Position.Y);
+	if (undo.To)
+	{
+		undo.To->AppendCoordToString(ret);
+	}
 	if (undo.Promotion)
 	{
 		ret.Append(undo.Promotion->GetFenChar());

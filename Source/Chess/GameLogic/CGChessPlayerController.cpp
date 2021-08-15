@@ -32,10 +32,19 @@ void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* iPiece,
 {
 	if (iPiece && iTile && iPiece->Board)
 	{
-		if (iPiece->IsBlack() == bIsBlack || UCGBPUtils::IsHotSeatMode(this))//NO HAX PLS
+		if (!IsInGameThread())
 		{
-			iPiece->MoveToTile(iTile);
-			iPiece->Board->GameOverCheck();
+			AsyncTask(ENamedThreads::GameThread, [=]() {
+				ServerMoveToTile(iPiece, iTile);
+			});
+		}
+		else
+		{
+			if (iPiece->IsBlack() == bIsBlack || UCGBPUtils::IsStandalone(this))//NO HAX PLS
+			{
+				iPiece->MoveToTile(iTile);
+				iPiece->Board->GameOverCheck();
+			}
 		}
 	}
 }
@@ -72,40 +81,23 @@ void ACGChessPlayerController::ServerUndoTo_Implementation(int iMoveNum)
 
 void ACGChessPlayerController::ServerConcede_Implementation()
 {
-	ACGGameMode* mode = GetWorld()->GetAuthGameMode<ACGGameMode>();
-	ACGGameState* state = GetWorld()->GetGameState<ACGGameState>();
 	ACGChessBoard* board = UCGBPUtils::FindBoard(this);
-	if (mode && state && board)
+	if (board)
 	{
 		if (UCGBPUtils::IsHotSeatMode(this))
 		{
-			if (board->Undos.Num() == 0)
-			{
-				mode->EndMatch();
-				state->GameResult = EGameResult::BLACK_WINS;
-			}
-			else
-			{
-				mode->EndMatch();
-				state->GameResult = board->Undos.Last().LastMoveIsBlack ? EGameResult::BLACK_WINS : EGameResult::WHITE_WINS;
-			}
-			state->ResultNotify();
+			board->EndGame(board->IsNextMoveBlack() ? EGameResult::BLACK_WINS : EGameResult::WHITE_WINS);
 		}
 		else
 		{
-			mode->EndMatch();
-			state->GameResult = bIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS;
-
-			if (UCGBPUtils::IsLocalUpdateRequired(this))
-			{
-				state->ResultNotify();
-			}
+			board->EndGame(bIsBlack ? EGameResult::WHITE_WINS : EGameResult::BLACK_WINS);
 		}
 	}
 }
 
 void ACGChessPlayerController::ServerChoosePromotion_Implementation(const FString& iPieceType)
 {
+	//TODO make async
 	if (ACGChessBoard* board = UCGBPUtils::FindBoard(this))
 	{
 		if (!iPieceType.IsEmpty())
@@ -144,7 +136,7 @@ void ACGChessPlayerController::ClientBeginPromotion_Implementation()
 
 void ACGChessPlayerController::BackToMenu()
 {
-	if (UCGBPUtils::IsHotSeatMode(this))
+	if (UCGBPUtils::IsHotSeatMode(this) || UCGBPUtils::IsChessEngineMode(this))
 	{
 		//just navigate to the main menu
 		UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Game")));

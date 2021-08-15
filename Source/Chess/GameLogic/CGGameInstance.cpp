@@ -84,7 +84,6 @@ TSubclassOf<UOnlineSession> UCGGameInstance::GetOnlineSessionClass()
 }
 
 //https://unreal.gg-labs.com/wiki-archives/networking/how-to-use-sessions-in-c++
-
 bool UCGGameInstance::Host(const FString& iFen, bool iIsLan)
 {
 	if (Settings)

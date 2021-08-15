@@ -32,6 +32,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	FString DefaultBoardFen = TEXT("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess")
+	FString StartingFen;// = TEXT("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
 	bool EnforceMoveOrder { true };
 

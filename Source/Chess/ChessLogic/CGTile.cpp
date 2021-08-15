@@ -141,3 +141,9 @@ void ACGTile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 
 	DOREPLIFETIME(ACGTile, OccupiedBy)
 }
+
+void ACGTile::AppendCoordToString(FString& oStr, bool iIsCaps) const
+{
+	oStr.AppendChar((iIsCaps ? 'A' : 'a') + Position.X);
+	oStr.AppendChar('1' + Position.Y);
+}

@@ -103,7 +103,6 @@ public:
 
 	void OnStartOnlineGameComplete(FName iSessionName, bool iWasSuccessful);
 
-	
 	void FindSessions(TSharedPtr<const FUniqueNetId> iUserId, bool iIsLAN, bool iIsPresence);
 
 	void OnFindSessionsComplete(bool iWasSuccessful);
