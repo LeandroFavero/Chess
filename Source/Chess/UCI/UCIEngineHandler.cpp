@@ -10,15 +10,14 @@
 #include "GameLogic/CGChessPlayerController.h"
 #include "Internationalization/Regex.h"
 
-
-#define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
+#define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
 
 UUCIEngineHandler::UUCIEngineHandler()
 {
 
 }
 
-void UUCIEngineHandler::StartEngine(const FString iEnginePath, const int iTurnTime, const int iElo, ACGChessPlayerController* iController, ACGChessBoard* iBoard)
+bool UUCIEngineHandler::StartEngine(const FString iEnginePath, const int iTurnTime, const int iElo, ACGChessPlayerController* iController, ACGChessBoard* iBoard)
 {
 	EnginePath = iEnginePath;
 	TurnTime = iTurnTime;
@@ -30,20 +29,24 @@ void UUCIEngineHandler::StartEngine(const FString iEnginePath, const int iTurnTi
 		EngineProc->Stop();
 		EngineProc.Reset();
 	}
-	EngineProc = MakeShared<FInteractiveProcess>(iEnginePath, TEXT(""), false);
+	EngineProc = MakeShared<FInteractiveProcess>(iEnginePath, TEXT(""), true);
 	EngineProc->OnOutput().BindUFunction(this, TEXT("OnReceive"));
 	EngineProc->OnCanceled().BindUFunction(this, TEXT("OnStopped"));
 	EngineProc->OnCompleted().BindUFunction(this, TEXT("OnStopped"));
 	EngineProc->SendWhenReady(TEXT("uci\n"));
+	SetState(EUCIState::STARTING);
 	if (!EngineProc->Launch())
 	{
 		Dbg("Couldn't launch InteractiveProcess!");
+		SetState(EUCIState::ERROR);
+		return false;
 	}
+	return true;
 }
 
 void UUCIEngineHandler::ApplySettings()
 {
-
+	SendCommand(FString::Printf(TEXT("setoption name UCI_LimitStrength value true\nsetoption name UCI_Elo value %d\n"), Elo));
 }
 
 void UUCIEngineHandler::StopEngine()
@@ -54,9 +57,21 @@ void UUCIEngineHandler::StopEngine()
 	}
 }
 
+void UUCIEngineHandler::CheckIfEngineShouldStartThinking()
+{
+	if (UWorld* w = GetWorld())
+	{
+		ACGChessPlayerController* pc = w->GetFirstPlayerController<ACGChessPlayerController>();
+		if (pc && Board && pc->bIsBlack != Board->IsNextMoveBlack())
+		{
+			GetNextMove();
+		}
+	}
+}
+
 void UUCIEngineHandler::GetNextMove()
 {
-	if (Board && Board->IsReadyForNextMove() && State == EUCIState::READY)
+	if (Board && Board->IsReadyForNextMove() && IsReady())
 	{
 		//build the moves
 		FString moves(TEXT("moves "));
@@ -80,7 +95,7 @@ void UUCIEngineHandler::GetNextMove()
 		
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UUCIEngineHandler::OnTurnTimeUp, 1, false, TurnTime);
 
-		State = EUCIState::THINKING;
+		SetState(EUCIState::THINKING);
 	}
 }
 
@@ -96,6 +111,11 @@ void UUCIEngineHandler::BeginDestroy()
 bool UUCIEngineHandler::IsReady()
 {
 	return State == EUCIState::READY && EngineProc && EngineProc->IsRunning();
+}
+
+bool UUCIEngineHandler::IsError()
+{
+	return State == EUCIState::ERROR;
 }
 
 void UUCIEngineHandler::SendCommand(const FString& iCmd)
@@ -115,7 +135,9 @@ void UUCIEngineHandler::OnReceive(const FString& iReceived)
 {
 	if (iReceived.StartsWith("uciok", ESearchCase::IgnoreCase))
 	{
-		State = EUCIState::READY;
+		//uci is ready to receive the settings
+		ApplySettings();
+		SetState(EUCIState::READY);
 	}
 	else if (iReceived.StartsWith("info", ESearchCase::IgnoreCase))
 	{
@@ -128,39 +150,58 @@ void UUCIEngineHandler::OnReceive(const FString& iReceived)
 		if (matcher.FindNext())
 		{
 			FString move = matcher.GetCaptureGroup(1).ToLower();
-
-			if (Board && move.Len() > 3)
-			{
-				int x = move[0] - 'a';
-				int y = move[1] - '1';
-				ACGTile* from = Board->GetTile(FCGSquareCoord(x, y));
-				x = move[2] - 'a';
-				y = move[3] - '1';
-				ACGTile* to = Board->GetTile(FCGSquareCoord(x, y));
-				if (from && to)
+			AsyncTask(ENamedThreads::GameThread, [=]() {
+				if (Board && move.Len() > 3)
 				{
-					if (ACGChessPlayerController* pc = GetWorld()->GetFirstPlayerController<ACGChessPlayerController>())
+					int x = move[0] - 'a';
+					int y = move[1] - '1';
+					ACGTile* from = Board->GetTile(FCGSquareCoord(x, y));
+					x = move[2] - 'a';
+					y = move[3] - '1';
+					ACGTile* to = Board->GetTile(FCGSquareCoord(x, y));
+					if (from && to)
 					{
-						pc->ServerMoveToTile(from->OccupiedBy, to);
-
-						if (move.Len() > 4)
+						if (ACGChessPlayerController* pc = GetWorld()->GetFirstPlayerController<ACGChessPlayerController>())
 						{
-							pc->ServerChoosePromotion(move.RightChop(4));
+							pc->ServerMoveToTile(from->OccupiedBy, to);
+
+							if (move.Len() > 4)
+							{
+								pc->ServerChoosePromotion(move.RightChop(4));
+							}
 						}
 					}
 				}
-			}
+			});
 		}
-		State = EUCIState::READY;
+		SetState(EUCIState::READY);
 	}
 	else
 	{
-		Dbg("Received: %s", *iReceived);
+		//Dbg("Received: %s", *iReceived);
 	}
 }
 
 void UUCIEngineHandler::OnStopped()
 {
-	State = EUCIState::NOT_RUNNING;
+	SetState(EUCIState::NOT_RUNNING);
+}
+
+void UUCIEngineHandler::SetState(EUCIState iNewState)
+{
+	if (State != iNewState)
+	{
+		State = iNewState;
+		if (!IsInGameThread())
+		{
+			AsyncTask(ENamedThreads::GameThread, [=]() {
+				OnStateChanged.Broadcast(State);
+			});
+		}
+		else
+		{
+			OnStateChanged.Broadcast(State);
+		}
+	}
 }
 

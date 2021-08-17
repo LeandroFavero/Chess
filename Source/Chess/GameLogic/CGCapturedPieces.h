@@ -16,7 +16,7 @@ class UCGCapturedPieces :public USceneComponent
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FVector Offset { 0, 100, 0 };
+	FVector Offset {0, 100, 0};
 
 	UCGCapturedPieces();
 

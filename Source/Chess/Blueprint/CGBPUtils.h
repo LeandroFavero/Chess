@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -65,4 +64,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "Chess utils")
 	static void BoardFenToClipboard(const UObject* WorldContextObject);
+
+	
 };

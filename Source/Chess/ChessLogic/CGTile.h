@@ -41,14 +41,14 @@ class CHESS_API ACGTile : public AActor
 	GENERATED_BODY()
 
 	UPROPERTY()
-	bool bIsBlack { false };
+	bool bIsBlack = false;
 public:
 
 	UPROPERTY()
 	TArray<ACGPiece*> AttackedBy;
 
 	UPROPERTY(Replicated)
-	ACGPiece* OccupiedBy { nullptr };
+	ACGPiece* OccupiedBy = nullptr;
 
 	UPROPERTY()
 	TArray<ACGTile*> Neighbours;
@@ -72,10 +72,10 @@ public:
 	TSubclassOf<class UCGLabelWidgetComponent> WidgetTemplate;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FRotator WidgetRotation { 0.0f, 0.0f, 90.0f };
+	FRotator WidgetRotation {0.0f, 0.0f, 90.0f};
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	FVector WidgetOffset { 0, 165, 1 };
+	FVector WidgetOffset {0, 165, 1};
 
 protected:
 	// Called when the game starts or when spawned

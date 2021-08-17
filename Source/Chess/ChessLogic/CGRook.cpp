@@ -4,7 +4,7 @@
 #include "ChessLogic/CGRook.h"
 #include "CGLinearMovement.h"
 
-const FString ACGRook::RookFen = { TEXT("Rr") };
+const FString ACGRook::RookFen = TEXT("Rr");
 
 ACGRook::ACGRook()
 {

@@ -18,10 +18,10 @@ class CHESS_API ACGKnight : public ACGPiece
 public:
 
 	UPROPERTY(EditAnywhere, Category="Chess setup")
-	float BlackMeshRotation { 90 };
+	float BlackMeshRotation = 90;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	float WhiteMeshRotation{ 270 };
+	float WhiteMeshRotation = 270;
 
 	ACGKnight();
 

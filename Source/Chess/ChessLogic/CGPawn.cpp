@@ -8,7 +8,7 @@
 #include "GameLogic/CGChessPlayerController.h"
 #include "GameLogic/CGGameState.h"
 
-const FString ACGPawn::PawnFen = { TEXT("Pp") };
+const FString ACGPawn::PawnFen = TEXT("Pp");
 
 ACGPawn::ACGPawn()
 {

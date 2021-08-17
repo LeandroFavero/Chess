@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Blueprint/CGBPUtils.h"
 #include "Engine/DataTable.h"
@@ -14,6 +13,7 @@
 #include <SocketSubsystem.h>
 #include <IPAddress.h>
 
+#define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
 
 void UCGBPUtils::FillCBFromDT(UDataTable* DataTable, UComboBoxString* ComboBox)
 {
@@ -125,15 +125,12 @@ bool UCGBPUtils::IsLocalUpdateRequired(const UObject* WorldContextObject)
 
 int UCGBPUtils::GetCurrentViewMode(const APlayerController* PlayerController)
 {
-
 	if (IsValid(PlayerController))
 	{
 		UGameViewportClient* GameViewportClient = PlayerController->GetWorld()->GetGameViewport();
 		ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer();
-
 		bool ignore = GameViewportClient->IgnoreInput();
 		EMouseCaptureMode capt = GameViewportClient->GetMouseCaptureMode();
-
 		if (ignore == false && capt == EMouseCaptureMode::CaptureDuringMouseDown)
 		{
 			return 0;  // Game And UI
@@ -147,9 +144,7 @@ int UCGBPUtils::GetCurrentViewMode(const APlayerController* PlayerController)
 			return 2;  // Game Only
 		}
 	}
-
 	return -1;
-
 }
 
 FString UCGBPUtils::UndoToNotationString(const FCGUndo& undo)
@@ -230,3 +225,4 @@ void UCGBPUtils::BoardFenToClipboard(const UObject* WorldContextObject)
 		FPlatformMisc::ClipboardCopy(*(board->PiecesToFen()));
 	}
 }
+

@@ -1,17 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CGChessPlayerController.h"
+#include "Blueprint/CGBPUtils.h"
 #include "ChessLogic/CGPiece.h"
+#include "ChessLogic/CGPawn.h"
 #include "ChessLogic/CGTile.h"
 #include "ChessLogic/CGChessBoard.h"
-#include "Net/UnrealNetwork.h"
-#include "GameLogic/CGGameState.h"
-#include "UI/CGHUD.h"
 #include "GameLogic/CGGameInstance.h"
 #include "GameLogic/CGChessPlayerPawn.h"
 #include "GameLogic/CGGameMode.h"
-#include "Blueprint/CGBPUtils.h"
-#include "ChessLogic/CGPawn.h"
+#include "GameLogic/CGGameState.h"
+#include "GameLogic/CGSettingsSave.h"
+#include "UI/CGHUD.h"
+#include "Net/UnrealNetwork.h"
 
 ACGChessPlayerController::ACGChessPlayerController() 
 {
@@ -32,19 +33,10 @@ void ACGChessPlayerController::ServerMoveToTile_Implementation(ACGPiece* iPiece,
 {
 	if (iPiece && iTile && iPiece->Board)
 	{
-		if (!IsInGameThread())
+		if (iPiece->IsBlack() == bIsBlack || UCGBPUtils::IsStandalone(this))//NO HAX PLS
 		{
-			AsyncTask(ENamedThreads::GameThread, [=]() {
-				ServerMoveToTile(iPiece, iTile);
-			});
-		}
-		else
-		{
-			if (iPiece->IsBlack() == bIsBlack || UCGBPUtils::IsStandalone(this))//NO HAX PLS
-			{
-				iPiece->MoveToTile(iTile);
-				iPiece->Board->GameOverCheck();
-			}
+			iPiece->MoveToTile(iTile);
+			iPiece->Board->GameOverCheck();
 		}
 	}
 }
@@ -97,7 +89,6 @@ void ACGChessPlayerController::ServerConcede_Implementation()
 
 void ACGChessPlayerController::ServerChoosePromotion_Implementation(const FString& iPieceType)
 {
-	//TODO make async
 	if (ACGChessBoard* board = UCGBPUtils::FindBoard(this))
 	{
 		if (!iPieceType.IsEmpty())
@@ -158,13 +149,18 @@ void ACGChessPlayerController::DrawClaimableChanged()
 	OnDrawClaimable.Broadcast(bIsDrawClaimable);
 }
 
-void ACGChessPlayerController::BeginPlayingState()
+void ACGChessPlayerController::BeginPlay()
 {
-	if (UCGGameInstance* gi = GetGameInstance<UCGGameInstance>())
+	if (IsLocalPlayerController())
 	{
-		gi->LoadCfg();
-
+		if (UCGGameInstance* gi = GetGameInstance<UCGGameInstance>())
+		{
+			gi->LoadCfg();
+			PreferredSide = gi->Settings->PreferredSide;
+			//Skin
+		}
 	}
+	Super::BeginPlay();
 }
 
 void ACGChessPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -17,17 +17,26 @@ class CHESS_API UCGSettingsSave : public USaveGame
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	FText PlayerName { FText::FromString(TEXT("")) };
+	FText PlayerName = FText::FromString(TEXT(""));
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	FString SelectedSkin { TEXT("Default") };
+	FString SelectedSkin = TEXT("Default");
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	TEnumAsByte<ESide> PreferredSide { ESide::WHITE };
+	TEnumAsByte<ESide> PreferredSide = ESide::WHITE;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	FString LastIp { TEXT("") };
+	FString LastIp = TEXT("");
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
-	bool bIsLan;
+	FString EnginePath = TEXT("");
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
+	int EngineElo = 1200;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
+	int EngineThinkTime = 2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess settings")
+	bool bIsLan = true;
 };

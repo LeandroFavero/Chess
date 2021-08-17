@@ -39,8 +39,8 @@ void ACGChessPlayerPawn::BeginPlay()
 	Super::BeginPlay();
 	if (ACGChessPlayerController* pc = GetWorld()->GetFirstPlayerController<ACGChessPlayerController>())
 	{
-		OrbitCamera(pc->bIsBlack?BlackRotation:WhiteRotation, CameraArmYDefault, true);
 		pc->OnMove.AddDynamic(this, &ACGChessPlayerPawn::OnMove);
+		pc->OnStart.AddDynamic(this, &ACGChessPlayerPawn::OnStart);
 	}
 }
 
@@ -49,11 +49,11 @@ void ACGChessPlayerPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (ACGChessPlayerController* pc = GetWorld()->GetFirstPlayerController<ACGChessPlayerController>())
 	{
 		pc->OnMove.RemoveDynamic(this, &ACGChessPlayerPawn::OnMove);
+		pc->OnStart.RemoveDynamic(this, &ACGChessPlayerPawn::OnStart);
 	}
 	Super::EndPlay(EndPlayReason);
 }
 
-// Called every frame
 void ACGChessPlayerPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -70,7 +70,6 @@ void ACGChessPlayerPawn::Tick(float DeltaTime)
 	}
 }
 
-// Called to bind functionality to input
 void ACGChessPlayerPawn::SetupPlayerInputComponent(UInputComponent* playerInputComponent)
 {
 	Super::SetupPlayerInputComponent(playerInputComponent);
@@ -112,6 +111,14 @@ void ACGChessPlayerPawn::TraceCursor()
 void ACGChessPlayerPawn::OnMove()
 {
 	SetMouseovered(nullptr);
+}
+
+void ACGChessPlayerPawn::OnStart()
+{
+	if (ACGChessPlayerController* pc = GetWorld()->GetFirstPlayerController<ACGChessPlayerController>())
+	{
+		OrbitCamera(pc->bIsBlack ? BlackRotation : WhiteRotation, CameraArmYDefault, true);
+	}
 }
 
 bool ACGChessPlayerPawn::IsPieceInteractable(const ACGPiece* iPiece, const ACGChessPlayerController* iPc)

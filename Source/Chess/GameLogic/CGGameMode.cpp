@@ -1,17 +1,17 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
 
-
+#include "ChessLogic/CGPiece.h"
+#include "ChessLogic/CGChessBoard.h"
 #include "GameLogic/CGGameMode.h"
+#include "GameLogic/CGGameState.h"
+#include "GameLogic/CGGameInstance.h"
+#include "GameLogic/CGSettingsSave.h"
 #include "GameLogic/CGChessPlayerPawn.h"
 #include "GameLogic/CGChessPlayerController.h"
-#include "ChessLogic/CGChessBoard.h"
-#include "MaterialShared.h"
 #include "UI/CGHUD.h"
-#include "ChessLogic/CGPiece.h"
-#include "GameLogic/CGGameState.h"
-#include "Kismet/GameplayStatics.h"
-#include "Blueprint/CGBPUtils.h"
 #include "UCI/UCIEngineHandler.h"
+#include "Blueprint/CGBPUtils.h"
+#include "MaterialShared.h"
+#include "Kismet/GameplayStatics.h"
 
 ACGGameMode::ACGGameMode()
 {
@@ -31,22 +31,38 @@ bool ACGGameMode::ReadyToStartMatch_Implementation()
 				if (UWorld* w = GetWorld())
 				{
 					ACGGameMode* mode = w->GetAuthGameMode<ACGGameMode>();
+					UCGGameInstance* insta = w->GetGameInstance<UCGGameInstance>();
 					ACGChessBoard* board = UCGBPUtils::FindBoard(this);
 					ACGChessPlayerController* pc = w->GetFirstPlayerController<ACGChessPlayerController>();
-					if (mode && board && pc)
+					if (mode && board && pc && insta)
 					{
-						EngineHandler = NewObject< UUCIEngineHandler>(this);
-						EngineHandler->StartEngine(
-							UGameplayStatics::ParseOption(mode->OptionsString, "Path"),
-							FCString::Atoi(*UGameplayStatics::ParseOption(mode->OptionsString, "Time")),
-							FCString::Atoi(*UGameplayStatics::ParseOption(mode->OptionsString, "Elo")),
+						UCGSettingsSave* settings = insta->Settings;
+						int elo = FCString::Atoi(*UGameplayStatics::ParseOption(mode->OptionsString, "Elo"));
+						int time = FCString::Atoi(*UGameplayStatics::ParseOption(mode->OptionsString, "Time"));
+						FString path = UGameplayStatics::ParseOption(mode->OptionsString, "Path");
+						if (settings && (elo != settings->EngineElo || time != settings->EngineThinkTime || path != settings->EnginePath))
+						{
+							settings->EngineElo = elo;
+							settings->EngineThinkTime = time;
+							settings->EnginePath = path;
+							insta->SaveCfg();
+						}
+						EngineHandler = NewObject<UUCIEngineHandler>(this);
+						if (!EngineHandler->StartEngine(
+							path,
+							time,
+							elo,
 							w->GetFirstPlayerController<ACGChessPlayerController>(),
-							board);
-						pc->OnMove.AddDynamic(this, &ACGGameMode::CheckIfEngineShouldStartThinking);
+							board))
+						{
+							return true;
+						}
+						pc->OnMove.AddDynamic(EngineHandler, &UUCIEngineHandler::CheckIfEngineShouldStartThinking);
+						pc->OnStart.AddDynamic(EngineHandler, &UUCIEngineHandler::CheckIfEngineShouldStartThinking);
 					}
 				}
 			}
-			else if (EngineHandler->IsReady())
+			else if (EngineHandler->IsReady() ||EngineHandler->IsError())
 			{
 				return true;
 			}
@@ -78,6 +94,7 @@ bool ACGGameMode::ReadyToEndMatch_Implementation()
 
 void ACGGameMode::HandleMatchHasStarted()
 {
+	Super::HandleMatchHasStarted();
 	if (UWorld* w = GetWorld())
 	{
 		ACGGameState* state = w->GetGameState<ACGGameState>();
@@ -89,10 +106,6 @@ void ACGGameMode::HandleMatchHasStarted()
 			if (UCGBPUtils::IsStandalone(this))//spawn pieces for the menu?
 			{
 				board->StartGame(fen, w->GetFirstPlayerController<ACGChessPlayerController>());
-				if (UCGBPUtils::IsChessEngineMode(this))
-				{
-					CheckIfEngineShouldStartThinking();
-				}
 			}
 			else
 			{
@@ -101,23 +114,6 @@ void ACGGameMode::HandleMatchHasStarted()
 				++it;
 				ACGChessPlayerController* pc2 = Cast<ACGChessPlayerController>((*it).Get());
 				board->StartGame(fen, pc1, pc2);
-			}
-		}
-	}
-	Super::HandleMatchHasStarted();
-}
-
-void ACGGameMode::CheckIfEngineShouldStartThinking()
-{
-	if (UCGBPUtils::IsChessEngineMode(this))
-	{
-		if (UWorld* w = GetWorld())
-		{
-			ACGChessBoard* board = UCGBPUtils::FindBoard(this);
-			ACGChessPlayerController* pc = w->GetFirstPlayerController<ACGChessPlayerController>();
-			if (pc && board && pc->bIsBlack != board->IsNextMoveBlack() && EngineHandler && EngineHandler->IsReady())
-			{
-				EngineHandler->GetNextMove();
 			}
 		}
 	}

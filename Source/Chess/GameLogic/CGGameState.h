@@ -37,7 +37,7 @@ public:
 	TArray<TSubclassOf<class ACGPiece>> PieceTemplates;
 
 	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, ReplicatedUsing=ResultNotify, Category = "Chess setup")
-	TEnumAsByte<EGameResult> GameResult { EGameResult::NOT_FINISHED };
+	TEnumAsByte<EGameResult> GameResult = EGameResult::NOT_FINISHED;
 
 	ACGGameState();
 

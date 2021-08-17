@@ -33,10 +33,10 @@ public:
 	FString DefaultBoardFen = TEXT("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chess")
-	FString StartingFen;// = TEXT("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+	FString StartingFen;
 
 	UPROPERTY(EditAnywhere, Category = "Chess setup")
-	bool EnforceMoveOrder { true };
+	bool EnforceMoveOrder = true;
 
 	UPROPERTY(Replicated)
 	TArray<ACGTile*> Board;
@@ -132,8 +132,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 
-	constexpr static int DEFAULT_FEN_MOVE_NUMBER { 1 };
-	constexpr static int DEFAULT_FEN_HALF_MOVE { 0 };
+	constexpr static int DEFAULT_FEN_MOVE_NUMBER = 1;
+	constexpr static int DEFAULT_FEN_HALF_MOVE = 0;
 };
 
 enum FenField

@@ -16,7 +16,7 @@ class CHESS_API UCGLabelWidget : public UUserWidget
 
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Chess setup")
-	int DigitMask { 1 << 31 };
+	int DigitMask = 1 << 31;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Chess setup")
 	void SetBoardLabel(int Packed);

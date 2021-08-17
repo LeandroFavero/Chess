@@ -3,7 +3,7 @@
 #include "ChessLogic/CGQueen.h"
 #include "CGLinearMovement.h"
 
-const FString ACGQueen::QueenFen = { TEXT("Qq") };
+const FString ACGQueen::QueenFen = TEXT("Qq");
 
 ACGQueen::ACGQueen()
 {

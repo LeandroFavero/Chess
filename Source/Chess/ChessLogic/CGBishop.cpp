@@ -4,7 +4,7 @@
 #include "ChessLogic/CGBishop.h"
 #include "ChessLogic/CGLinearMovement.h"
 
-const FString ACGBishop::BishopFen = { TEXT("Bb") };
+const FString ACGBishop::BishopFen = TEXT("Bb");
 
 ACGBishop::ACGBishop()
 {

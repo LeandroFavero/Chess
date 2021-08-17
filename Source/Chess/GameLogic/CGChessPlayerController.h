@@ -12,7 +12,7 @@ class ACGTile;
 class ACGGameState;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameStartDelegate, bool, bIsBlack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameStartDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameOverDelegate, EGameResult, Result);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPawnPromotionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDrawClaimableDelegate, bool, bIsClaimable);
@@ -23,17 +23,15 @@ class CHESS_API ACGChessPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
-	FString SelectedSkin { "Default" };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
 	TEnumAsByte<ESide> PreferredSide;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = SideChanged, Category = "Chess setup")
-	bool bIsBlack { false };
+	bool bIsBlack = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = DrawClaimableChanged, Category = "Chess setup")
-	bool bIsDrawClaimable { false };
+	bool bIsDrawClaimable = false;
 
 	ACGChessPlayerController();
 
@@ -106,7 +104,7 @@ public:
 	UFUNCTION()
 	void DrawClaimableChanged();
 
-	virtual void BeginPlayingState() override;
+	virtual void BeginPlay() override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

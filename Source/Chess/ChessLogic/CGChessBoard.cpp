@@ -168,35 +168,31 @@ void ACGChessBoard::StartGame(const FString& iFen, ACGChessPlayerController* iP1
 	{
 		FenStringToChessPieces(iFen.IsEmpty() ? DefaultBoardFen : iFen);
 		//TODO: prefered side vs chess engine!
-		if (iP2)
+		if (iP1)
 		{
-			if (iP1)
+			if (iP1->PreferredSide == ESide::NONE || (iP2 && iP2->PreferredSide == iP1->PreferredSide))
 			{
-				//randomize
-				if (iP1->PreferredSide == iP2->PreferredSide && (iP1->PreferredSide == 0 || iP1->PreferredSide == 1))
+				//randomize?
+				iP1->bIsBlack = static_cast<bool>(FMath::RandRange(0, 1));
+				if (iP2)
 				{
-					iP1->bIsBlack = static_cast<bool>(FMath::RandRange(0, 1));
 					iP2->bIsBlack = !iP1->bIsBlack;
+				}
+			}
+			else
+			{
+				//give them what they want
+				if (iP1->PreferredSide == ESide::NONE && iP2)
+				{
+					iP1->bIsBlack = iP2->PreferredSide == ESide::WHITE;
 				}
 				else
 				{
-					//give them what they want
-					if (iP1->PreferredSide == 2)
-					{
-						iP1->bIsBlack = iP2->PreferredSide == 0;
-					}
-					else
-					{
-						iP1->bIsBlack = iP1->PreferredSide == 1;
-					}
-					if (iP2->PreferredSide == 2)
-					{
-						iP2->bIsBlack = iP1->PreferredSide == 0;
-					}
-					else
-					{
-						iP2->bIsBlack = iP2->PreferredSide == 1;
-					}
+					iP1->bIsBlack = iP1->PreferredSide == ESide::BLACK;
+				}
+				if (iP2)
+				{
+					iP2->bIsBlack = iP1->bIsBlack;
 				}
 			}
 		}

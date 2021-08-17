@@ -7,7 +7,7 @@
 #include "ChessLogic/CGTile.h"
 #include "Blueprint/CGBPUtils.h"
 
-const FString ACGKing::KingFen = { TEXT("Kk") };
+const FString ACGKing::KingFen = TEXT("Kk");
 
 ACGKing::ACGKing()
 {

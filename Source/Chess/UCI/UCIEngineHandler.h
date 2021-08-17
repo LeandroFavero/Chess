@@ -14,14 +14,14 @@ UENUM(BlueprintType)
 enum EUCIState
 {
 	NOT_RUNNING,
+	STARTING,
 	READY,
 	THINKING,
-
+	ERROR,
 };
 
-/**
- * 
- */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUCIStateChangeDelegate, EUCIState, State);
+
 UCLASS(BlueprintType, Blueprintable, Config = UCISettings)
 class CHESS_API UUCIEngineHandler : public UObject
 {
@@ -34,31 +34,37 @@ class CHESS_API UUCIEngineHandler : public UObject
 	ACGChessBoard* Board;
 	TSharedPtr<FInteractiveProcess> EngineProc;
 	FTimerHandle TimerHandle;
-
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "UCI")
 	TEnumAsByte<EUCIState> State;
 
 	UUCIEngineHandler();
 	UFUNCTION(BlueprintCallable, Category = "UCI")
-	void StartEngine(const FString iEnginePath, const int iTurnTime, const int iElo, ACGChessPlayerController* iController, ACGChessBoard* iBoard);
+	bool StartEngine(const FString iEnginePath, const int iTurnTime, const int iElo, ACGChessPlayerController* iController, ACGChessBoard* iBoard);
 	UFUNCTION(BlueprintCallable, Category = "UCI")
 	void ApplySettings();
 	UFUNCTION(BlueprintCallable, Category = "UCI")
 	void StopEngine();
+	UFUNCTION(BlueprintCallable, Category = "UCI")
+	void CheckIfEngineShouldStartThinking();
 	UFUNCTION(BlueprintCallable, Category = "UCI")
 	void GetNextMove();
 	void BeginDestroy() override;
 	UFUNCTION(BlueprintCallable, Category = "UCI")
 	bool IsReady();
 
+	bool IsError();
+
 	UFUNCTION(BlueprintCallable, Category = "UCI")
 	void SendCommand(const FString& iCmd);
+
+	UPROPERTY(BlueprintAssignable, Category = "UCI")
+	FOnUCIStateChangeDelegate OnStateChanged;
 private:
 	void OnTurnTimeUp();
 	UFUNCTION()
 	void OnReceive(const FString& iReceived);
 	UFUNCTION()
 	void OnStopped();
-	FString SearchForExe() { return ""; }
+	void SetState(EUCIState iNewState);
 };

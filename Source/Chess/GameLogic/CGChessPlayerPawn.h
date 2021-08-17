@@ -44,16 +44,16 @@ public:
 	float CameraArmSpeed = 1.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
-	bool bIsAdjustingCamera{ false };
+	bool bIsAdjustingCamera = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
-	bool bIsLeftClicking{ false };
+	bool bIsLeftClicking = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	bool bIsSpinnyMenu{ false };
+	bool bIsSpinnyMenu = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	float SpinnyMenuSpeed{ -10.0f };
+	float SpinnyMenuSpeed = -10.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float CameraArmLengthDefault = 2500.0f;
@@ -107,6 +107,8 @@ protected:
 
 	UFUNCTION()
 	void OnMove();
+	UFUNCTION()
+	void OnStart();
 	bool IsPieceInteractable(const ACGPiece* iPiece, const ACGChessPlayerController* iPc);
 public:	
 	virtual void Tick(float DeltaTime) override;

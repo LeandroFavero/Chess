@@ -4,7 +4,7 @@
 #include "ChessLogic/CGKnight.h"
 #include "ChessLogic/CGLinearMovement.h"
 
-const FString ACGKnight::KnightFen = { TEXT("Nn") };
+const FString ACGKnight::KnightFen = TEXT("Nn");
 
 ACGKnight::ACGKnight()
 {

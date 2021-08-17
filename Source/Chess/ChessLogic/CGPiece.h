@@ -55,7 +55,7 @@ public:
 	ACGTile* Tile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Chess setup")
-	uint8 Flags { 0 };
+	uint8 Flags = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Chess setup")
 	int Value;

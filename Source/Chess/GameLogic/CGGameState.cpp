@@ -40,7 +40,7 @@ void ACGGameState::HandleMatchHasStarted()
 				hud->ShowMenu();
 			}
 		}
-		pc->OnStart.Broadcast(pc->bIsBlack);
+		pc->OnStart.Broadcast();
 		if (UCGGameInstance* insta = GetWorld()->GetGameInstance<UCGGameInstance>())
 		{
 			if (insta->Settings)
