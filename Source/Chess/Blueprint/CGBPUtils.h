@@ -65,5 +65,6 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "Chess utils")
 	static void BoardFenToClipboard(const UObject* WorldContextObject);
 
-	
+	UFUNCTION(BlueprintPure, Category = "Chess utils")
+	static FString TryFindStockfishPath();
 };

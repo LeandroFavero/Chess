@@ -10,6 +10,7 @@
 #include "ChessLogic/CGTile.h"
 #include "ChessLogic/CGChessBoard.h"
 #include "EngineUtils.h"
+#include "HAL/FileManagerGeneric.h"
 #include <SocketSubsystem.h>
 #include <IPAddress.h>
 
@@ -224,5 +225,20 @@ void UCGBPUtils::BoardFenToClipboard(const UObject* WorldContextObject)
 	{
 		FPlatformMisc::ClipboardCopy(*(board->PiecesToFen()));
 	}
+}
+
+FString UCGBPUtils::TryFindStockfishPath()
+{
+	TArray<FString> fileNames;
+	FFileManagerGeneric::Get().FindFilesRecursive(fileNames, *FPaths::LaunchDir(), TEXT("*stockfish*"), true, false, false);
+
+	for (FString& s : fileNames)
+	{
+		if (FPaths::GetExtension(s).ToLower().Equals("exe"))
+		{
+			return s;
+		}
+	}
+	return FString();
 }
 

@@ -1,47 +1,53 @@
 
 #include "Blueprint/CGFileDialogAction.h"
-#include "Developer/DesktopPlatform/Public/IDesktopPlatform.h"
-#include "Developer/DesktopPlatform/Public/DesktopPlatformModule.h"
 #include "GameLogic/CGGameInstance.h"
 #include "GameLogic/CGSettingsSave.h"
+
+#if PLATFORM_WINDOWS
+	#include "Windows/MinWindows.h"
+	#include <commdlg.h>
+#endif
 
 #define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
 
 void UCGFileDialogAction::Activate()
 {
-	if (IDesktopPlatform* dp = FDesktopPlatformModule::Get())
+#if PLATFORM_WINDOWS
+	HWND hWnd = (HWND)(FSlateApplication::Get().FindBestParentWindowHandleForDialogs(nullptr));
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this, hWnd]()
 	{
-		TArray< FString > filenames;
-		void* handle = GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
-		FString title = TEXT("Select UCI engine executable.");
-		FString defaultPath;
-		FString defaultName;
-		FString filter = TEXT("Executable file|*.exe");
-		FString ext;
-		FPaths::Split(Path, defaultPath, defaultName, ext);
-		if (!ext.IsEmpty())
+		OPENFILENAME ofn;       // common dialog box structure
+		TCHAR szFile[512] = { 0 };       // if using TCHAR macros
+		// Initialize OPENFILENAME
+		ZeroMemory(&ofn, sizeof(ofn));
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = hWnd;
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = TEXT("Executable\0*.EXE\0All\0*.*\0");
+		ofn.nFilterIndex = 1;
+		ofn.lpstrFileTitle = nullptr;
+		ofn.nMaxFileTitle = 0;
+		ofn.lpstrInitialDir = nullptr;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+		if (GetOpenFileName(&ofn) == TRUE)
 		{
-			defaultName.AppendChar('.');
-			defaultName.Append(ext);
-		}
-		int flags = 0;
-		//can't get to run the file dialog on my own thread, sho this whole thing is pointless >_<
-		if (dp->OpenFileDialog(nullptr, title, defaultPath, defaultName, filter, flags, filenames))
-		{
-			if (filenames.Num() > 0)
+			FString path(ofn.lpstrFile);
+			AsyncTask(ENamedThreads::GameThread, [this, path]()
 			{
-				FString file = filenames[0];
-				//AsyncTask(ENamedThreads::GameThread, [this, file]() {
-					Completed.Broadcast(file, true);
-				//});
-				return;//success
-			}
+				Completed.Broadcast(path, true);
+			});
 		}
-	}
-	//something went wrong
-	//AsyncTask(ENamedThreads::GameThread, [this]() {
-		Completed.Broadcast("", false);
-	//});
+		else
+		{
+			AsyncTask(ENamedThreads::GameThread, [this]()
+			{
+				Completed.Broadcast("", false);
+			});
+		}
+	});
+#endif
 }
 
 UCGFileDialogAction* UCGFileDialogAction::OpenFileChooser(UObject* WorldContextObject)

@@ -170,29 +170,36 @@ void ACGChessBoard::StartGame(const FString& iFen, ACGChessPlayerController* iP1
 		//TODO: prefered side vs chess engine!
 		if (iP1)
 		{
-			if (iP1->PreferredSide == ESide::NONE || (iP2 && iP2->PreferredSide == iP1->PreferredSide))
+			if (UCGBPUtils::IsHotSeatMode(this))
 			{
-				//randomize?
-				iP1->bIsBlack = static_cast<bool>(FMath::RandRange(0, 1));
-				if (iP2)
-				{
-					iP2->bIsBlack = !iP1->bIsBlack;
-				}
+				iP1->bIsBlack = false;
 			}
 			else
 			{
-				//give them what they want
-				if (iP1->PreferredSide == ESide::NONE && iP2)
+				if (iP1->PreferredSide == ESide::NONE || (iP2 && iP2->PreferredSide == iP1->PreferredSide))
 				{
-					iP1->bIsBlack = iP2->PreferredSide == ESide::WHITE;
+					//randomize?
+					iP1->bIsBlack = static_cast<bool>(FMath::RandRange(0, 1));
+					if (iP2)
+					{
+						iP2->bIsBlack = !iP1->bIsBlack;
+					}
 				}
 				else
 				{
-					iP1->bIsBlack = iP1->PreferredSide == ESide::BLACK;
-				}
-				if (iP2)
-				{
-					iP2->bIsBlack = iP1->bIsBlack;
+					//give them what they want
+					if (iP1->PreferredSide == ESide::NONE && iP2)
+					{
+						iP1->bIsBlack = iP2->PreferredSide == ESide::WHITE;
+					}
+					else
+					{
+						iP1->bIsBlack = iP1->PreferredSide == ESide::BLACK;
+					}
+					if (iP2)
+					{
+						iP2->bIsBlack = !iP1->bIsBlack;
+					}
 				}
 			}
 		}

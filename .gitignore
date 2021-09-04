@@ -79,3 +79,10 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+/Debug/vc142.pdb
+/Debug/Stockfish.tlog/unsuccessfulbuild
+/Debug/Stockfish.tlog/Stockfish.lastbuildstate
+/Debug/Stockfish.tlog/CL.write.1.tlog
+/Debug/Stockfish.tlog/CL.read.1.tlog
+/Debug/Stockfish.tlog/CL.command.1.tlog
+/Debug/Stockfish.log

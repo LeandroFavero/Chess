@@ -49,6 +49,7 @@ bool UCGGameInstance::LoadCfg()
 		//get user name for default name
 		Settings->PlayerName = FText::FromString(UKismetSystemLibrary::GetPlatformUserName());
 		Settings->LastIp = UCGBPUtils::GetLocalIP();
+		Settings->EnginePath = UCGBPUtils::TryFindStockfishPath();
 		return false;
 	}
 	return true;
