@@ -11,7 +11,7 @@
 
 ## How to try:
 ### Binary
-- Download the zipped game from the releases tab and have fun (win64bit only, stockfish executable included)
+- Download the zipped game from the [releases](https://github.com/buta/Chess/releases) tab and have fun (win64bit only, [stockfish](https://stockfishchess.org/) executable included)
 ### With editor
 - Download the repository and open the project file
 - Start with standalone net mode to start in the main menu
