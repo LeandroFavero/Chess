@@ -1,4 +1,4 @@
-# Unreal chess for C++ practice.
+# C++ Chess in Unreal Engine 4
 ## Features
 - [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) chess engine compatibility
 - [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation) import/export
