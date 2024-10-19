@@ -13,11 +13,14 @@
 ### Binary
 - Download the zipped game from the [releases](https://github.com/buta/Chess/releases) tab and have fun (win64bit only, [stockfish](https://stockfishchess.org/) executable included)
 ### With editor
-- Download the repository and open the project file
+- 4.27 branch requires that version, main requires UE 5.4+
+- Download the repository and open the project file 
 - Start with standalone net mode to start in the main menu
 - Start with listen server net mode (don't forget to set the number of players to 2) to start the match right away
+- If you want to play against AI, you need to download a [UCI compatible chess engine](https://stockfishchess.org/download/) and point the "Executable path" to its .exe
 
 ## Todo:
+- Why is the skybox broken in 5.4 Packaged?
 - Chess clock?
 - Steam integration?
 

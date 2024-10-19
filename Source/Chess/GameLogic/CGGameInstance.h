@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OnlineSessionSettings.h"
 #include "Engine/GameInstance.h"
 #include "Chess.h"
 #include "CGGameInstance.generated.h"
 
 class UCGSettingsSave;
-class FOnlineSessionSearchResult;
 
 USTRUCT(BlueprintType)
 struct FJoinableGame

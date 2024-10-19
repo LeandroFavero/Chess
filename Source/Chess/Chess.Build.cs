@@ -8,7 +8,16 @@ public class Chess : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "RenderCore", "Sockets"/*atm only to find the local ip*/ });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core",
+			"CoreUObject",
+			"Engine", 
+			"InputCore", 
+			"RenderCore",
+			"Sockets", /*atm only to find the local ip*/
+			"ApplicationCore", /*CopyToClipboard*/
+			"OnlineBase"
+		});
 
 		//PrivateDependencyModuleNames.AddRange(new string[] { });
 

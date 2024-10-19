@@ -26,7 +26,7 @@ void ACGHUD::ShowMenu()
 	{
 		if (CurrentWidget)
 		{
-			CurrentWidget->RemoveFromViewport();
+			CurrentWidget->RemoveFromParent();
 		}
 		if (MainMenu)
 		{
@@ -42,7 +42,7 @@ void ACGHUD::ShowGame()
 	{
 		if (CurrentWidget)
 		{
-			CurrentWidget->RemoveFromViewport();
+			CurrentWidget->RemoveFromParent();
 		}
 		if (InGame)
 		{

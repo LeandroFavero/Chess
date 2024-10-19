@@ -11,6 +11,7 @@
 #include "ChessLogic/CGChessBoard.h"
 #include "EngineUtils.h"
 #include "HAL/FileManagerGeneric.h"
+#include "HAL/PlatformApplicationMisc.h"
 #include <SocketSubsystem.h>
 #include <IPAddress.h>
 
@@ -223,7 +224,7 @@ void UCGBPUtils::BoardFenToClipboard(const UObject* WorldContextObject)
 {
 	if (ACGChessBoard* board = FindBoard(WorldContextObject))
 	{
-		FPlatformMisc::ClipboardCopy(*(board->PiecesToFen()));
+		FPlatformApplicationMisc::ClipboardCopy(*(board->PiecesToFen()));
 	}
 }
 

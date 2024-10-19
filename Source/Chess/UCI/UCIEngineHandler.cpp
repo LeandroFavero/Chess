@@ -9,8 +9,7 @@
 #include "ChessLogic/CGPiece.h"
 #include "GameLogic/CGChessPlayerController.h"
 #include "Internationalization/Regex.h"
-
-#define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
+#include "GameLogic/CGUtils.h"
 
 UUCIEngineHandler::UUCIEngineHandler()
 {
@@ -37,7 +36,7 @@ bool UUCIEngineHandler::StartEngine(const FString iEnginePath, const int iTurnTi
 	SetState(EUCIState::STARTING);
 	if (!EngineProc->Launch())
 	{
-		Dbg("Couldn't launch InteractiveProcess!");
+		Dbg("Couldn't launch InteractiveProcess!", "");
 		SetState(EUCIState::ERROR);
 		return false;
 	}
@@ -150,7 +149,7 @@ void UUCIEngineHandler::OnReceive(const FString& iReceived)
 		if (matcher.FindNext())
 		{
 			FString move = matcher.GetCaptureGroup(1).ToLower();
-			AsyncTask(ENamedThreads::GameThread, [=]() {
+			AsyncTask(ENamedThreads::GameThread, [this, move]() {
 				if (Board && move.Len() > 3)
 				{
 					int x = move[0] - 'a';
@@ -194,7 +193,7 @@ void UUCIEngineHandler::SetState(EUCIState iNewState)
 		State = iNewState;
 		if (!IsInGameThread())
 		{
-			AsyncTask(ENamedThreads::GameThread, [=]() {
+			AsyncTask(ENamedThreads::GameThread, [this]() {
 				OnStateChanged.Broadcast(State);
 			});
 		}

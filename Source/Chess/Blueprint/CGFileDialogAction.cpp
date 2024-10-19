@@ -4,11 +4,9 @@
 #include "GameLogic/CGSettingsSave.h"
 
 #if PLATFORM_WINDOWS
-	#include "Windows/MinWindows.h"
+	#include "Windows/WindowsHWrapper.h"
 	#include <commdlg.h>
 #endif
-
-#define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
 
 void UCGFileDialogAction::Activate()
 {
@@ -31,7 +29,7 @@ void UCGFileDialogAction::Activate()
 		ofn.lpstrInitialDir = nullptr;
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
-		if (GetOpenFileName(&ofn) == TRUE)
+		if (GetOpenFileName(&ofn))
 		{
 			FString path(ofn.lpstrFile);
 			AsyncTask(ENamedThreads::GameThread, [this, path]()

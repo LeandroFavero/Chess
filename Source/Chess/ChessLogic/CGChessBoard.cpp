@@ -13,8 +13,7 @@
 #include "Misc/Char.h"
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/CGBPUtils.h"
-
-#define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
+#include "GameLogic/CGUtils.h"
 
 ACGChessBoard::ACGChessBoard()
 {
@@ -285,7 +284,7 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 								ACGPiece* newPiece = world->SpawnActor<ACGPiece>(temp, params);
 								newPiece->SetColor(isWhite);
 								newPiece->Board = this;
-								newPiece->MoveToTileInternal(GetTile({ x,y }), dummyUndo, false);
+								newPiece->MoveToTileInternal(GetTile(FCGSquareCoord(x,y)), dummyUndo, false);
 								Pieces.Add(newPiece);
 
 								//ptr to the kings
@@ -412,7 +411,7 @@ bool ACGChessBoard::FenStringToChessPieces(const FString& iFen)
 				int tileY = tmp[1] - '1';
 				bool isBlack = tileY > (Size.Y / 2);
 				tileY = isBlack ? tileY - 1 : tileY + 1;
-				ACGTile* t = GetTile({ tileX, tileY });
+				ACGTile* t = GetTile(FCGSquareCoord(tileX, tileY));
 				if (t && t->OccupiedBy)
 				{
 					if (!undo)

@@ -5,6 +5,7 @@
 #include "GameLogic/CGSettingsSave.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Online/OnlineSessionNames.h"
 #include "GameLogic/CGOnlineSession.h"
 #include "Blueprint/CGBPUtils.h"
 
@@ -234,7 +235,7 @@ void UCGGameInstance::Join()
 			if (SessionSearch->SearchResults[i].Session.OwningUserId != GetMyId())
 			{
 				searchResult = SessionSearch->SearchResults[i];
-				JoinSessionInternal(GetMyId(), GameSessionName, searchResult);
+				JoinSessionInternal(GetMyId(), NAME_GameSession, searchResult);
 				break;
 			}
 		}

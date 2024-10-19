@@ -85,7 +85,7 @@ public:
 	ACGTile();
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
-	virtual void SetCoord(const FCGSquareCoord Coord);
+	virtual void SetCoord(const FCGSquareCoord& Coord);
 
 	UFUNCTION(BlueprintCallable, Category = "Chess setup")
 	virtual void SetBlack(bool bNewIsBlack);

@@ -100,7 +100,7 @@ void ACGChessPlayerPawn::TraceCursor()
 		{
 			DrawDebugSolidBox(GetWorld(), hitResult.Location, FVector(20.0f), FColor::Red);
 		}
-		SetMouseovered(hitResult.Actor);
+		SetMouseovered(hitResult.GetActor());
 		if (GrabbedPiece.IsValid())
 		{
 			pc->ServerUpdateGrab(GrabbedPiece.Get(), hitResult.Location);

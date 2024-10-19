@@ -27,11 +27,11 @@ class CHESS_API UUCIEngineHandler : public UObject
 {
 	GENERATED_BODY()
 
-	float TurnTime;
-	int Elo;
+	float TurnTime = 0.0f;
+	int Elo = 0;
 	FString EnginePath;
-	ACGChessPlayerController* Controller;
-	ACGChessBoard* Board;
+	ACGChessPlayerController* Controller = nullptr;
+	ACGChessBoard* Board = nullptr;
 	TSharedPtr<FInteractiveProcess> EngineProc;
 	FTimerHandle TimerHandle;
 public:

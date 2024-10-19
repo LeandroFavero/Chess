@@ -14,8 +14,8 @@
 #include "GameLogic/CGGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/CGBPUtils.h"
+#include "GameLogic/CGUtils.h"
 
-#define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(x), __VA_ARGS__));}
 
 ACGPiece::ACGPiece()
 {

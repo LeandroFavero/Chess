@@ -1,3 +1,7 @@
+Stockfish/*
+Export/*
+.vsconfig
+
 # Already have them in uasset format
 *.fbx
 *.png

@@ -6,8 +6,7 @@
 #include "UI/CGLabelWidgetComponent.h"
 #include "ChessLogic/CGPiece.h"
 #include "Net/UnrealNetwork.h"
-
-#define Dbg(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT(x), __VA_ARGS__));}
+#include "GameLogic/CGUtils.h"
 
 ACGTile::ACGTile()
 {
@@ -31,7 +30,7 @@ void ACGTile::BeginPlay()
 	SetCoord(Position);
 }
 
-void ACGTile::SetCoord(const FCGSquareCoord iCoord)
+void ACGTile::SetCoord(const FCGSquareCoord& iCoord)
 {
 	Position = iCoord;
 	SetBlack(iCoord.X % 2 == iCoord.Y % 2);
