@@ -20,7 +20,6 @@
 - If you want to play against AI, you need to download a [UCI compatible chess engine](https://stockfishchess.org/download/) and point the "Executable path" to its .exe
 
 ## Todo:
-- Why is the skybox broken in 5.4 Packaged?
 - Chess clock?
 - Steam integration?
 
